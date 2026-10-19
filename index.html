@@ -1,0 +1,762 @@
+<title>Vasant Suraj</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Archivo:wdth,wght@62..125,300..700&display=swap" rel="stylesheet">
+<style>
+/* One page, one thread. The particle portrait condenses into a thick smooth line that draws itself down the page
+   ahead of the visitor, weaving between the work. The name waits at the end of the line. */
+:root{
+  --bg:#0d0d0d; --ink:#f1f1ee; --ink-soft:#8a8b90; --pill:#1a1b1e; --pill-ink:#f1f1ee; --panel:#141518; --panel-2:#1b1c20;
+  --line-a:#a6dfd3; --line-b:#5B9BF6; --line-c:#FF8FD0;
+  --font:'Elms Sans','Archivo','Helvetica Neue',Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden;background:radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,#f5f5f5 5%,var(--bg)),var(--bg) 70%) fixed}
+a,button{color:inherit;font:inherit}
+
+/* layers: thread svg (1) < particles (2) < content (3) < ui (4) < butterfly (9) */
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:2;pointer-events:none}
+.thread{position:absolute;left:0;top:0;width:100%;z-index:1;pointer-events:none;overflow:visible}
+.thread path{fill:none;stroke:url(#threadGrad);stroke-linecap:round;stroke-linejoin:round}
+
+main{position:relative;z-index:3}
+section{position:relative}
+.hero{height:100svh}
+@supports (height:100dvh){.hero{height:100dvh}}
+.gap{height:40svh}
+.band{padding-block:14vh;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12vh}
+.band h2{margin:0 0 -4vh;font-weight:500;font-size:clamp(28px,3.2vw,46px);letter-spacing:-.02em;line-height:1}
+.card{display:flex;flex-direction:column;gap:14px;width:min(62vw,980px)}
+.card.right{align-self:flex-end}
+.frame{aspect-ratio:16/10;width:100%;max-width:100%;background:var(--panel);border-radius:18px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center}
+.frame::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.04),rgba(255,255,255,0) 50%)}
+.frame span{font-size:14px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.card .meta{display:flex;justify-content:space-between;gap:16px;font-size:15px;font-weight:500}
+.card .meta em,.slide .meta em{font-style:normal;color:var(--ink-soft)}
+
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* showcase: pinned deck of tilted project cards */
+.show{position:relative;height:calc((var(--n,6) - 1) * var(--per,100svh) + 100svh)}
+.show-pin{position:sticky;top:0;height:100svh;overflow:hidden}
+.show-meta{position:absolute;left:max(24px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);display:grid;grid-template-columns:auto auto;gap:22px 28px;font-size:14px;line-height:1.45;max-width:30vw}
+.show-meta div{display:contents}
+.show-meta em{font-style:normal;color:var(--ink-soft)}
+.show-meta span{white-space:pre-line;font-weight:500}
+.show-deck{position:absolute;inset:0}
+.pcard{cursor:pointer;text-decoration:none;color:inherit;position:absolute;left:50%;top:50%;width:min(34vw,560px);aspect-ratio:16/10;margin:calc(min(34vw,560px) * -0.3125) 0 0 calc(min(34vw,560px) * -0.5);border-radius:6px;overflow:hidden;background:var(--panel-2);box-shadow:0 30px 80px rgba(0,0,0,.45);will-change:transform,opacity;display:flex;align-items:flex-end;padding:18px}
+.pcard span{font-size:13px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:rgba(241,241,238,.7)}
+.pcard::before{content:"";position:absolute;inset:0;background:var(--tint,linear-gradient(135deg,#1c1e24,#2a2d36))}
+.pcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.pcard .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(0,0,0,.6))}
+.pcard .flow{position:absolute;left:18px;right:18px;top:18px;display:flex;flex-wrap:wrap;gap:6px}
+.pcard .flow i{font-style:normal;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.1);color:rgba(241,241,238,.85)}
+.pcard .big{position:relative;font-size:clamp(20px,2vw,30px);font-weight:500;letter-spacing:-.01em;line-height:1.1;max-width:90%}
+.pcard .open{position:absolute;right:16px;bottom:16px;width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;transition:background .25s,transform .25s}
+.pcard:hover .open{background:var(--ink);color:var(--bg);transform:translate(2px,-2px)}
+.pcard:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+.show-list .it b a{color:inherit;text-decoration:none}
+/* detail panel */
+.panel{position:fixed;inset:0;z-index:20}
+.panel[hidden]{display:none}
+.panel-bg{position:absolute;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px)}
+.panel-card{position:absolute;right:0;top:0;bottom:0;width:min(560px,100%);background:#141518;padding:calc(28px + env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) 28px;overflow-y:auto;display:flex;flex-direction:column;gap:18px;animation:slideIn .45s cubic-bezier(.2,.7,.2,1)}
+@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+.panel-x{position:absolute;top:calc(20px + env(safe-area-inset-top,0px));right:max(20px,env(safe-area-inset-right,0px))}
+.panel-cat{font-style:normal;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:40px}
+.panel-card h2{margin:0;font-size:clamp(26px,3vw,38px);font-weight:500;letter-spacing:-.02em;line-height:1.05}
+.panel-one{margin:0;font-size:17px;line-height:1.5;color:var(--ink)}
+.panel-meta{margin:8px 0 0;display:grid;grid-template-columns:auto 1fr;gap:12px 20px;font-size:15px;line-height:1.45}
+.panel-meta dt{color:var(--ink-soft)}
+.panel-meta dd{margin:0}
+.panel-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:20px}
+.panel-tags i{font-style:normal;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:7px 11px;border-radius:999px;background:#1f2125}
+@media (prefers-reduced-motion:reduce){.panel-card{animation:none}}
+.pcard span{position:relative}
+.show-count{position:absolute;left:max(24px,env(safe-area-inset-left,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:0}
+.show-count em{font-style:normal;font-size:14px;color:var(--ink-soft)}
+.show-count .num{display:flex;align-items:flex-start;gap:14px;line-height:.8}
+.show-count b{font-weight:500;font-size:clamp(120px,19vw,300px);letter-spacing:-.05em;transition:opacity .25s}
+.show-count b.flip{opacity:0}
+.show-count i{font-style:normal;font-size:16px;margin-top:.6em;color:var(--ink-soft)}
+.show-list{position:absolute;right:max(24px,env(safe-area-inset-right,0px));top:50%;width:min(26vw,380px);transform:translateY(-50%);text-align:center;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.show-list .it{padding:7vh 0;opacity:.22;transition:opacity .5s}
+.show-list .it.on{opacity:1}
+.show-list em{display:block;font-style:normal;font-size:13px;color:var(--ink-soft);margin-bottom:10px}
+.show-list b{display:block;font-weight:500;font-size:clamp(22px,2.2vw,34px);letter-spacing:-.01em;line-height:1.05}
+.show-list b::after{content:"";display:block;width:18px;height:1px;background:var(--ink-soft);margin:14px auto 12px}
+.show-list p{margin:0;font-size:14px;line-height:1.5;color:var(--ink-soft)}
+@media (max-width:900px){
+  .show-meta{display:none}
+  .show-pin{height:100dvh}
+  .pcard{width:80vw;margin:calc(80vw * -0.3125 - 14vh) 0 0 -40vw;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+  .show-count{left:max(20px,env(safe-area-inset-left,0px));right:auto;bottom:auto;top:calc(72px + env(safe-area-inset-top,0px));align-items:flex-start;gap:2px}
+  .show-count em{font-size:12px}
+  .show-count b{font-size:15vw}
+  .show-count i{font-size:13px;margin-top:.5em}
+  .show-list{right:auto;left:50%;top:auto;bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:calc(100vw - 48px);max-width:480px;transition:none}
+  .show-list .it{display:none;padding:0}
+  .show-list .it.on{display:block}
+  .show-list b{font-size:clamp(22px,6.5vw,30px)}
+  .show-list p{font-size:14px}
+}
+}
+.foot{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 max(24px,env(safe-area-inset-left,0px)) 6vh max(24px,env(safe-area-inset-right,0px));gap:6vh}
+.foot .big{margin:0;font-weight:800;font-size:clamp(48px,13.4vw,220px);line-height:.86;letter-spacing:-.045em;text-transform:uppercase;overflow-wrap:anywhere}
+.foot .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:15px;font-weight:500;color:var(--ink-soft)}
+.foot .row a{color:var(--ink);text-decoration:none}
+
+.ui{position:fixed;inset:0;z-index:4;pointer-events:none}
+.ui > *{pointer-events:auto}
+.mark{position:absolute;top:calc(28px + env(safe-area-inset-top,0px));left:max(28px,env(safe-area-inset-left,0px));font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--ink);opacity:0;transform:translateY(8px);transition:opacity .9s ease .2s,transform .9s ease .2s}
+.actions{position:absolute;top:calc(22px + env(safe-area-inset-top,0px));right:max(24px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center;opacity:0;transform:translateY(8px);transition:opacity .9s ease .35s,transform .9s ease .35s}
+.mark.ready,.actions.ready{opacity:1;transform:none}
+.pill{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 26px;border-radius:999px;background:var(--pill);color:var(--pill-ink);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transition:transform .25s cubic-bezier(.2,.7,.2,1),background .25s}
+.pill:hover{transform:translateY(-2px);background:#25272b}
+.pill:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.pill.round{width:52px;padding:0}
+.pill .dot{width:5px;height:5px;border-radius:999px;background:var(--ink)}
+.pill svg{display:block}
+.pill[aria-pressed="true"] .wave path{animation:wave 1.1s ease-in-out infinite}
+@keyframes wave{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.4)}}
+.scroll{position:absolute;right:max(28px,env(safe-area-inset-right,0px));bottom:calc(28px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);opacity:0;transition:opacity .8s ease}
+.scroll.show{opacity:1;transition-delay:1.4s}
+.scroll i{display:block;width:44px;height:2px;background:var(--ink-soft);animation:line 2.2s cubic-bezier(.7,0,.3,1) infinite}
+@keyframes line{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+
+.palette{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:flex-start;gap:12px;opacity:0;transform:translateY(8px);transition:opacity .9s ease .5s,transform .9s ease .5s}
+.palette.ready{opacity:1;transform:none}
+.palette.gone{opacity:0;pointer-events:none;transition-delay:0s}
+.palette .swatch{width:20px;height:20px;border-radius:999px;background:conic-gradient(#ff5d5d,#ffd23f,#7cf27c,#5dd6ff,#8a6bff,#ff6bd6,#ff5d5d);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.palette .swatch.set{background:var(--hood)}
+.picker{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:20px;background:var(--pill);width:252px}
+.picker[hidden]{display:none}
+.wheelWrap{position:relative;width:220px;height:220px;cursor:crosshair;touch-action:none}
+.wheelWrap canvas{display:block;border-radius:999px}
+.cursor-dot{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:999px;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.5);pointer-events:none;left:50%;top:50%}
+.lrow{display:flex;align-items:center;gap:12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.lrow input{flex:1;accent-color:#fff}
+.prow{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.prow button{all:unset;cursor:pointer;padding:6px 12px;border-radius:999px;background:#25272b;color:var(--ink);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.prow button:focus-visible,.wheelWrap:focus-within{outline:2px solid var(--ink);outline-offset:3px}
+.loader{position:fixed;inset:0;z-index:6;background:var(--bg);display:flex;align-items:flex-end;justify-content:space-between;padding:0 max(28px,env(safe-area-inset-right,0px)) 28px max(28px,env(safe-area-inset-left,0px));transition:opacity .8s ease,visibility 0s linear .8s}
+.loader.done{opacity:0;visibility:hidden}
+.loader .count{font-weight:300;font-size:clamp(72px,14vw,200px);line-height:.8;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.loader .what{font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);max-width:24ch;text-align:right;line-height:1.5}
+#fly{position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;display:block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (max-width:760px){
+  .card{width:calc(100vw - 48px)}
+  .card.right{align-self:flex-start}
+  .band{padding-block:10vh}
+  .band{gap:9vh}
+  .mark{font-size:14px}
+  .actions .pill:not(.round){height:44px;padding:0 18px;font-size:12px}
+  .pill.round{width:44px;height:44px}
+  .loader .what{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .scroll i{animation:none}
+  .mark,.actions,.reveal{transition:none}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+
+<svg class="thread" id="thread" aria-hidden="true">
+  <defs>
+    <linearGradient id="threadGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="1000">
+      <stop offset="0" stop-color="#a6dfd3"/><stop offset="0.5" stop-color="#5B9BF6"/><stop offset="1" stop-color="#FF8FD0"/>
+    </linearGradient>
+  </defs>
+  <path id="threadPath" d=""/>
+</svg>
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<main>
+  <section class="hero" id="top"></section>
+  <section class="gap" aria-hidden="true"></section>
+
+  <section class="show" id="work" aria-label="Webflow work at Factors.ai" data-label="Webflow work">
+    <div class="show-pin">
+      <div class="show-meta"><div><em data-k="k1"></em><span data-v="v1"></span></div><div><em data-k="k2"></em><span data-v="v2"></span></div><div><em data-k="k3"></em><span data-v="v3"></span></div></div>
+      <div class="show-deck"></div>
+      <div class="show-count"><em>Webflow work</em><div class="num"><b class="num-b">01</b><i class="num-t">/00</i></div></div>
+      <div class="show-list"></div>
+    </div>
+  </section>
+
+  <section class="show" id="automations" aria-label="Automations" data-label="Automations">
+    <div class="show-pin">
+      <div class="show-meta"><div><em data-k="k1"></em><span data-v="v1"></span></div><div><em data-k="k2"></em><span data-v="v2"></span></div><div><em data-k="k3"></em><span data-v="v3"></span></div></div>
+      <div class="show-deck"></div>
+      <div class="show-count"><em>Automations</em><div class="num"><b class="num-b">01</b><i class="num-t">/00</i></div></div>
+      <div class="show-list"></div>
+    </div>
+  </section>
+
+  <section class="show" id="personal" aria-label="Personal projects" data-label="Personal projects">
+    <div class="show-pin">
+      <div class="show-meta"><div><em data-k="k1"></em><span data-v="v1"></span></div><div><em data-k="k2"></em><span data-v="v2"></span></div><div><em data-k="k3"></em><span data-v="v3"></span></div></div>
+      <div class="show-deck"></div>
+      <div class="show-count"><em>Personal projects</em><div class="num"><b class="num-b">01</b><i class="num-t">/00</i></div></div>
+      <div class="show-list"></div>
+    </div>
+  </section>
+
+  <footer class="foot" id="contact">
+    <h1 class="big reveal">Vasant<br>Suraj</h1>
+    <div class="row reveal"><a href="mailto:hello@vasantsuraj.com">hello@vasantsuraj.com</a><span>Webflow developer · Automations engineer</span><span>[City]</span></div>
+  </footer>
+</main>
+
+<aside class="panel" id="panel" hidden aria-label="Automation details">
+  <div class="panel-bg" id="panelBg"></div>
+  <div class="panel-card" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+    <button class="pill round panel-x" type="button" id="panelClose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+    <em class="panel-cat" id="panelCat"></em>
+    <h2 id="panelTitle"></h2>
+    <p class="panel-one" id="panelOne"></p>
+    <dl class="panel-meta"><dt>Stack</dt><dd id="panelStack"></dd><dt>Trigger</dt><dd id="panelTrigger"></dd><dt>Outcome</dt><dd id="panelOutcome"></dd></dl>
+    <div class="panel-tags" id="panelTags"></div>
+  </div>
+</aside>
+
+<div class="ui">
+  <a class="mark" href="#top" id="mark">Vasant Suraj</a>
+  <div class="actions" id="actions">
+    <button class="pill round" id="sound" type="button" aria-pressed="false" aria-label="Sound off">
+      <svg class="wave" width="18" height="16" viewBox="0 0 18 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M2 8v0" style="transform-origin:2px 8px"/><path d="M6 4v8" style="transform-origin:6px 8px"/><path d="M10 1v14" style="transform-origin:10px 8px"/><path d="M14 5v6" style="transform-origin:14px 8px"/>
+      </svg>
+    </button>
+    <a class="pill" href="#contact">Let's talk <span class="dot" aria-hidden="true"></span></a>
+  </div>
+  <div class="scroll" id="scrollHint" aria-hidden="true">Scroll to explore <i></i></div>
+  <div class="palette" id="palette">
+    <button class="pill round" type="button" id="hoodBtn" aria-label="Change hoodie colour" aria-expanded="false"><span class="swatch" id="hoodSwatch"></span></button>
+    <div class="picker" id="picker" hidden>
+      <div class="wheelWrap"><canvas id="wheel" width="220" height="220" aria-hidden="true"></canvas><div class="cursor-dot" id="wheelDot"></div><input id="wheelInput" type="range" min="0" max="359" value="165" aria-label="Hoodie hue" class="sr"></div>
+      <label class="lrow"><span>Light</span><input id="lightRange" type="range" min="18" max="82" value="58"></label>
+      <div class="prow"><button type="button" id="hoodReset">Original</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="loader" id="loader" aria-live="polite">
+  <div class="count" id="count">000</div>
+  <div class="what">Assembling particles of one person.</div>
+</div>
+
+<canvas id="fly" aria-hidden="true"></canvas>
+<p class="sr">Vasant Suraj. Webflow developer and automations engineer.</p>
+
+<script>
+(() => {
+'use strict';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(hover: none)').matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+let W = 0, H = 0, docH = 0;
+
+/* =====================================================================
+   1. THE THREAD: one smooth path through the whole document
+   ===================================================================== */
+const svg = document.getElementById('thread'), pathEl = document.getElementById('threadPath');
+let lut = null, totalLen = 0, strokeW = 36, CONVERGE_LEN = 0;   // CONVERGE_LEN: how much of the line the particles form
+function catmull(points, tension = 0.5) {
+  // Catmull-Rom -> cubic Bezier path string
+  let d = `M ${points[0][0]} ${points[0][1]}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i - 1] || points[i], p1 = points[i], p2 = points[i + 1], p3 = points[i + 2] || p2;
+    const c1 = [p1[0] + (p2[0] - p0[0]) * tension / 3, p1[1] + (p2[1] - p0[1]) * tension / 3];
+    const c2 = [p2[0] - (p3[0] - p1[0]) * tension / 3, p2[1] - (p3[1] - p1[1]) * tension / 3];
+    d += ` C ${c1[0]} ${c1[1]}, ${c2[0]} ${c2[1]}, ${p2[0]} ${p2[1]}`;
+  }
+  return d;
+}
+function buildThread() {
+  docH = document.documentElement.scrollHeight;
+  svg.setAttribute('width', W); svg.setAttribute('height', docH); svg.setAttribute('viewBox', `0 0 ${W} ${docH}`);
+  const g = document.getElementById('threadGrad'); g.setAttribute('y2', docH);
+  strokeW = clamp(W * 0.026, 16, 44); pathEl.setAttribute('stroke-width', strokeW);
+  const sy = y => Math.round(y), top = (el) => el.getBoundingClientRect().top + scrollY;
+  const cards = [...document.querySelectorAll('.card, .show')];
+  let flip = 0;
+  const pts = [];
+  // start in the portrait's chest, loop once, then weave past every card on its empty side
+  // the thread is introduced with the work section: it enters from the left edge just above it, no loop
+  const work = document.getElementById('work'); const workTop = work ? work.getBoundingClientRect().top + scrollY : H * 1.5;
+  pts.push([-W * 0.08, workTop - H * 0.18]);
+  pts.push([W * 0.34, workTop - H * 0.02]);
+  for (const c of cards) {
+    const r = c.getBoundingClientRect(); const cy = r.top + scrollY + r.height * 0.5;
+    if (c.classList.contains('show')) { const t0 = r.top + scrollY, hh = r.height; const n = Math.max(3, Math.round(hh / H / 1.3)); for (let k = 0; k < n; k++) { pts.push([(k + flip) % 2 ? W * 0.12 : W * 0.88, sy(t0 + hh * ((k + 0.5) / n))]); } flip += n; continue; }
+    const isRight = c.classList.contains('right');
+    const side = isRight ? W * 0.16 : W * 0.84;
+    pts.push([side, sy(cy - r.height * 0.35)]);
+    pts.push([isRight ? W * 0.3 : W * 0.7, sy(cy + r.height * 0.55)]);
+  }
+  // after the last deck the thread flows out of the frame on the far side; it never enters the footer
+  const foot = document.querySelector('.foot'); const footTop = top(foot); const lastX = pts[pts.length - 1][0];
+  // the last stroke simply continues out of the right edge: one point, no turn-back
+  const lastY = pts[pts.length - 1][1];
+  pts.push([W * 1.14, Math.min(footTop - H * 0.08, lastY + (lastX < W * 0.5 ? H * 0.42 : H * 0.22))]);
+  pathEl.setAttribute('d', catmull(pts, 0.62));
+  totalLen = pathEl.getTotalLength();
+  // length -> y lookup, every 6px
+  const n = Math.ceil(totalLen / 6) + 1; lut = { len: new Float32Array(n), x: new Float32Array(n), y: new Float32Array(n), n };
+  for (let i = 0; i < n; i++) { const L = Math.min(totalLen, i * 6); const p = pathEl.getPointAtLength(L); lut.len[i] = L; lut.x[i] = p.x; lut.y[i] = p.y; }
+  pathEl.style.strokeDasharray = `${totalLen} ${totalLen}`; pathEl.style.opacity = '1';
+  updateThread();
+}
+// how much of the thread is drawn: it stays ahead of the viewer, and only starts once the particles begin to gather
+function headLength() {
+  if (!lut) return 0;
+  const target = scrollY + H * 0.86; let L = 0;
+  for (let i = 0; i < lut.n; i++) { if (lut.y[i] > target) break; L = lut.len[i]; }
+  // nothing while the portrait is still on screen; then the line draws on from its start
+  const gate = clamp((scrollY - H * 0.98) / (H * 0.35), 0, 1);
+  return L * (gate * gate * (3 - 2 * gate));
+}
+function updateThread() { if (!lut) return; const L = headLength(); pathEl.style.strokeDashoffset = String(totalLen - L); }
+
+/* =====================================================================
+   2. SCROLL STATE
+   ===================================================================== */
+let converge = 0, fade = 0, revealed = false;
+function onScroll() {
+  const s = scrollY / H;
+  converge = scrollY / H;                         // screens scrolled (drives the shedding)
+  fade = 0;                                        // the field stays for the whole page
+  shows.forEach(sh => sh.update());
+  document.getElementById('scrollHint').classList.toggle('show', scrollY < 10 && revealed);
+  document.getElementById('palette').classList.toggle('gone', scrollY > H * 0.5);
+  document.getElementById('mark').classList.toggle('gone', false);
+  updateThread();
+}
+addEventListener('scroll', onScroll, { passive: true });
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }), { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+/* showcase: a deck that shuffles with the scroll */
+const WORK = [
+  { name: 'Benchmarks to Blueprints', cat: 'Landing page · Factors.ai', url: 'https://www.factors.ai/lp/benchmarks-to-blueprints-linkedin-report', img: 'thumbs/benchmarks.jpg', line: 'Gated LinkedIn benchmark report, built from design to live page.', k: ['Role','Launch','Type'], v: ['Design to Webflow\nInteractions · Form flow', '2025', 'Landing page'], tint: 'linear-gradient(135deg,#1b2b3a,#0f1a26)' },
+  { name: 'LinkedIn Campaign Offer', cat: 'Landing page · Factors.ai', url: 'https://www.factors.ai/lp/linkedin-campaign-offer', img: 'thumbs/campaign-offer.jpg', line: 'Conversion-focused offer page for LinkedIn campaigns.', k: ['Role','Launch','Type'], v: ['Design to Webflow\nConversion layout', '2025', 'Landing page'], tint: 'linear-gradient(135deg,#2a1f3a,#171226)' },
+  { name: 'Microsoft Advertising Partner', cat: 'Partner page · Factors.ai', url: 'https://www.factors.ai/partner/microsoft-advertising-partner', img: 'thumbs/microsoft.jpg', line: 'Partner page on a reusable partner template.', k: ['Role','Launch','Type'], v: ['Design to Webflow\nPartner template', '2025', 'Partner page'], tint: 'linear-gradient(135deg,#1f3a2e,#0f2620)' },
+  { name: 'Prove ROI — LinkedIn Partner', cat: 'Landing page · Factors.ai', url: 'https://www.factors.ai/lp/prove-roi-linkedin-marketing-partner', img: 'thumbs/prove-roi.jpg', line: 'LinkedIn Marketing Partner page with proof-led sections.', k: ['Role','Launch','Type'], v: ['Design to Webflow\nInteractions', '2025', 'Landing page'], tint: 'linear-gradient(135deg,#3a2a1f,#26170f)' },
+  { name: 'Routines', cat: 'Product page · CMS · Factors.ai', url: 'https://www.factors.ai/product/routines', img: 'thumbs/routines.jpg', line: 'CMS-driven product page with a dynamic template.', k: ['Role','Launch','Type'], v: ['CMS architecture\nDynamic template · Interactions', '2025', 'Product page'], tint: 'linear-gradient(135deg,#1f2a3a,#0f1626)' },
+];
+const AUTOMATIONS = [
+  { name: 'Notion to Webflow Publisher', cat: 'Publishing', line: 'Approve in Notion, get a complete Webflow draft.', tags: ['n8n','Notion','Webflow','Slack'], one: 'When an editor marks a finished blog as approved in Notion, the content is converted to HTML, every SEO field is filled, and a Webflow CMS draft is created and confirmed in Slack.', trigger: 'Notion status change', outcome: 'A publish-ready Webflow draft appears minutes after the editor flips the status, with every SEO field filled.' },
+  { name: 'SEO Pre-Live Checks', cat: 'Publishing', line: 'Eight SEO checks on every new page before it goes live.', tags: ['n8n','Webflow','Slack'], one: 'When a page is published to the Webflow staging domain, eight SEO checks run against it and a pass/fail report lands in Slack.', trigger: 'Webflow publish to staging', outcome: 'Every new page is checked for eight SEO essentials before production, with no one remembering to do it.' },
+  { name: 'Auto Internal Linking', cat: 'Publishing', line: 'New posts linked in and out across the blog at publish time.', tags: ['n8n','Webflow','Google Sheets','Search Console','Claude'], one: 'Two engines wire every new post into the site: one adds links from the new post outward, the other adds links from older posts into it, with a log of every change.', trigger: 'Webflow publish of a new post', outcome: 'Every new post is linked in both directions within minutes of publishing, with no editor involved.' },
+  { name: 'AI Blog Drafts', cat: 'Content', line: 'Flag a sheet row, get a 3,000-word draft in Google Docs.', tags: ['n8n','Gemini','Google Sheets','Google Docs','Slack'], one: 'A flagged row in a Google Sheet (title, keywords, brief) becomes a complete 3,000–4,000-word draft in Google Docs, with a Slack notification.', trigger: 'Google Sheets row change', outcome: 'A full draft lands in Google Docs minutes after a row is flagged, instead of hours of writing per post.' },
+  { name: 'Webinar to Webflow', cat: 'Content', line: 'YouTube link in, labelled transcript and CMS recap page out.', tags: ['n8n','Gemini','Supadata','Google Docs','Webflow'], one: 'A YouTube webinar link produces a speaker-labelled, cleaned transcript in Google Docs, then a reviewed recap page pushed to the Webflow CMS.', trigger: 'Webhooks from an internal app', outcome: 'A named, cleaned transcript in two to four minutes per video, with a draft recap page ready for review.' },
+  { name: 'Video to Blog', cat: 'Content', line: 'One Slack command turns a YouTube video into a blog draft.', tags: ['n8n','Slack','Claude','Notion'], one: 'A single Slack slash command fetches a video transcript, analyses it and writes a complete blog draft into Notion.', trigger: 'Slack slash command', outcome: 'A reviewable blog draft from any captioned video, without anyone transcribing or outlining it.' },
+  { name: 'Voice to Blog', cat: 'Content', line: 'Talk for three minutes, get a blog draft in Notion.', tags: ['n8n','Groq','Claude','Notion','Slack'], one: 'A browser recorder captures a founder talking through a brief; the audio is transcribed and turned into a Notion draft with SEO fields.', trigger: 'Webhook from the recorder', outcome: 'A talk-through becomes a reviewable draft in about 90 seconds.' },
+  { name: 'Podcast to CMO Brief', cat: 'Content', line: 'Any podcast URL becomes a structured brief for marketing leaders.', tags: ['n8n','Groq Whisper','Claude','CloudConvert','Google Drive'], one: 'A podcast audio URL or YouTube link is transcribed and distilled into a structured JSON brief for a B2B marketing leader, stored in Google Drive.', trigger: 'Webhook (job start / result)', outcome: 'An hour of audio becomes a structured brief in a few minutes, with no one listening.' },
+  { name: 'Cluster to Pillar Post', cat: 'Content', line: 'Four old posts become one new pillar article in Notion.', tags: ['n8n','Claude','Webflow','Google Sheets','Notion'], one: 'A sheet row groups up to four existing posts into a topic cluster; their bodies are pulled from the Webflow CMS and synthesised into one pillar article in Notion.', trigger: 'Google Sheets row change', outcome: 'A pillar draft synthesised from four live posts lands in Notion in minutes.' },
+  { name: 'Blog Refresh Engine', cat: 'SEO', line: 'Turns every webinar into ranked, ready-to-write blog refresh briefs.', tags: ['n8n','Gemini','Ahrefs','Google Sheets','Google Docs'], one: 'Matches a new webinar or research report against the whole blog archive, scores the fit per post, and writes rewrite or optimisation briefs for the best matches.', trigger: 'Schedule + webhooks from an internal app', outcome: 'A webinar is matched against the whole blog archive in minutes, with a ranked shortlist and a reason per post.' },
+  { name: 'Blog to Social and Ads', cat: 'Social', line: 'Tick a box, get social posts and ad ideas from any blog.', tags: ['n8n','Notion','Claude'], one: 'Two checkbox-driven workflows on one Notion database: paste a live blog URL and tick a box to get social post copy, then ad angles.', trigger: 'Notion checkbox', outcome: 'Every blog gets social copy and ad angles within minutes of a tick.' },
+  { name: 'Organic Social Engine', cat: 'Social', line: 'Ideas to drafts to creatives, all driven from one Notion board.', tags: ['n8n','Notion','Claude','Reddit','LinkedIn'], one: 'A six-workflow pipeline that feeds one Notion board with post ideas from scrapers, call transcripts and webinars, then drafts posts and creative briefs.', trigger: 'Weekly schedule + Notion actions', outcome: 'A full week of post ideas arrives every Monday without anyone searching for them.' },
+  { name: 'Slack to Post Idea', cat: 'Social', line: 'Type one word in a thread, get a Notion post idea.', tags: ['n8n','Slack','Claude','Notion'], one: 'Typing one keyword in any Slack thread turns that conversation into a LinkedIn post idea in Notion.', trigger: 'Slack keyword in a thread', outcome: 'A post idea is captured in seconds, from inside the conversation.' },
+  { name: 'LinkedIn ICP Leaderboard', cat: 'Social', line: 'Weekly ranking of who drives buyer engagement on LinkedIn.', tags: ['n8n','Apify','Gemini','Google Sheets','GitHub'], one: 'Every week, scrapes the posts of tracked team members, collects everyone who engaged, scores them against the ideal customer profile and publishes a ranked leaderboard.', trigger: 'Schedule', outcome: 'A weekly leaderboard built from every engagement, not a sample, with no manual counting.' },
+  { name: 'Reddit Keyword Alerts', cat: 'Monitoring', line: 'Instant Slack alerts when Reddit mentions your keywords or competitors.', tags: ['n8n','Reddit','Slack'], one: 'Polls Reddit for a configurable list of keywords and competitor names and drops an alert in Slack when a matching thread appears.', trigger: 'Schedule', outcome: 'Matching Reddit threads reach the team within minutes of posting.' },
+  { name: 'Competitive Intel System', cat: 'Monitoring', line: 'Competitor launches tracked and battlecards drafted, no backend required.', tags: ['n8n','n8n Data Tables','Claude','Gemini','Webhooks'], one: 'Three workflows run a competitor battlecard system on n8n alone: one watches release pages, one serves an internal app, one drafts battlecard edits.', trigger: 'Schedules + app webhook', outcome: 'Competitor launches reach the feed within six hours of publication, classified and summarised for sales.' },
+  { name: 'Marketing Ticket Desk', cat: 'Operations', line: 'Form requests become Notion tickets with Slack pings in seconds.', tags: ['n8n','Notion','Slack','Webhooks'], one: 'Requests from an internal form are filed on a single Notion intake board with owner, priority, due date and attachments, and announced in Slack.', trigger: 'Webhook', outcome: 'Every request is a tracked Notion ticket, created in seconds.' },
+  { name: 'Dev Tasks from Slack', cat: 'Operations', line: 'Create and prioritise dev tasks without leaving Slack.', tags: ['n8n','Slack','Notion'], one: 'Two slash commands and interactive buttons let the marketing team run the developers’ task board without opening Notion.', trigger: 'Slack slash commands', outcome: 'Tasks reach the board in seconds from the conversation they came from.' },
+  { name: 'Docs to Notion Sync', cat: 'Operations', line: 'Finished posts flow from a Google Doc into Notion automatically.', tags: ['n8n','Google Docs','Notion','Data Table'], one: 'Watches a working Google Doc where finished posts are filed under a Completed tab and copies each one into Notion exactly once.', trigger: 'Schedule', outcome: 'Every finished post appears in Notion within seconds of being moved, with no copy-paste.' },
+];
+const TINTS = ['linear-gradient(135deg,#1b2b3a,#0f1a26)','linear-gradient(135deg,#2a1f3a,#171226)','linear-gradient(135deg,#1f3a2e,#0f2620)','linear-gradient(135deg,#3a2a1f,#26170f)','linear-gradient(135deg,#1f2a3a,#0f1626)','linear-gradient(135deg,#3a1f2e,#26101c)'];
+AUTOMATIONS.forEach((a, i) => { a.tint = TINTS[i % TINTS.length]; a.k = ['Stack','Trigger','Category']; a.v = [a.tags.join(' · '), a.trigger, a.cat]; });
+const PERSONAL = [
+  { name: 'Nike — Air Jordan concept', cat: 'Concept · Front-end', url: 'https://nike-rm1r.vercel.app/', img: 'thumbs/nike.jpg', line: 'Single-product concept page with colour variants.', k: ['Role','Stack','Type'], v: ['Design + build', 'HTML · CSS · JS', 'Concept'], tint: TINTS[0] },
+  { name: 'I-Lish', cat: 'Landing page · Client', url: 'https://i-lish-new.vercel.app/', img: 'thumbs/ilish.jpg', line: 'Live English classes for kids: landing page with trial-class flow.', k: ['Role','Stack','Type'], v: ['Design + build', 'HTML · CSS · JS', 'Landing page'], tint: TINTS[1] },
+  { name: 'LinkedIn Leaderboard', cat: 'Web app · Internal tool', url: 'https://linked-in-engagements-leader-board.vercel.app/', img: 'thumbs/leaderboard.jpg', line: 'Weekly ICP engagement leaderboard, fed by the n8n automation.', k: ['Role','Stack','Type'], v: ['Design + build', 'Vercel · n8n · GitHub', 'Web app'], tint: TINTS[2] },
+];
+
+/* detail panel for automations */
+const panel = (() => {
+  const el = document.getElementById('panel'); let last = null;
+  function open(a, from) { last = from; document.getElementById('panelCat').textContent = a.cat; document.getElementById('panelTitle').textContent = a.name; document.getElementById('panelOne').textContent = a.one; document.getElementById('panelStack').textContent = a.tags.join(' · '); document.getElementById('panelTrigger').textContent = a.trigger; document.getElementById('panelOutcome').textContent = a.outcome; document.getElementById('panelTags').innerHTML = a.tags.map(t => `<i>${t}</i>`).join(''); el.hidden = false; document.body.style.overflow = 'hidden'; document.getElementById('panelClose').focus(); }
+  function close() { el.hidden = true; document.body.style.overflow = ''; if (last) last.focus(); }
+  document.getElementById('panelClose').addEventListener('click', close); document.getElementById('panelBg').addEventListener('click', close);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && !el.hidden) close(); });
+  return { open, close };
+})();
+
+function makeShow(id, DATA) {
+  const sec = document.getElementById(id); if (!sec) return { update() {} };
+  const deck = sec.querySelector('.show-deck'), list = sec.querySelector('.show-list'), numEl = sec.querySelector('.num-b'), meta = sec.querySelector('.show-meta');
+  const N = DATA.length; const per = N > 8 ? 0.6 : 0.85; sec.style.setProperty('--n', N); sec.style.setProperty('--per', per * 100 + 'svh');
+  sec.querySelector('.num-t').textContent = '/' + String(N).padStart(2, '0');
+  const ks = meta.querySelectorAll('[data-k]'), vs = meta.querySelectorAll('[data-v]');
+  const cards = DATA.map((p, i) => {
+    const isLink = !!p.url;
+    const el = document.createElement(isLink ? 'a' : 'button'); el.className = 'pcard'; el.style.setProperty('--tint', p.tint);
+    if (isLink) { el.href = p.url; el.target = '_blank'; el.rel = 'noopener'; el.setAttribute('aria-label', `${p.name} (opens in a new tab)`); }
+    else { el.type = 'button'; el.setAttribute('aria-label', `${p.name}: details`); el.addEventListener('click', () => panel.open(p, el)); }
+    const img = p.img ? `<img src="${p.img}" alt="" loading="lazy" onerror="this.remove()">` : '';
+    const flow = p.tags ? `<div class="flow">${p.tags.slice(0, 4).map(t => `<i>${t}</i>`).join('')}</div>` : '';
+    el.innerHTML = `${img}<div class="shade"></div>${flow}<span class="big">${p.name}</span><span class="open" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${isLink ? '<path d="M3 11 11 3M5 3h6v6"/>' : '<path d="M2 7h10M8 3l4 4-4 4"/>'}</svg></span>`;
+    deck.appendChild(el); return el;
+  });
+  const items = DATA.map((p, i) => { const el = document.createElement('div'); el.className = 'it'; el.innerHTML = `<em>${p.cat}</em><b>${p.url ? `<a href="${p.url}" target="_blank" rel="noopener">${p.name}</a>` : p.name}</b><p>${p.line}</p>`; list.appendChild(el); return el; });
+  let active = -1;
+  function setActive(i) {
+    if (i === active) return; active = i;
+    items.forEach((el, k) => el.classList.toggle('on', k === i));
+    const it = items[i]; if (it && W > 900) list.style.transform = `translateY(calc(-50% + ${list.getBoundingClientRect().height / 2 - (it.offsetTop + it.offsetHeight / 2)}px))`; else list.style.transform = '';
+    numEl.classList.add('flip'); setTimeout(() => { numEl.textContent = String(i + 1).padStart(2, '0'); numEl.classList.remove('flip'); }, 120);
+    const p = DATA[i]; ks.forEach((k, j) => k.textContent = p.k[j] || ''); vs.forEach((v, j) => v.textContent = p.v[j] || '');
+  }
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  function update() {
+    const top = sec.offsetTop, prog = clamp((scrollY - top) / ((N - 1) * H * per), 0, 1) * (N - 1);
+    setActive(clamp(Math.round(prog), 0, N - 1));
+    cards.forEach((el, k) => {
+      const d = prog - k; let x, y, r, sc, o; const nar = W < 900;
+      if (d < 0) { const e = clamp(1 + d, 0, 1); const ee = easeOut(e); x = lerp(nar ? -20 : -38, 0, ee) * (W / 100); y = lerp(nar ? 55 : 70, 0, ee) * (H / 100); r = lerp(-14, -3, ee); sc = lerp(0.9, 1, ee); o = e > 0 ? 1 : 0; if (d < -1) o = 0; }
+      else { const e = Math.min(d, 1); const ee = easeOut(e); const depth = Math.max(0, d - 1); x = lerp(0, nar ? 16 : 30, ee) * (W / 100) + depth * (nar ? 5 : 10); y = lerp(0, nar ? -26 : -34, ee) * (H / 100) - depth * 6; r = lerp(-3, 9, ee) + depth * 2.2; sc = lerp(1, nar ? 0.62 : 0.72, ee) - depth * 0.02; o = depth > 3.5 ? 0 : 1; }
+      el.style.transform = `translate(${x}px, ${y}px) rotate(${r}deg) scale(${sc})`;
+      el.style.opacity = o; el.style.zIndex = String(d < 0 ? 50 + Math.round(d * 10) : 50 - Math.round(d * 10));
+      el.style.pointerEvents = Math.abs(d) < 0.5 ? 'auto' : 'none';
+    });
+  }
+  return { update };
+}
+const shows = [makeShow('work', WORK), makeShow('automations', AUTOMATIONS), makeShow('personal', PERSONAL)];
+
+/* =====================================================================
+   3. PARTICLES (WebGL2): the portrait, then the gathering into the line
+   ===================================================================== */
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl2', { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance' });
+const VS = `#version 300 es
+precision highp float;
+in vec3 aPos; in vec3 aCol; in vec3 aRand; in vec3 aTarget; in vec3 aHood;   // x hoodie, y cast on skin, z drawstring   // aTarget: u along the line (0..1 of the formed stretch), tube angle, tube radius (model)
+uniform sampler2D uPath;   // line samples in model space (scroll 0): x in r, y in g
+uniform float uPathN;
+uniform mat4 uProj, uView, uModel;
+uniform float uTime, uIntro, uConverge, uFade, uShift, uPointScale, uRadius, uStrength, uHalfW, uHalfH, uBaseY;
+uniform vec2 uMouse, uMouseVel;
+uniform vec3 uLineA, uLineB, uHood; uniform float uHoodOn;
+out vec3 vCol; out float vAlpha; out float vDepth;
+vec3 swirl(vec3 q, float t) {
+  vec3 a = vec3(sin(q.z*3.1 + t) + cos(q.y*3.7 - t*0.7), sin(q.x*3.3 - t*0.8) + cos(q.z*2.9 + t*0.6), sin(q.y*3.5 + t*0.9) + cos(q.x*3.0 - t));
+  vec3 b = vec3(sin(q.z*9.0 - t*1.7) + cos(q.y*8.0 + t*1.3), sin(q.x*8.5 + t*1.1) + cos(q.z*9.5 - t*1.5), sin(q.y*9.0 - t*1.2) + cos(q.x*8.0 + t*1.6));
+  return a * 0.7 + b * 0.3;
+}
+void main(){
+  float t = uTime;
+  vec3 p = aPos;
+  float d = clamp((uIntro - aRand.x*0.55)/0.45, 0.0, 1.0); d = d*d*(3.0-2.0*d);
+  vec3 scatter = (aRand - 0.5) * vec3(3.4, 2.6, 2.4) + vec3(0.0, 0.1, -0.6);
+  p = mix(scatter, p, d);
+  // the portrait scrolls away with the page and sheds itself: each particle lets go on its own cue,
+  // drifts down a little faster than the page, and fades into the background. Quiet, not a storm.
+  float s = uConverge;                                   // scroll in screens
+  // release from the bottom up: a particle lets go when the shedding front (rising with the scroll) reaches its height
+  float h01 = clamp(aPos.y + 0.5, 0.0, 1.0);          // 0 at the hem, 1 at the top of the head
+  float start = 0.04 + h01 * 1.1 + aRand.x * 0.08;
+  float drop = max(0.0, s - start);
+  float rainer = step(0.45, aRand.z);                    // most of what lets go rains; the rest dissolves at the edge
+  float fall = mix(pow(drop, 1.4) * 0.35, pow(drop, 1.25) * 2.4, rainer);
+  vec3 q = p; q.y += uShift - fall;
+  // the rain spreads out to the full width of the screen as it falls, so the whole background rains
+  float spread = smoothstep(0.0, 0.5, drop) * rainer;
+  float wide = (fract(aRand.y * 7.31 + aRand.x * 3.17) - 0.5) * 2.0 * uHalfW * 1.05;
+  q.x = mix(q.x, wide, spread) + sin(drop * 6.0 + aRand.y * 6.2831) * drop * 0.05 * rainer;
+  float m = 0.0, m2 = 0.0;
+  float gone = mix(smoothstep(0.0, 0.22, drop), smoothstep(0.15, 1.25, drop), rainer);
+  // the rain never ends: once a raining particle has fallen through, it settles into a slow, drifting field
+  // that stays behind the whole site
+  float toField = smoothstep(0.6, 1.3, drop) * rainer;
+  // field in screen space: x across the width, y wraps top->bottom slowly (model y is up; view is shifted by uBaseY)
+  float fy = fract((aRand.y * 4.37 + aRand.x * 1.93) - t * 0.01 - aRand.z * 0.3);
+  vec2 bg = vec2((fract(aRand.x * 5.13 + aRand.z * 2.71) - 0.5) * 2.2 * uHalfW,
+                 (0.5 - fy) * 2.3 * uHalfH - uBaseY);
+  q.xy = mix(q.xy, bg, toField);
+  q.z = mix(q.z, (aRand.z - 0.5) * 0.4, toField);
+  float amp = 0.006 + min(drop, 1.0) * 0.006 + toField * 0.02;
+  q += swirl(q * 1.3 + aRand * 2.0, t * 0.8) * amp;
+  // butterfly / pointer
+  vec2 dm = q.xy - uMouse; float dist = length(dm);
+  float rr = uRadius * (0.75 + aRand.z*0.5);
+  float f = 1.0 - smoothstep(0.0, rr, dist); f = f*f*(3.0-2.0*f);
+  vec2 dir = dm / max(dist, 1e-4);
+  float jitter = 0.6 + 0.8*aRand.y;
+  q.xy += dir * f * 0.02 * uStrength * jitter * (1.0 - m*0.6);
+  q.z  += f * 0.14 * uStrength * jitter * (1.0 - m*0.6);
+  q.xy += uMouseVel * f * 0.9 * jitter * (1.0 - m*0.6);
+  vec4 mv = uView * uModel * vec4(q, 1.0);
+  gl_Position = uProj * mv;
+  float lum = dot(aCol, vec3(0.3, 0.59, 0.11));
+  float size = (0.8 + lum*0.7) * (0.85 + aPos.z*1.4) * uPointScale / max(-mv.z, 0.2);
+  gl_PointSize = max(size * mix(1.0 - gone*0.5, 0.55, toField), 1.0);
+  vec3 lineCol = mix(uLineA, uLineB, aTarget.x * 0.6);
+  // recolour the hoodie: keep the particle's shading (its luminance relative to the hoodie's average) and swap the hue
+  float lumP = dot(aCol, vec3(0.3, 0.59, 0.11));
+  // shade = how light this particle is compared with the hoodie's average; dark swatches get a floor so folds still read
+  float shade = clamp(lumP / 0.72, 0.3, 1.18);
+  // the white drawstrings keep their colour: nearly neutral AND very bright
+  float chroma = max(max(aCol.r, aCol.g), aCol.b) - min(min(aCol.r, aCol.g), aCol.b);
+  float notString = 1.0 - aHood.z;   // the drawstrings stay white whatever the colour
+  vec3 tinted = uHood * shade + vec3(0.06) * (shade - 0.3) * (1.0 - dot(uHood, vec3(0.33)));
+  vec3 col = mix(aCol, tinted, aHood.x * notString * uHoodOn);
+  // bounce light from the hoodie on the jaw/neck: pull those skin particles to a warm neutral so no mint lingers
+  vec3 skin = vec3(lumP) * vec3(1.18, 0.92, 0.78);
+  col = mix(col, skin, aHood.y * (1.0 - aHood.x) * uHoodOn);   // never on hoodie particles
+  vCol = col; vDepth = aPos.z;
+  float a = mix(1.0 - gone, 0.45, toField);
+  vAlpha = d * (0.92 + f*0.08) * (1.0 - uFade) * a;
+}`;
+const FS = `#version 300 es
+precision highp float;
+in vec3 vCol; in float vAlpha; in float vDepth;
+out vec4 o;
+void main(){
+  vec2 c = gl_PointCoord - 0.5; float d = length(c);
+  float a = smoothstep(0.5, 0.22, d) * vAlpha;
+  vec3 col = vCol * (0.86 + 0.14 * clamp(vDepth*2.0+0.5, 0.0, 1.0));
+  o = vec4(col * a, a);
+}`;
+let prog, U = {}, count = 0, vao, posCPU = null, targetBuf = null, pathTex = null, pathN = 0;
+function compile(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
+if (gl) {
+  prog = gl.createProgram(); gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(prog));
+  for (const n of ['uProj','uView','uModel','uTime','uIntro','uConverge','uFade','uShift','uPointScale','uRadius','uStrength','uHalfW','uHalfH','uBaseY','uMouse','uMouseVel','uLineA','uLineB','uPath','uPathN','uHood','uHoodOn']) U[n] = gl.getUniformLocation(prog, n);
+}
+function perspective(fov, aspect, near, far) { const f = 1 / Math.tan(fov / 2), nf = 1 / (near - far); return new Float32Array([f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0]); }
+function translate(x, y, z) { return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]); }
+function rotXY(rx, ry) { const cx = Math.cos(rx), sx = Math.sin(rx), cy = Math.cos(ry), sy = Math.sin(ry); return new Float32Array([cy, 0, -sy, 0, sx * sy, cx, sx * cy, 0, cx * sy, -sx, cx * cy, 0, 0, 0, 0, 1]); }
+
+let DPR = 1, aspect = 1, camDist = 2.7, fov = 0.62, portraitAspect = 1.09, baseY = 0;
+const ptr = { x: 0, y: 0, tx: 0, ty: 0, vx: 0, vy: 0, has: false };
+let rot = { x: 0, y: 0 }, intro = 0, startT = 0, loaded = false;
+
+function resize() {
+  DPR = Math.min(coarse ? 2 : 1.6, devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight; aspect = W / H;
+  canvas.width = Math.floor(W * DPR); canvas.height = Math.floor(H * DPR);
+  // on narrow screens the figure may overflow the sides (shoulders cropped) so it fills ~70% of the height
+  const narrow = aspect < 0.8;
+  const fitH = 1 / (narrow ? 0.70 : 0.93), fitW = portraitAspect / (narrow ? 1.6 : 0.96) / aspect;
+  camDist = Math.max(fitH, fitW) / 2 / Math.tan(fov / 2);
+  baseY = 0.5 - Math.tan(fov / 2) * camDist - 0.035;
+  if (gl) gl.viewport(0, 0, canvas.width, canvas.height);
+  fly.resize();
+  clearTimeout(resize.t); resize.t = setTimeout(() => { buildThread(); assignTargets(); }, 120);
+}
+addEventListener('resize', resize);
+
+function build(colorImg, depthImg, maskImg) {
+  const w = colorImg.width, h = colorImg.height; portraitAspect = w / h;
+  const read = img => { const oc = document.createElement('canvas'); oc.width = w; oc.height = h; const o = oc.getContext('2d', { willReadFrequently: true }); o.drawImage(img, 0, 0, w, h); return o.getImageData(0, 0, w, h).data; };
+  const C = read(colorImg), D = read(depthImg), M = maskImg ? read(maskImg) : null;
+  const step = coarse ? 2.0 : 1.2;
+  const pos = [], col = [], rnd = [], hood = [];
+  for (let y = 0; y < h; y += step) for (let x = 0; x < w; x += step) {
+    const xi = Math.min(w - 1, (x + Math.random() * step) | 0), yi = Math.min(h - 1, (y + Math.random() * step) | 0);
+    const i = (yi * w + xi) * 4; if (C[i + 3] < 120) continue;
+    let r = C[i] / 255, g = C[i + 1] / 255, b = C[i + 2] / 255;
+    const l = 0.3 * r + 0.59 * g + 0.11 * b; const sat = 1.25;
+    r = clamp(l + (r - l) * sat, 0, 1); g = clamp(l + (g - l) * sat, 0, 1); b = clamp(l + (b - l) * sat, 0, 1);
+    const lift = 0.68; r = Math.pow(r, lift); g = Math.pow(g, lift); b = Math.pow(b, lift);
+    const dep = D[i] / 255;
+    // hoodie = mint-ish: green/blue above red, reasonably light. Strings and badge are kept out by the colour test itself.
+    let isHood = M ? (M[i] > 128 ? 1 : 0) : 0; const isCast = M ? (M[i + 2] > 128 ? 1 : 0) : 0, isString = M ? (M[i + 1] > 128 ? 1 : 0) : 0;
+    { const r0 = C[i] / 255, g0 = C[i + 1] / 255, b0 = C[i + 2] / 255; if (!isString && yi > h * 0.9 && g0 > r0 + 0.02 && g0 > 0.25) isHood = 1; }
+    pos.push((xi / w - 0.5) * portraitAspect, 0.5 - yi / h, (dep - 0.5) * 0.42);
+    col.push(r, g, b); rnd.push(Math.random(), Math.random(), Math.random()); hood.push(isHood, isCast, isString);
+  }
+  count = pos.length / 3; posCPU = pos;
+  vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+  const attr = (name, arr, size) => { const bf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW); const loc = gl.getAttribLocation(prog, name); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0); return bf; };
+  attr('aPos', pos, 3); attr('aCol', col, 3); attr('aRand', rnd, 3); attr('aHood', hood, 3);
+  targetBuf = attr('aTarget', new Float32Array(count * 3), 3);
+  gl.bindVertexArray(null);
+  document.querySelector('.loader .what').textContent = `Assembling ${count.toLocaleString()} particles of one person.`;
+  setTimeout(() => { buildThread(); assignTargets(); }, 0);
+}
+function toModel(px, py) { const tanH = Math.tan(fov / 2); return [((px / W) * 2 - 1) * tanH * aspect * camDist, -((py / H) * 2 - 1) * tanH * camDist]; }
+function assignTargets() {}
+
+/* =====================================================================
+   4. BUTTERFLY CURSOR
+   ===================================================================== */
+const fly = (() => {
+  const cv = document.getElementById('fly'); const c2 = cv.getContext('2d');
+  const P = { wingspan: 20, flapHz: 3, follow: 0.07, wander: 14 };
+  const st = { x: -100, y: -100, px: -100, py: -100, tx: -100, ty: -100, vx: 0, vy: 0, bank: 0, heading: 0, hover: 0, hoverT: 0, seen: false, mounted: false, dpr: 1, w: 0, h: 0 };
+  const mq = matchMedia('(hover: hover) and (pointer: fine)');
+  const onMove = e => { st.tx = e.clientX; st.ty = e.clientY; if (!st.seen) { st.x = st.px = st.tx; st.y = st.py = st.ty; st.seen = true; } st.hoverT = e.target && e.target.closest && e.target.closest('a, button, input') ? 1 : 0; };
+  const onLeave = () => { st.seen = false; };
+  function mount() { if (st.mounted || reduce || !mq.matches) return; st.mounted = true; cv.hidden = false; addEventListener('pointermove', onMove, { passive: true }); document.addEventListener('mouseleave', onLeave); resize(); }
+  function unmount() { if (!st.mounted) return; st.mounted = false; cv.hidden = true; removeEventListener('pointermove', onMove); document.removeEventListener('mouseleave', onLeave); st.seen = false; }
+  function resize() { st.dpr = Math.min(2, devicePixelRatio || 1); st.w = innerWidth; st.h = innerHeight; cv.width = Math.floor(st.w * st.dpr); cv.height = Math.floor(st.h * st.dpr); c2.setTransform(st.dpr, 0, 0, st.dpr, 0, 0); }
+  mq.addEventListener ? mq.addEventListener('change', () => mq.matches ? mount() : unmount()) : mq.addListener(() => mq.matches ? mount() : unmount());
+  function wing(side, sp, s) {
+    c2.save(); c2.scale(side, 1);
+    c2.beginPath(); c2.moveTo(0, -1 * s);
+    c2.bezierCurveTo(6 * s * sp, -14 * s * sp, 22 * s * sp, -12 * s * sp, 20 * s * sp, -2 * s);
+    c2.bezierCurveTo(19 * s * sp, 2 * s, 12 * s * sp, 3 * s, 7 * s * sp, 2 * s);
+    c2.bezierCurveTo(14 * s * sp, 8 * s * sp, 10 * s * sp, 15 * s * sp, 3 * s * sp, 11 * s * sp);
+    c2.bezierCurveTo(1 * s, 9 * s * sp, 0, 5 * s, 0, 3 * s); c2.closePath();
+    const g = c2.createLinearGradient(0, -14 * s, 0, 14 * s); g.addColorStop(0, '#FF8FD0'); g.addColorStop(1, '#5B9BF6');
+    c2.fillStyle = g; c2.globalAlpha = 0.92; c2.fill();
+    c2.globalAlpha = 0.5; c2.strokeStyle = 'rgba(255,255,255,.55)'; c2.lineWidth = 0.6; c2.stroke();
+    c2.restore();
+  }
+  function frame(t) {
+    if (!st.mounted) return;
+    c2.clearRect(0, 0, st.w, st.h);
+    if (!st.seen) return;
+    const wx = Math.sin(t * 0.00071) * P.wander * 0.7 + Math.sin(t * 0.00113 + 1.7) * P.wander * 0.3;
+    const wy = Math.cos(t * 0.00059) * P.wander * 0.6 + Math.sin(t * 0.00097 + 0.4) * P.wander * 0.4;
+    const gx = st.tx + wx, gy = st.ty + wy - 10;
+    st.px = st.x; st.py = st.y;
+    st.x += (gx - st.x) * P.follow; st.y += (gy - st.y) * P.follow;
+    st.vx = st.x - st.px; st.vy = st.y - st.py;
+    const speed = Math.hypot(st.vx, st.vy);
+    if (speed > 0.15) { const h = Math.atan2(st.vy, st.vx) + Math.PI / 2; let dh = h - st.heading; dh = Math.atan2(Math.sin(dh), Math.cos(dh)); st.heading += dh * 0.12; st.bank = lerp(st.bank, clamp(dh * 2.2, -0.9, 0.9), 0.15); }
+    else { st.bank = lerp(st.bank, 0, 0.08); st.heading = lerp(st.heading, 0, 0.03); }
+    st.hover = lerp(st.hover, st.hoverT, 0.12);
+    const flapHz = P.flapHz * (1 - st.hover * 0.45) + speed * 0.05;
+    const flap = 0.5 + 0.5 * Math.sin(t / 1000 * flapHz * Math.PI * 2);
+    const spread = 0.22 + 0.78 * flap;
+    const s = (P.wingspan / 20) * (1 + st.hover * 0.45);
+    c2.save(); c2.translate(st.x, st.y); c2.rotate(st.heading);
+    c2.transform(Math.cos(st.bank * 0.6), 0, 0, 1, 0, 0);
+    c2.globalAlpha = 0.25; c2.fillStyle = '#5B9BF6'; c2.beginPath(); c2.ellipse(0, 2, 10 * s * spread + 2, 6 * s, 0, 0, 7); c2.filter = 'blur(4px)'; c2.fill(); c2.filter = 'none'; c2.globalAlpha = 1;
+    wing(1, spread, s); wing(-1, spread, s);
+    c2.fillStyle = '#f6f6f3'; c2.beginPath(); c2.ellipse(0, 2 * s, 1.3 * s, 7 * s, 0, 0, 7); c2.fill();
+    c2.strokeStyle = 'rgba(246,246,243,.8)'; c2.lineWidth = 0.8; c2.beginPath(); c2.moveTo(0, -5 * s); c2.quadraticCurveTo(-3 * s, -10 * s, -5 * s, -11 * s); c2.moveTo(0, -5 * s); c2.quadraticCurveTo(3 * s, -10 * s, 5 * s, -11 * s); c2.stroke();
+    c2.restore();
+  }
+  mount();
+  return { frame, resize, st, mount, unmount };
+})();
+function setTouch(x, y) { const m = toModel(x, y); ptr.tx = m[0]; ptr.ty = m[1]; if (!ptr.has) { ptr.x = ptr.tx; ptr.y = ptr.ty; ptr.has = true; } }
+addEventListener('touchmove', e => { const t = e.touches[0]; if (t) setTouch(t.clientX, t.clientY); }, { passive: true });
+addEventListener('touchstart', e => { const t = e.touches[0]; if (t) setTouch(t.clientX, t.clientY); }, { passive: true });
+if (!fly.st.mounted) addEventListener('pointermove', e => setTouch(e.clientX, e.clientY), { passive: true });
+
+/* =====================================================================
+   5. SOUND
+   ===================================================================== */
+let actx = null, gain = null;
+const soundBtn = document.getElementById('sound');
+soundBtn.addEventListener('click', () => {
+  const on = soundBtn.getAttribute('aria-pressed') !== 'true';
+  if (on) {
+    if (!actx) {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      gain = actx.createGain(); gain.gain.value = 0; gain.connect(actx.destination);
+      const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; lp.connect(gain);
+      [[55, 'sine', .5], [110.6, 'sine', .22], [164.5, 'triangle', .06], [220.9, 'sine', .05]].forEach(([f, type, g]) => { const osc = actx.createOscillator(); osc.type = type; osc.frequency.value = f; const og = actx.createGain(); og.gain.value = g; osc.connect(og); og.connect(lp); osc.start(); const lfo = actx.createOscillator(); lfo.frequency.value = 0.07 + Math.random() * 0.08; const lg = actx.createGain(); lg.gain.value = f * 0.004; lfo.connect(lg); lg.connect(osc.frequency); lfo.start(); });
+      const buf = actx.createBuffer(1, actx.sampleRate * 2, actx.sampleRate); const ch = buf.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * 0.08;
+      const noise = actx.createBufferSource(); noise.buffer = buf; noise.loop = true; const nf = actx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 900; nf.Q.value = 0.6; const ng = actx.createGain(); ng.gain.value = 0.12; noise.connect(nf); nf.connect(ng); ng.connect(gain); noise.start();
+    }
+    actx.resume(); gain.gain.cancelScheduledValues(actx.currentTime); gain.gain.linearRampToValueAtTime(0.35, actx.currentTime + 1.2);
+  } else if (gain) { gain.gain.cancelScheduledValues(actx.currentTime); gain.gain.linearRampToValueAtTime(0, actx.currentTime + 0.6); }
+  soundBtn.setAttribute('aria-pressed', String(on)); soundBtn.setAttribute('aria-label', on ? 'Sound on' : 'Sound off');
+});
+
+/* =====================================================================
+   6. LOADER + FRAME LOOP
+   ===================================================================== */
+const loader = document.getElementById('loader'), countEl = document.getElementById('count');
+let shown = 0, target = 0, last = performance.now();
+function reveal() { loader.classList.add('done'); document.getElementById('mark').classList.add('ready'); document.getElementById('actions').classList.add('ready'); document.getElementById('palette').classList.add('ready'); revealed = true; onScroll(); startT = performance.now(); }
+const hex = h => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+const LINE_A = hex('#a6dfd3'), LINE_B = hex('#5B9BF6');
+let hoodCol = [0, 0, 0], hoodOn = 0, hoodTarget = 0, hoodCur = [0.56, 0.83, 0.77];
+(() => {
+  const btn = document.getElementById('hoodBtn'), picker = document.getElementById('picker'), wheel = document.getElementById('wheel'), wrap = wheel.parentElement, dot = document.getElementById('wheelDot');
+  const light = document.getElementById('lightRange'), sw = document.getElementById('hoodSwatch'), hueIn = document.getElementById('wheelInput');
+  const ctx = wheel.getContext('2d'); const R = 110;
+  function drawWheel(L) {
+    const img = ctx.createImageData(220, 220); const d = img.data;
+    for (let y = 0; y < 220; y++) for (let x = 0; x < 220; x++) { const dx = x - R, dy = y - R, rr = Math.hypot(dx, dy); const o = (y * 220 + x) * 4; if (rr > R) { d[o + 3] = 0; continue; } const hue = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360, sat = Math.min(1, rr / R); const c = hsl(hue, sat, L / 100); d[o] = c[0] * 255; d[o + 1] = c[1] * 255; d[o + 2] = c[2] * 255; d[o + 3] = rr > R - 1.5 ? 255 * (R - rr + 0.5) : 255; }
+    ctx.putImageData(img, 0, 0);
+  }
+  function hsl(h, s, l) { const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l), f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); return [f(0), f(8), f(4)]; }
+  const toHex = c => '#' + c.map(v => Math.round(v * 255).toString(16).padStart(2, '0')).join('');
+  let hue = 165, sat = 0.5;
+  function apply(save = true) {
+    const L = Number(light.value); const c = hsl(hue, sat, L / 100);
+    hoodCol = c; hoodTarget = 1; sw.classList.add('set'); sw.style.setProperty('--hood', toHex(c));
+    dot.style.left = (R + Math.cos(hue * Math.PI / 180) * sat * R) + 'px'; dot.style.top = (R + Math.sin(hue * Math.PI / 180) * sat * R) + 'px';
+    if (save) try { localStorage.setItem('hoodie', JSON.stringify({ hue, sat, L })); } catch (e) {}
+  }
+  function pick(e) { const r = wrap.getBoundingClientRect(); const dx = e.clientX - r.left - R, dy = e.clientY - r.top - R; hue = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360; sat = Math.min(1, Math.hypot(dx, dy) / R); hueIn.value = Math.round(hue); apply(); }
+  let down = false;
+  wrap.addEventListener('pointerdown', e => { down = true; wrap.setPointerCapture(e.pointerId); pick(e); });
+  wrap.addEventListener('pointermove', e => { if (down) pick(e); });
+  wrap.addEventListener('pointerup', () => { down = false; }); wrap.addEventListener('pointercancel', () => { down = false; });
+  hueIn.addEventListener('input', () => { hue = Number(hueIn.value); sat = Math.max(sat, 0.5); apply(); });
+  light.addEventListener('input', () => { drawWheel(Number(light.value)); apply(); });
+  btn.addEventListener('click', () => { const open = picker.hidden; picker.hidden = !open; btn.setAttribute('aria-expanded', String(open)); });
+  document.getElementById('hoodReset').addEventListener('click', () => { hoodTarget = 0; sw.classList.remove('set'); try { localStorage.removeItem('hoodie'); } catch (e) {} });
+  document.addEventListener('pointerdown', e => { if (!picker.hidden && !e.target.closest('.palette')) { picker.hidden = true; btn.setAttribute('aria-expanded', 'false'); } });
+  drawWheel(58);
+  try { const saved = JSON.parse(localStorage.getItem('hoodie') || 'null'); if (saved) { hue = saved.hue; sat = saved.sat; light.value = saved.L; drawWheel(saved.L); apply(false); } } catch (e) {}
+})();
+
+function frame(now) {
+  const dt = Math.min(50, now - last); last = now;
+  if (!loaded) target = Math.min(target + dt * 0.06, 92); else target = 100;
+  shown = lerp(shown, target, 0.12); countEl.textContent = String(Math.round(shown)).padStart(3, '0');
+  if (loaded && shown > 99.2 && !revealed) reveal();
+  if (startT) intro = reduce ? 1 : Math.min(1, (now - startT) / 2600);
+
+  fly.frame(now, dt);
+  if (fly.st.mounted && fly.st.seen) { const m = toModel(fly.st.x, fly.st.y); ptr.tx = m[0]; ptr.ty = m[1]; if (!ptr.has) { ptr.x = ptr.tx; ptr.y = ptr.ty; ptr.has = true; } }
+  const nx = lerp(ptr.x, ptr.tx, 0.18), ny = lerp(ptr.y, ptr.ty, 0.18);
+  ptr.vx = (nx - ptr.x) * 0.5 + ptr.vx * 0.5; ptr.vy = (ny - ptr.y) * 0.5 + ptr.vy * 0.5; ptr.x = nx; ptr.y = ny;
+  const tanH = Math.tan(fov / 2);
+  rot.y = lerp(rot.y, ptr.has ? clamp(ptr.x / (tanH * aspect * camDist), -1, 1) * 0.22 : 0, 0.04);
+  rot.x = lerp(rot.x, ptr.has ? -clamp(ptr.y / (tanH * camDist), -1, 1) * 0.06 : 0, 0.04);
+
+  if (gl && count && fade < 1) {
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); gl.disable(gl.DEPTH_TEST);
+    gl.useProgram(prog); gl.bindVertexArray(vao);
+    gl.uniformMatrix4fv(U.uProj, false, perspective(fov, aspect, 0.1, 20));
+    gl.uniformMatrix4fv(U.uView, false, translate(0, baseY, -camDist));
+    gl.uniformMatrix4fv(U.uModel, false, rotXY(rot.x, rot.y));
+    gl.uniform1f(U.uTime, now / 1000); gl.uniform1f(U.uIntro, intro);
+    gl.uniform1f(U.uConverge, converge); gl.uniform1f(U.uFade, fade);
+    gl.uniform1f(U.uShift, scrollY * (2 * tanH * camDist / H)); gl.uniform1f(U.uHalfW, tanH * aspect * camDist); gl.uniform1f(U.uHalfH, tanH * camDist); gl.uniform1f(U.uBaseY, baseY);
+    gl.uniform1f(U.uPointScale, Math.max(1.8, H / 380) * DPR * camDist);
+    gl.uniform1f(U.uRadius, coarse ? 0.24 : 0.17); gl.uniform1f(U.uStrength, ptr.has ? 1 : 0);
+    gl.uniform2f(U.uMouse, ptr.x, ptr.y); gl.uniform2f(U.uMouseVel, reduce ? 0 : ptr.vx * 0.9, reduce ? 0 : ptr.vy * 0.9);
+    gl.uniform3f(U.uLineA, LINE_A[0], LINE_A[1], LINE_A[2]); gl.uniform3f(U.uLineB, LINE_B[0], LINE_B[1], LINE_B[2]);
+    hoodOn = lerp(hoodOn, hoodTarget, 0.08); if (hoodTarget) for (let i = 0; i < 3; i++) hoodCur[i] = lerp(hoodCur[i], hoodCol[i], 0.08);
+    gl.uniform3f(U.uHood, hoodCur[0], hoodCur[1], hoodCur[2]); gl.uniform1f(U.uHoodOn, hoodOn);
+      gl.drawArrays(gl.POINTS, 0, count);
+  } else if (gl && fade >= 1) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ---------- boot ---------- */
+const colorImg = new Image(), depthImg = new Image(), maskImg = new Image(); let got = 0, maskOk = false;
+const done = () => { if (++got < 3) return; try { if (gl) build(colorImg, depthImg, maskOk ? maskImg : null); } catch (e) { console.error('build failed', e); } resize(); loaded = true; };
+maskImg.onload = () => { maskOk = true; done(); }; maskImg.onerror = done; maskImg.src = 'portrait/portrait-hoodmask.png?v=4';
+setTimeout(() => { loaded = true; }, 8000);
+colorImg.onload = done; depthImg.onload = done;
+colorImg.onerror = depthImg.onerror = () => { loaded = true; document.querySelector('.loader .what').textContent = 'Portrait texture not found.'; };
+colorImg.src = 'portrait/portrait-color.webp'; depthImg.src = 'portrait/portrait-depth.png';
+Promise.resolve(document.fonts && document.fonts.ready).then(() => resize()).catch(() => resize());
+resize(); onScroll();
+})();
+</script>

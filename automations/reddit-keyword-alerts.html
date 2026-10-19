@@ -1,0 +1,845 @@
+<meta charset="utf-8">
+<title>Reddit Keyword Alerts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Archivo:wdth,wght@62..125,300..700&display=swap" rel="stylesheet">
+<style>
+/* One automation, shown as a machine: a fixed 3D stage; scrolling moves the camera from station to station
+   while the stream of Reddit threads keeps running through the machine in real time. Below the machine, the runbook. */
+:root{
+  --bg:#0d0d0d; --ink:#f1f1ee; --ink-soft:#8a8b90; --pill:#1a1b1e; --pill-ink:#f1f1ee; --line:#1f2125; --card:#131416;
+  --mint:#a6dfd3; --blue:#5B9BF6; --pink:#FF8FD0; --amber:#ffb454; --reddit:#ff6a3d;
+  --font:'Elms Sans','Archivo','Helvetica Neue',Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a,button{color:inherit;font:inherit}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1}
+.scrim{position:fixed;left:0;right:0;bottom:0;height:52%;z-index:2;pointer-events:none;background:linear-gradient(to top,rgba(13,13,13,.82),rgba(13,13,13,.35) 45%,rgba(13,13,13,0))}
+.vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,.6) 100%)}
+
+.ui{position:fixed;inset:0;z-index:4;pointer-events:none}
+.ui > *{pointer-events:auto}
+.ui.off > :not(.mark):not(.actions){opacity:0!important;pointer-events:none!important}
+.mark{position:absolute;top:calc(28px + env(safe-area-inset-top,0px));left:max(28px,env(safe-area-inset-left,0px));font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:14px}
+.mark svg{display:block}
+.actions{position:absolute;top:calc(22px + env(safe-area-inset-top,0px));right:max(24px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center}
+.pill{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 26px;border-radius:999px;background:var(--pill);color:var(--pill-ink);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transition:transform .25s cubic-bezier(.2,.7,.2,1),background .25s;text-decoration:none;white-space:nowrap}
+.pill:hover{transform:translateY(-2px);background:#25272b}
+.pill:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.pill .dot{width:5px;height:5px;border-radius:999px;background:var(--ink)}
+.pill.ghost{background:transparent;box-shadow:inset 0 0 0 1px #2a2c31}
+.pill.ghost:hover{background:#17181b}
+
+/* captions: one per station, pinned bottom-left, swapped by scroll */
+.cap{position:absolute;left:max(28px,env(safe-area-inset-left,0px));bottom:calc(36px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100vw - 56px));opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;pointer-events:none}
+.cap.on{opacity:1;transform:none;pointer-events:auto}
+.cap em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.cap em b{font-weight:600;color:var(--ink)}
+.cap h2{margin:0 0 10px;font-weight:500;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1.05}
+.cap p{margin:0;font-size:16px;line-height:1.5;color:#c9cacd;max-width:44ch}
+.cap .key{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.cap .key i{font-style:normal;display:inline-flex;align-items:center;gap:7px}
+.cap .key i::before{content:'';width:8px;height:8px;border-radius:999px;background:var(--c,#fff);box-shadow:0 0 10px var(--c,#fff)}
+
+.hero-title{position:absolute;left:max(28px,env(safe-area-inset-left,0px));right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);pointer-events:none;transition:opacity .5s ease}
+.hero-title em{display:block;font-style:normal;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
+.hero-title h1{margin:0;font-weight:500;font-size:clamp(44px,8.5vw,140px);letter-spacing:-.035em;line-height:.92;max-width:11ch}
+.hero-title p{margin:22px 0 0;font-size:clamp(16px,1.4vw,20px);color:#c9cacd;max-width:40ch}
+.hero-title .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.hero-title .row > *{pointer-events:auto}
+
+.progress{position:absolute;right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px}
+.progress i{width:6px;height:6px;border-radius:999px;background:#2a2c31;transition:background .3s,transform .3s}
+.progress i.on{background:var(--ink);transform:scale(1.4)}
+
+.end{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 max(28px,env(safe-area-inset-left,0px));opacity:0;transition:opacity .6s ease;pointer-events:none}
+.end.on{opacity:1;pointer-events:auto}
+.end .big{margin:0;font-weight:500;font-size:clamp(40px,7vw,110px);letter-spacing:-.035em;line-height:.95;max-width:14ch}
+.end .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;align-items:center}
+.end .next{margin-top:48px;font-size:14px;color:var(--ink-soft)}
+.end .next a{color:var(--ink);text-decoration:none;font-weight:500}
+
+.scroll{position:absolute;right:max(28px,env(safe-area-inset-right,0px));bottom:calc(32px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);transition:opacity .6s ease}
+.scroll i{display:block;width:44px;height:2px;background:var(--ink-soft);animation:line 2.2s cubic-bezier(.7,0,.3,1) infinite}
+@keyframes line{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+
+#fly{position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;display:block}
+.runway{position:relative;z-index:0;height:680svh;pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------------- the runbook ---------------- */
+.doc{position:relative;z-index:3;background:var(--bg);padding:0 0 120px}
+.doc::before{content:'';position:absolute;left:0;right:0;top:-220px;height:220px;background:linear-gradient(to bottom,rgba(13,13,13,0),var(--bg));pointer-events:none}
+.doc-in{width:min(1240px,calc(100% - 56px));margin:0 auto}
+.doc-head{padding:140px 0 56px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:end}
+.doc-head em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:18px}
+.doc-head h2{margin:0;font-weight:500;font-size:clamp(34px,4.6vw,68px);letter-spacing:-.03em;line-height:1}
+.doc-head p{margin:20px 0 0;font-size:18px;line-height:1.5;color:#c9cacd;max-width:52ch}
+.facts{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.facts div{background:var(--card);padding:18px 20px}
+.facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.facts dd{margin:0;font-size:16px;font-weight:500}
+.doc-grid{display:grid;grid-template-columns:220px 1fr;gap:64px;padding-top:56px}
+.toc{position:sticky;top:120px;align-self:start;display:flex;flex-direction:column;gap:4px;font-size:13px;letter-spacing:.04em}
+.toc a{text-decoration:none;color:var(--ink-soft);padding:8px 0;display:flex;gap:12px;transition:color .25s}
+.toc a span{font-variant-numeric:tabular-nums;color:#4a4c52}
+.toc a:hover,.toc a.on{color:var(--ink)}
+.toc .foot{margin-top:28px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:12px;line-height:1.5}
+article{min-width:0}
+.sec{padding:0 0 72px;margin-bottom:72px;border-bottom:1px solid var(--line)}
+.sec:last-child{border:0;margin:0;padding:0}
+.sec h3{margin:0 0 26px;font-weight:500;font-size:clamp(24px,2.4vw,34px);letter-spacing:-.02em;display:flex;gap:18px;align-items:baseline}
+.sec h3 span{font-size:13px;letter-spacing:.1em;color:var(--ink-soft);font-weight:500}
+.sec p{margin:0 0 16px;font-size:17px;line-height:1.6;color:#d4d5d8;max-width:64ch}
+.sec p:last-child{margin-bottom:0}
+.lede{font-size:clamp(20px,1.8vw,26px)!important;line-height:1.35!important;color:var(--ink)!important;letter-spacing:-.01em;max-width:30ch!important}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.steps li{background:var(--card);display:grid;grid-template-columns:72px 1fr;gap:20px;padding:24px 26px 26px 22px;align-items:start}
+.steps .n{font-size:13px;letter-spacing:.08em;color:var(--ink-soft);font-variant-numeric:tabular-nums;padding-top:4px;display:flex;align-items:center;gap:10px}
+.steps .n::before{content:'';width:8px;height:8px;border-radius:999px;background:var(--c,#555)}
+.steps h4{margin:0 0 6px;font-weight:500;font-size:18px;letter-spacing:-.01em}
+.steps p{font-size:15px!important;color:#b9babd!important;margin:0!important;max-width:60ch!important}
+.steps .node{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:#0f1012;border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+.rules{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.rules li{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.rules b{display:block;font-weight:500;font-size:17px;margin-bottom:8px}
+.rules span{font-size:15px;color:#b9babd;line-height:1.5;display:block}
+.code{margin:24px 0 0;background:#0a0a0b;border:1px solid var(--line);border-radius:18px;padding:22px 24px;font-family:var(--mono);font-size:13.5px;line-height:1.7;color:#c9cacd;overflow:auto}
+.code .k{color:var(--mint)}.code .c{color:#5c5e66}.code .a{color:var(--amber)}.code .p{color:var(--pink)}.code .b{color:var(--blue)}
+.msg{margin:28px 0 0;background:#17181c;border:1px solid var(--line);border-radius:20px;padding:22px 24px;max-width:620px}
+.msg .who{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.msg .av{width:36px;height:36px;border-radius:10px;background:var(--reddit)}
+.msg .who b{font-weight:600}
+.msg .who span{color:var(--ink-soft);font-size:14px;margin-left:8px}
+.msg .body{border-left:3px solid var(--mint);padding-left:16px}
+.msg .t{color:var(--blue);font-weight:600;font-size:17px;margin:0 0 6px}
+.msg .m{color:var(--ink-soft);font-size:14px;margin:0 0 8px}
+.msg .k{color:var(--mint);font-size:14px;margin:0 0 10px}
+.msg .x{color:#c9cacd;font-size:15px;margin:0;line-height:1.5}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:8px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 22px}
+.stats b{display:block;font-weight:500;font-size:clamp(30px,3vw,44px);letter-spacing:-.03em;line-height:1;margin-bottom:10px}
+.stats span{font-size:14px;color:var(--ink-soft)}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pills i{font-style:normal;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border-radius:999px;background:#1f2125}
+.doc-foot{margin-top:96px;padding-top:40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.doc-foot .nm{font-size:14px;color:var(--ink-soft)}
+.doc-foot .nm a{color:var(--ink);text-decoration:none;font-weight:500}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:980px){
+  .doc-head{grid-template-columns:1fr;gap:32px;padding-top:110px}
+  .doc-grid{grid-template-columns:1fr;gap:0}
+  .toc{display:none}
+}
+@media (max-width:760px){
+  .cap{bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+  .cap h2{font-size:24px}.cap p{font-size:15px}
+  .hero-title{top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:none}
+  .hero-title h1{font-size:13vw}
+  .progress{display:none}
+  .scroll{display:none}
+  .mark span{display:none}
+  .doc-in{width:calc(100% - 40px)}
+  .steps li{grid-template-columns:1fr;gap:10px;padding:20px}
+  .facts{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){.scroll i{animation:none}.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+</style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="scrim" aria-hidden="true"></div>
+
+<div class="ui" id="ui">
+  <a class="mark" href="#top" id="mark"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3 5 9l6 6"/></svg><span>Vasant Suraj</span></a>
+  <div class="actions"><a class="pill" href="#contact">Let's talk <span class="dot" aria-hidden="true"></span></a></div>
+
+  <div class="hero-title" id="heroTitle">
+    <em>Automation · Monitoring</em>
+    <h1>Reddit Keyword Alerts</h1>
+    <p>Instant Slack alerts when Reddit mentions your keywords or competitors.</p>
+    <div class="row"><a class="pill ghost" href="#doc">Read the runbook</a></div>
+  </div>
+
+  <div class="cap" data-i="1"><em><b>01</b> · Poll</em><h2>Every few minutes, n8n sweeps Reddit.</h2><p>A schedule trigger fires on a short interval. Each run pulls the newest threads from the watched subreddits. Most runs find nothing, and that is the point.</p><div class="key"><i style="--c:#5B9BF6">each tick · one sweep</i></div></div>
+  <div class="cap" data-i="2"><em><b>02</b> · Match</em><h2>A watchlist of keywords and competitor names.</h2><p>Multi-word terms match as exact phrases. Threads that hit light up and lift onto the alert line; everything else drifts past untouched.</p><div class="key"><i style="--c:#a6dfd3">matched</i><i style="--c:#3a3c42">ignored</i></div></div>
+  <div class="cap" data-i="3"><em><b>03</b> · Filter</em><h2>Only fresh threads. Never the same one twice.</h2><p>A freshness window drops anything older than the cut-off. A memory of already-alerted posts catches repeats, so the channel stays worth reading.</p><div class="key"><i style="--c:#ffb454">too old</i><i style="--c:#FF8FD0">already seen</i></div></div>
+  <div class="cap" data-i="4"><em><b>04</b> · Alert</em><h2>A formatted message lands in Slack.</h2><p>Linked title, subreddit, author, upvotes, comment count, the matched keyword and an excerpt. Enough to decide whether to reply, in one glance.</p></div>
+
+  <div class="end" id="end">
+    <p class="big">Threads reach the team within minutes of posting, not days later.</p>
+    <div class="row"><a class="pill" href="#doc">Read the runbook <span class="dot" aria-hidden="true"></span></a><span class="pill ghost">n8n</span><span class="pill ghost">Reddit API</span><span class="pill ghost">Slack</span></div>
+    <p class="next">Next automation → <a href="#" id="nextLink">Competitive Intel System</a></p>
+  </div>
+
+  <div class="progress" id="progress" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="scroll" id="scrollHint" aria-hidden="true">Scroll to run it <i></i></div>
+</div>
+
+<canvas id="fly" aria-hidden="true"></canvas>
+<div class="runway" id="runway" aria-hidden="true"></div>
+<h1 class="sr">Reddit Keyword Alerts. Scheduled Reddit polling with exact-phrase keyword matching, a freshness window, de-duplication and formatted Slack alerts. Built with n8n.</h1>
+
+<!-- ============================ RUNBOOK ============================ -->
+<section class="doc" id="doc">
+  <div class="doc-in">
+    <header class="doc-head">
+      <div class="rv"><em>Runbook</em><h2>How Reddit Keyword Alerts works</h2><p>The full picture of the machine above: what it watches, how it decides, and what it hands to the team. Written so anyone can run it, extend it, or rebuild it.</p></div>
+      <dl class="facts rv">
+        <div><dt>Trigger</dt><dd>Schedule</dd></div>
+        <div><dt>Cadence</dt><dd>Every few minutes</dd></div>
+        <div><dt>Stack</dt><dd>n8n · Reddit · Slack</dd></div>
+        <div><dt>Status</dt><dd>In production</dd></div>
+      </dl>
+    </header>
+
+    <div class="doc-grid">
+      <nav class="toc" id="toc" aria-label="Runbook sections">
+        <a href="#d-problem"><span>01</span>Problem</a>
+        <a href="#d-flow"><span>02</span>Flow</a>
+        <a href="#d-match"><span>03</span>Matching rules</a>
+        <a href="#d-guard"><span>04</span>Guardrails</a>
+        <a href="#d-alert"><span>05</span>The alert</a>
+        <a href="#d-outcome"><span>06</span>Outcome</a>
+        <a href="#d-ops"><span>07</span>Operating it</a>
+        <div class="foot">Internal identifiers, credentials and channel names are left out on purpose.</div>
+      </nav>
+
+      <article>
+        <section class="sec rv" id="d-problem">
+          <h3><span>01</span>Problem</h3>
+          <p class="lede">Reddit is where buyers compare tools in their own words, and nobody was listening.</p>
+          <p>Threads that mentioned our category or a competitor by name were found days late, usually by whoever happened to be browsing. By then the conversation had moved on and the chance to help, correct or learn was gone. Manual searching did not scale, and a raw firehose of every post would have been ignored within a week.</p>
+          <p>The brief was narrow on purpose: tell the team about the threads that matter, within minutes, once each.</p>
+        </section>
+
+        <section class="sec rv" id="d-flow">
+          <h3><span>02</span>Flow</h3>
+          <p>One n8n workflow, running on a schedule. Each run is a single pass through the steps below.</p>
+          <ol class="steps">
+            <li><div class="n" style="--c:#5B9BF6">01</div><div><h4>Tick</h4><p>A schedule trigger fires on a short, fixed interval around the clock. Every run is independent; nothing waits on the previous one.</p><span class="node">Schedule Trigger</span></div></li>
+            <li><div class="n" style="--c:#5B9BF6">02</div><div><h4>Pull the newest threads</h4><p>For each watched subreddit, the newest posts are fetched through the Reddit API with an authenticated app, sorted by creation time, a bounded page at a time.</p><span class="node">HTTP Request → Reddit API</span></div></li>
+            <li><div class="n" style="--c:#8a8b90">03</div><div><h4>Normalise</h4><p>Title and body are joined, lower-cased and whitespace-collapsed so matching is predictable. Post id, author, score, comment count and permalink are carried along.</p><span class="node">Code</span></div></li>
+            <li><div class="n" style="--c:#a6dfd3">04</div><div><h4>Match against the watchlist</h4><p>Every term in the watchlist is tested against the normalised text. Multi-word terms must appear as an exact phrase; single words must match as whole words. The first matching term is recorded on the item.</p><span class="node">Code · IF</span></div></li>
+            <li><div class="n" style="--c:#ffb454">05</div><div><h4>Freshness window</h4><p>Anything created before the cut-off is dropped. This keeps a first run, a restart or a slow API from flooding the channel with history.</p><span class="node">IF</span></div></li>
+            <li><div class="n" style="--c:#FF8FD0">06</div><div><h4>Seen-post memory</h4><p>Post ids that have already produced an alert are kept in the workflow's persistent store. A repeat is skipped; a new id is written before the alert is sent, so a retry can never double-post.</p><span class="node">Code · workflow static data</span></div></li>
+            <li><div class="n" style="--c:#f1f1ee">07</div><div><h4>Format</h4><p>Each surviving thread becomes a Slack block message: linked title, subreddit, author, upvotes, comment count, the matched term, and a trimmed excerpt.</p><span class="node">Set</span></div></li>
+            <li><div class="n" style="--c:#f1f1ee">08</div><div><h4>Send</h4><p>The message is posted to the team's alerts channel. Failures are retried with back-off and logged; a failed send never counts as seen.</p><span class="node">Slack</span></div></li>
+          </ol>
+        </section>
+
+        <section class="sec rv" id="d-match">
+          <h3><span>03</span>Matching rules</h3>
+          <p>The watchlist is a plain list, edited in one place. The rules exist to keep false positives out: a noisy alert channel is a muted alert channel.</p>
+          <ul class="rules">
+            <li><b>Exact phrases</b><span>A multi-word term has to appear in that order, as a phrase. “attribution tool” does not fire on a post that merely contains both words.</span></li>
+            <li><b>Whole words</b><span>Single-word terms match on word boundaries, so a short brand name does not fire inside an unrelated longer word.</span></li>
+            <li><b>Case and spacing ignored</b><span>Everything is lower-cased and whitespace-collapsed before matching, so capitalisation and line breaks never matter.</span></li>
+            <li><b>First match wins</b><span>One alert per thread, tagged with the first term that matched, even if several terms appear.</span></li>
+          </ul>
+          <figure class="code"><span class="c"># watchlist (illustrative)</span><br><span class="k">"attribution tool"</span>        <span class="c">→ exact phrase</span><br><span class="k">"&lt;competitor name&gt;"</span>      <span class="c">→ exact phrase</span><br><span class="k">attribution</span>               <span class="c">→ whole word</span><br><br><span class="c"># decision per thread</span><br>text = normalise(title + body)<br>term = first(t <span class="b">for</span> t <span class="b">in</span> watchlist <span class="b">if</span> matches(t, text))<br><span class="b">if</span> term <span class="b">and</span> fresh(created) <span class="b">and</span> <span class="b">not</span> seen(id): alert(term)</figure>
+        </section>
+
+        <section class="sec rv" id="d-guard">
+          <h3><span>04</span>Guardrails</h3>
+          <ul class="rules">
+            <li><b style="color:var(--amber)">Freshness window</b><span>Old threads are ignored, so a cold start or a backlog can never flood the channel. The window is a single number in the workflow.</span></li>
+            <li><b style="color:var(--pink)">De-duplication</b><span>Alerted post ids are remembered across runs. The same thread is never announced twice, however many times it is fetched.</span></li>
+            <li><b>Bounded fetches</b><span>Each run reads a fixed page of newest posts per subreddit, which keeps API usage flat and predictable.</span></li>
+            <li><b>Fail quiet, not silent</b><span>API or Slack errors are retried, then logged with the run id. The channel only ever sees real alerts.</span></li>
+          </ul>
+        </section>
+
+        <section class="sec rv" id="d-alert">
+          <h3><span>05</span>The alert</h3>
+          <p>One message per thread, built so the decision to reply can be made without opening Reddit.</p>
+          <div class="msg" aria-label="Example Slack alert">
+            <div class="who"><div class="av" aria-hidden="true"></div><div><b>reddit-monitor</b><span>just now</span></div></div>
+            <div class="body">
+              <p class="t">Which attribution tool actually works for LinkedIn ads?</p>
+              <p class="m">r/marketing · u/author · ▲ 42 · 17 comments</p>
+              <p class="k">matched: “attribution”</p>
+              <p class="x">We run ads on LinkedIn and can’t tie pipeline back to them. Tried two tools so far and neither matched our CRM…</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="sec rv" id="d-outcome">
+          <h3><span>06</span>Outcome</h3>
+          <div class="stats">
+            <div><b>Minutes</b><span>from a thread being posted to the team seeing it, instead of days</span></div>
+            <div><b>0</b><span>duplicate alerts, thanks to the seen-post memory</span></div>
+            <div><b>1 list</b><span>to edit when a new keyword or competitor needs watching</span></div>
+          </div>
+          <p style="margin-top:26px">The alerts channel became a place people read, because every message in it is a real conversation worth joining.</p>
+        </section>
+
+        <section class="sec rv" id="d-ops">
+          <h3><span>07</span>Operating it</h3>
+          <ul class="rules">
+            <li><b>Add a keyword</b><span>Append it to the watchlist. Quote it if it is a phrase. No other change is needed.</span></li>
+            <li><b>Watch another subreddit</b><span>Add it to the subreddit list; it is picked up on the next tick.</span></li>
+            <li><b>Change the cadence or window</b><span>Two numbers: the trigger interval and the freshness cut-off.</span></li>
+            <li><b>Reset the memory</b><span>Clear the stored ids. The freshness window protects the channel while it rebuilds.</span></li>
+          </ul>
+          <div class="pills" style="margin-top:28px"><i>n8n</i><i>Schedule Trigger</i><i>HTTP Request</i><i>Code</i><i>IF</i><i>Set</i><i>Slack</i><i>Reddit API</i></div>
+        </section>
+      </article>
+    </div>
+
+    <footer class="doc-foot">
+      <a class="pill ghost" href="#top">Back to the machine</a>
+      <p class="nm">Next automation → <a href="#" id="nextLink2">Competitive Intel System</a></p>
+    </footer>
+  </div>
+</section>
+
+<script>
+/* UI layer: scroll → station. Runs before the 3D module so the page reads even if WebGL is unavailable. */
+(() => {
+  const caps = [...document.querySelectorAll('.cap')], dots = [...document.querySelectorAll('.progress i')];
+  const runway = document.getElementById('runway'), ui = document.getElementById('ui'), hero = document.getElementById('heroTitle'), hint = document.getElementById('scrollHint'), end = document.getElementById('end');
+  const S = window.__stage = { prog: 0, station: 0, doc: 0 };
+  function onScroll() {
+    const H = innerHeight, max = Math.max(1, runway.offsetHeight - H);
+    const pr = Math.max(0, Math.min(1, scrollY / max));
+    const st = pr < 0.12 ? 0 : pr < 0.30 ? 1 : pr < 0.50 ? 2 : pr < 0.70 ? 3 : pr < 0.88 ? 4 : 5;
+    S.prog = pr; S.station = st; S.doc = Math.max(0, Math.min(1, (scrollY - (runway.offsetHeight - H * 0.9)) / (H * 0.5)));
+    caps.forEach(c => c.classList.toggle('on', Number(c.dataset.i) === st));
+    dots.forEach((d, i) => d.classList.toggle('on', i === st));
+    hero.style.opacity = String(1 - Math.min(1, pr / 0.1));
+    hint.style.opacity = String(pr < 0.02 ? 1 : 0);
+    end.classList.toggle('on', st === 5 && S.doc < 0.5);
+    ui.classList.toggle('off', S.doc >= 0.5);
+  }
+  addEventListener('scroll', onScroll, { passive: true }); addEventListener('resize', onScroll); onScroll();
+  // runbook reveals + toc highlight
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  const links = [...document.querySelectorAll('.toc a')];
+  const io2 = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-30% 0px -55% 0px' });
+  document.querySelectorAll('.sec').forEach(s => io2.observe(s));
+})();
+</script>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { Reflector } from 'three/addons/objects/Reflector.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(hover: none)').matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = t => t * t * (3 - 2 * t);
+let W = innerWidth, H = innerHeight;
+const stage = window.__stage; const SNAP = /snap/.test(location.search);
+
+/* =====================================================================
+   RENDERER · bloom · environment
+   ===================================================================== */
+const canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
+const DPR = Math.min(1.5, devicePixelRatio || 1);
+renderer.setPixelRatio(DPR);
+renderer.setClearColor(0x0d0d0d, 1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; if ('transmissionResolutionScale' in renderer) renderer.transmissionResolutionScale = 0.5;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d0d0d);
+scene.fog = new THREE.FogExp2(0x0d0d0d, 0.035);
+const camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 120);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 0.5, 0.55, 0.9); composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+const C = { mint: new THREE.Color('#a6dfd3'), blue: new THREE.Color('#5B9BF6'), pink: new THREE.Color('#FF8FD0'), amber: new THREE.Color('#ffb454'), reddit: new THREE.Color('#ff6a3d'), dim: new THREE.Color('#9a9ca3'), ink: new THREE.Color('#f1f1ee') };
+
+// lights: a soft key, a cool rim, and a focus light that travels with the camera to the active station
+scene.add(new THREE.HemisphereLight(0x9fb4c8, 0x0d0d0d, 0.45));
+const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(6, 9, 7); scene.add(key);
+const rim = new THREE.DirectionalLight(0x5B9BF6, 0.5); rim.position.set(-8, 2, -6); scene.add(rim);
+const focus = new THREE.PointLight(0xffffff, 14, 14, 2); focus.position.set(-10, 3.5, 2); scene.add(focus);
+
+/* ---- the machine's stations along x ---- */
+const X = { start: -26, clock: -10, lens: -2, fresh: 4, seen: 8, slack: 15, end: 22 };
+const LANE_Y = 0;        // the raw stream
+const ALERT_Y = 1.7;     // matched threads lift to this line
+const FLOOR_Y = -1.15;
+
+/* ---- helpers ---- */
+function roundRect(x, X0, Y0, w, h, r) { x.beginPath(); x.moveTo(X0 + r, Y0); x.arcTo(X0 + w, Y0, X0 + w, Y0 + h, r); x.arcTo(X0 + w, Y0 + h, X0, Y0 + h, r); x.arcTo(X0, Y0 + h, X0, Y0, r); x.arcTo(X0, Y0, X0 + w, Y0, r); x.closePath(); }
+const at = (m, x, y, z) => { m.position.set(x, y, z); return m; };
+const rot = (m, x, y, z) => { m.rotation.set(x, y, z); return m; };
+const metal = (color, rough = 0.18) => new THREE.MeshStandardMaterial({ color, metalness: 1, roughness: rough, envMapIntensity: 0.55 });
+const glow = (color, k = 1) => new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: k, metalness: 0.2, roughness: 0.4 });
+function glass(color, opacity = 0.35, extra = {}) { return new THREE.MeshPhysicalMaterial({ color, transparent: true, opacity, roughness: 0.08, metalness: 0, transmission: 0.9, thickness: 0.4, ior: 1.45, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 0.35, side: THREE.DoubleSide, depthWrite: false, ...extra }); }
+function pill(text, color = '#f1f1ee', size = 0.24) {   // a billboard label on a dark pill
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 128; const x = c.getContext('2d');
+  x.font = `500 44px 'Elms Sans', Arial, sans-serif`; const tw = x.measureText(text.toUpperCase()).width;
+  const pw = Math.min(1000, tw + 96), px = (1024 - pw) / 2;
+  x.shadowColor = 'rgba(0,0,0,.9)'; x.shadowBlur = 14; x.fillStyle = color; x.textBaseline = 'middle'; x.textAlign = 'center'; x.letterSpacing = '5px'; x.fillText(text.toUpperCase(), 512, 66);
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 8; t.colorSpace = THREE.SRGBColorSpace;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(8 * size, size), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false }));
+  m.renderOrder = 5; return m;
+}
+// a scrolling stripe texture: used for flow along the alert line and the dashed gates
+const stripes = (() => { const c = document.createElement('canvas'); c.width = 256; c.height = 8; const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 256, 8); x.fillStyle = '#fff'; roundRect(x, 20, 0, 120, 8, 4); x.fill(); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; })();
+
+/* ---- the ground: still dark water with a skin of mist ---- */
+const noiseTex = (() => {   // tileable value noise, used for ripples and mist
+  const S = 256, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d'); const img = x.createImageData(S, S);
+  const grid = 8, G = []; for (let i = 0; i < grid * grid; i++) G.push(Math.random());
+  const sm = t => t * t * (3 - 2 * t);
+  for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) {
+    let v = 0, amp = 0.5, f = grid;
+    for (let o = 0; o < 4; o++) { const gx = (i / S) * f, gy = (j / S) * f, x0 = Math.floor(gx) % f, y0 = Math.floor(gy) % f, x1 = (x0 + 1) % f, y1 = (y0 + 1) % f, u = sm(gx - Math.floor(gx)), w = sm(gy - Math.floor(gy));
+      const g = (xx, yy) => { const n = Math.sin((xx * 73 + yy * 157 + o * 31) * 0.371) * 43758.5; return n - Math.floor(n); };
+      v += amp * ((g(x0, y0) * (1 - u) + g(x1, y0) * u) * (1 - w) + (g(x0, y1) * (1 - u) + g(x1, y1) * u) * w); amp *= 0.5; f *= 2; }
+    const k = (i + j * S) * 4; img.data[k] = img.data[k + 1] = img.data[k + 2] = v * 255; img.data[k + 3] = 255;
+  }
+  x.putImageData(img, 0, 0); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+})();
+const water = new Reflector(new THREE.PlaneGeometry(400, 220), {
+  textureWidth: Math.round(W * DPR * (coarse ? 0.3 : 0.4)), textureHeight: Math.round(H * DPR * (coarse ? 0.3 : 0.4)), clipBias: 0.003, multisample: 0, color: 0x0a0b0e,
+  shader: {
+    uniforms: { color: { value: null }, tDiffuse: { value: null }, textureMatrix: { value: null }, tNoise: { value: noiseTex }, uTime: { value: 0 }, uFog: { value: new THREE.Color(0x0d0d0d) } },
+    vertexShader: `uniform mat4 textureMatrix; varying vec4 vUvP; varying vec3 vW; varying float vZ;
+      void main(){ vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; vUvP = textureMatrix * vec4(position, 1.0); vec4 mv = viewMatrix * wp; vZ = -mv.z; gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform vec3 color, uFog; uniform sampler2D tDiffuse, tNoise; uniform float uTime; varying vec4 vUvP; varying vec3 vW; varying float vZ;
+      void main(){
+        float n1 = texture2D(tNoise, vW.xz * 0.045 + vec2(uTime * 0.010, uTime * 0.006)).r;
+        float n2 = texture2D(tNoise, vW.xz * 0.12 - vec2(uTime * 0.008, -uTime * 0.012)).r;
+        vec2 ripple = (vec2(n1, n2) - 0.5);
+        vec4 uv = vUvP; uv.xy += ripple * 0.06 * uv.w;
+        vec3 refl = texture2DProj(tDiffuse, uv).rgb;
+        float glint = smoothstep(0.62, 0.78, (n1 + n2) * 0.5) * 0.025;
+        vec3 col = color + refl * 0.55 + glint;
+        float f = 1.0 - exp(-0.026 * 0.026 * vZ * vZ);
+        gl_FragColor = vec4(mix(col, uFog, f), 1.0);
+      }` }
+});
+water.rotation.x = -Math.PI / 2; water.position.set(2, FLOOR_Y, -6); scene.add(water);
+{ const orig = water.onBeforeRender; let f = 0; water.onBeforeRender = function (...args) { if ((f++ & 1) === 0 || SNAP) orig.apply(this, args); }; }   // refresh the reflection every other frame
+// mist: a few large drifting sheets just above the surface
+const mist = (() => {
+  const mc = document.createElement('canvas'); mc.width = mc.height = 256; const mx = mc.getContext('2d'); const rg = mx.createRadialGradient(128, 128, 20, 128, 128, 128); rg.addColorStop(0, 'rgba(255,255,255,1)'); rg.addColorStop(1, 'rgba(255,255,255,0)'); mx.fillStyle = rg; mx.fillRect(0, 0, 256, 256);
+  const maskTex = new THREE.CanvasTexture(mc);
+  const sheets = [];
+  const mat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, uniforms: { tNoise: { value: noiseTex }, tMask: { value: maskTex }, uTime: { value: 0 }, uOff: { value: 0 }, uOp: { value: 0.16 } },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform sampler2D tNoise, tMask; uniform float uTime, uOff, uOp; varying vec2 vUv;
+      void main(){ float a = texture2D(tNoise, vUv * vec2(3.0, 1.6) + vec2(uTime * 0.012 + uOff, uOff * 0.3)).r; float b = texture2D(tNoise, vUv * vec2(1.4, 0.9) - vec2(uTime * 0.007, uOff)).r;
+        float m = texture2D(tMask, vUv).r; float d = smoothstep(0.35, 0.8, a * 0.6 + b * 0.5); gl_FragColor = vec4(vec3(0.42, 0.45, 0.52), d * m * uOp); }` });
+  const specs = [[0, 0.2, 0, 90, 40, 0.055], [1.7, 0.45, 4, 70, 30, 0.045], [3.1, 0.75, -3, 110, 44, 0.035], [4.6, 0.35, 9, 60, 26, 0.04]];
+  specs.forEach(([off, y, x, w, d, op]) => { const m = mat.clone(); m.uniforms.uOff.value = off; m.uniforms.uOp.value = op; const sheet = new THREE.Mesh(new THREE.PlaneGeometry(w, d), m); sheet.rotation.x = -Math.PI / 2; sheet.position.set(x, FLOOR_Y + y, -4); sheet.renderOrder = 3; scene.add(sheet); sheets.push(sheet); });
+  return { update(t) { sheets.forEach(sh => sh.material.uniforms.uTime.value = t); } };
+})();
+
+/* ---- atmosphere: low mountain silhouettes at the far edge, heavier fog, depth haze ---- */
+{
+  const hash = (x, y) => { const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); };
+  const vnoise = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf); return lerp(lerp(hash(xi, yi), hash(xi + 1, yi), u), lerp(hash(xi, yi + 1), hash(xi + 1, yi + 1), u), v); };
+  const fbm = (x, y) => { let a = 0, amp = 0.5, f = 1; for (let i = 0; i < 5; i++) { a += amp * vnoise(x * f, y * f); amp *= 0.5; f *= 2.1; } return a; };
+  const ss = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
+  const g = new THREE.PlaneGeometry(240, 140, 240, 140); g.rotateX(-Math.PI / 2);
+  const pos = g.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    const n = fbm(x * 0.05 + 3, z * 0.05 + 7);
+    const back = ss(-18, -50, z) * (8 + 12 * n) + ss(-30, -62, z) * 8 * fbm(x * 0.03, 1.5);                 // the far ridge
+    const sides = ss(34, 80, Math.abs(x - 2)) * (5 + 7 * n);     // low shoulders left and right
+    const front = ss(16, 40, z) * (3 + 4 * n);                   // a faint rim behind the camera
+    pos.setY(i, FLOOR_Y - 0.3 + back + sides + front);
+  }
+  g.computeVertexNormals();
+  const ridge = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x2e3036, roughness: 1, metalness: 0, envMapIntensity: 0.04 }));
+  ridge.position.set(2, 0, -6); scene.add(ridge);
+  // depth haze: a soft vertical gradient standing behind the ridge
+  const hc = document.createElement('canvas'); hc.width = 4; hc.height = 256; const hx = hc.getContext('2d'); const hg = hx.createLinearGradient(0, 0, 0, 256); hg.addColorStop(0, 'rgba(13,13,13,0)'); hg.addColorStop(0.6, 'rgba(40,42,48,.28)'); hg.addColorStop(1, 'rgba(70,72,80,.6)'); hx.fillStyle = hg; hx.fillRect(0, 0, 4, 256);
+  const haze = new THREE.Mesh(new THREE.PlaneGeometry(700, 60), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(hc), transparent: true, depthWrite: false, fog: false, toneMapped: false })); haze.position.set(2, FLOOR_Y + 14, -66); scene.add(haze);
+}
+scene.fog = new THREE.FogExp2(0x0d0d0d, 0.026);
+
+/* ---- night sky behind the ridge: faint stars + the occasional shooting star ---- */
+const sky = (() => {
+  const n = 520, pos = new Float32Array(n * 3), sz = new Float32Array(n);
+  for (let i = 0; i < n; i++) { pos[i * 3] = -220 + Math.random() * 440; pos[i * 3 + 1] = FLOOR_Y + 6 + Math.pow(Math.random(), 0.7) * 50; pos[i * 3 + 2] = -70 - Math.random() * 20; sz[i] = 0.5 + Math.random() * Math.random() * 1.8; }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aSz', new THREE.BufferAttribute(sz, 1));
+  const m = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uDpr: { value: DPR } }, transparent: true, depthWrite: false, fog: false,
+    vertexShader: `attribute float aSz; uniform float uTime, uDpr; varying float vA; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = aSz * 1.6 * uDpr; vA = 0.35 + 0.45 * (0.5 + 0.5 * sin(uTime * (0.6 + aSz) + position.x * 3.1)); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `varying float vA; void main(){ vec2 q = gl_PointCoord - 0.5; float d = length(q); if (d > 0.5) discard; gl_FragColor = vec4(vec3(0.85, 0.88, 0.95), vA * smoothstep(0.5, 0.1, d)); }` });
+  const stars = new THREE.Points(g, m); stars.frustumCulled = false; scene.add(stars);
+  // shooting stars: a few streak planes with a gradient tail, fired now and then far behind the mountains
+  const tc = document.createElement('canvas'); tc.width = 256; tc.height = 8; const tx = tc.getContext('2d'); const tg = tx.createLinearGradient(0, 0, 256, 0); tg.addColorStop(0, 'rgba(255,255,255,0)'); tg.addColorStop(0.75, 'rgba(255,255,255,.45)'); tg.addColorStop(1, 'rgba(255,255,255,1)'); tx.fillStyle = tg; tx.fillRect(0, 0, 256, 8);
+  const streakTex = new THREE.CanvasTexture(tc);
+  const streaks = []; for (let i = 0; i < 3; i++) { const mesh = new THREE.Mesh(new THREE.PlaneGeometry(7, 0.1), new THREE.MeshBasicMaterial({ map: streakTex, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false })); mesh.frustumCulled = false; scene.add(mesh); streaks.push({ mesh, t: -1, dur: 1, x0: 0, y0: 0, dx: 0, dy: 0 }); }
+  let next = 2.5;
+  function fire(now) { const st = streaks.find(s => s.t < 0); if (!st) return; const ang = -0.35 - Math.random() * 0.5; const sp = 26 + Math.random() * 14; st.x0 = -70 + Math.random() * 130; st.y0 = FLOOR_Y + 26 + Math.random() * 26; st.dx = Math.cos(ang) * sp * (Math.random() < 0.5 ? 1 : -1); st.dy = Math.sin(ang) * sp; st.dur = 0.9 + Math.random() * 0.6; st.t = 0; st.mesh.rotation.z = Math.atan2(st.dy, st.dx); st.mesh.scale.x = 0.7 + Math.random() * 0.8; st.mesh.position.z = -72; }
+  function update(t, dt) {
+    m.uniforms.uTime.value = t;
+    if (t > next) { fire(t); next = t + (reduce ? 9 : 3.5 + Math.random() * 5); }
+    streaks.forEach(st => { if (st.t < 0) return; st.t += dt; const k = st.t / st.dur; if (k >= 1) { st.t = -1; st.mesh.material.opacity = 0; return; } st.mesh.position.x = st.x0 + st.dx * st.t; st.mesh.position.y = st.y0 + st.dy * st.t; st.mesh.material.opacity = Math.sin(k * Math.PI) * 0.9; });
+  }
+  return { update, fire };
+})();
+if (SNAP) sky.fire(0);
+
+/* ---- background dust (continuity with the main site) ---- */
+{
+  const n = 1400, pos = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { pos[i * 3] = -44 + Math.random() * 88; pos[i * 3 + 1] = -1 + Math.random() * 18; pos[i * 3 + 2] = -24 + Math.random() * 14; }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0x8fa0a8, size: 0.04, transparent: true, opacity: 0.35, depthWrite: false })));
+}
+
+/* ---- the alert line: a glowing tube lens → slack, with flow running along it ---- */
+const threadCurve = new THREE.CatmullRomCurve3([new THREE.Vector3(X.lens, ALERT_Y, 0), new THREE.Vector3(X.fresh, ALERT_Y, 0), new THREE.Vector3(X.seen, ALERT_Y, 0), new THREE.Vector3(X.slack - 2.2, ALERT_Y, 0)]);
+const flowTex = stripes.clone(); flowTex.needsUpdate = true; flowTex.repeat.set(14, 1);
+const thread = new THREE.Mesh(new THREE.TubeGeometry(threadCurve, 64, 0.045, 12, false), new THREE.MeshStandardMaterial({ color: 0x1b2a2f, emissive: 0xa6dfd3, emissiveIntensity: 1.6, emissiveMap: flowTex, metalness: 0.6, roughness: 0.3 })); scene.add(thread);
+const threadBase = new THREE.Mesh(new THREE.TubeGeometry(threadCurve, 64, 0.03, 10, false), new THREE.MeshStandardMaterial({ color: 0x2a3b40, emissive: 0x1c3a38, emissiveIntensity: 0.6, metalness: 0.8, roughness: 0.25 })); scene.add(threadBase);
+// raw stream rails
+{
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([X.start - 10, LANE_Y - 0.45, 1.25, X.lens + 1, LANE_Y - 0.45, 1.25, X.start - 10, LANE_Y - 0.45, -1.25, X.lens + 1, LANE_Y - 0.45, -1.25], 3));
+  scene.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: 0x2a2d33, transparent: true, opacity: 0.9 })));
+}
+
+/* ---- station 1: the clock ---- */
+const clockG = new THREE.Group(); clockG.position.set(X.clock, 2.7, -0.6); scene.add(clockG);
+clockG.add(new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.07, 24, 128), metal(0x9aa3aa, 0.22)));
+const clockFace = new THREE.Mesh(new THREE.CircleGeometry(1.1, 72), new THREE.MeshPhysicalMaterial({ color: 0x16212c, transparent: true, opacity: 0.55, roughness: 0.5, metalness: 0.1, clearcoat: 0.6, clearcoatRoughness: 0.1, envMapIntensity: 0.15, side: THREE.DoubleSide, depthWrite: false })); clockG.add(clockFace);
+for (let i = 0; i < 12; i++) { const tick = new THREE.Mesh(new THREE.BoxGeometry(0.03, i % 3 === 0 ? 0.18 : 0.09, 0.03), glow(0x9ec8ff, i % 3 === 0 ? 1.2 : 0.5)); const a = i / 12 * Math.PI * 2; tick.position.set(Math.sin(a) * 0.96, Math.cos(a) * 0.96, 0.04); tick.rotation.z = -a; clockG.add(tick); }
+const hand = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.92, 0.045), glow(0x5B9BF6, 2.2)); hand.position.y = 0.44; const handPivot = new THREE.Group(); handPivot.position.z = 0.06; handPivot.add(hand); clockG.add(handPivot);
+clockG.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.09, 24, 16), metal(0xf1f1ee, 0.2)), 0, 0, 0.08));
+const clockLabel = pill('schedule trigger', '#9ec8ff'); clockLabel.position.set(0, -1.7, 0); clockG.add(clockLabel);
+// radar sweeps: expanding glowing rings on the stream plane
+const sweeps = []; for (let i = 0; i < 3; i++) { const r = new THREE.Mesh(new THREE.RingGeometry(0.97, 1, 128), new THREE.MeshBasicMaterial({ color: 0x5B9BF6, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })); r.rotation.x = -Math.PI / 2; r.position.set(X.clock, FLOOR_Y + 0.03, 0); scene.add(r); sweeps.push({ m: r, t: -1 }); }
+const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.5, 3.6, 32, 1, true), new THREE.MeshBasicMaterial({ color: 0x5B9BF6, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })); beam.position.set(X.clock, 0.9, -0.6); scene.add(beam);
+// pedestal under the clock
+clockG.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3.9, 12), metal(0x3a3d44, 0.4)), 0, -1.95, -0.1));
+
+/* ---- station 2: the lens with the watchlist ---- */
+const lensG = new THREE.Group(); lensG.position.set(X.lens, 1.0, 0); scene.add(lensG);
+const lensDisc = new THREE.Mesh(new THREE.CircleGeometry(2.15, 96), glass('#a6dfd3', 0.4, { transmission: 0.92, thickness: 0.6, envMapIntensity: 0.25 })); lensDisc.rotation.y = Math.PI / 2; lensG.add(lensDisc);
+const lensRing = new THREE.Mesh(new THREE.TorusGeometry(2.15, 0.06, 24, 160), metal(0xd6ebe6, 0.12)); lensRing.rotation.y = Math.PI / 2; lensG.add(lensRing);
+const lensHalo = new THREE.Mesh(new THREE.TorusGeometry(2.15, 0.018, 8, 160), glow(0xa6dfd3, 1.2)); lensHalo.rotation.y = Math.PI / 2; lensHalo.position.x = 0.07; lensG.add(lensHalo);
+const WATCH = ['attribution', 'competitor a', 'marketing analytics', 'competitor b', 'linkedin ads roi', 'revenue attribution'];
+const watchTiles = WATCH.map((w, i) => { const t = pill(w, '#a6dfd3', 0.26); const a = (i / WATCH.length) * Math.PI * 2; t.userData.a = a; lensG.add(t); return t; });
+const lensLabel = pill('watchlist · exact phrases', '#a6dfd3'); lensLabel.position.set(0, -2.75, 0); lensG.add(lensLabel);
+
+/* ---- station 3a: freshness gate (amber) ---- */
+function gate(color, hex) {
+  const g = new THREE.Group();
+  g.add(rot(new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.05, 20, 96), metal(0xd8d8d8, 0.15)), 0, Math.PI / 2, 0));
+  const dashTex = stripes.clone(); dashTex.needsUpdate = true; dashTex.repeat.set(10, 1);
+  const dash = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.025, 10, 96), new THREE.MeshStandardMaterial({ color: hex, emissive: hex, emissiveIntensity: 1.8, emissiveMap: dashTex, alphaMap: dashTex, transparent: true, metalness: 0.3, roughness: 0.4 })); dash.rotation.y = Math.PI / 2; g.add(dash);
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(0.78, 48), glass(color, 0.25, { transmission: 0.9 })); disc.rotation.y = Math.PI / 2; g.add(disc);
+  g.userData = { dash, dashTex, disc }; return g;
+}
+const freshG = gate('#ffb454', 0xffb454); freshG.position.set(X.fresh, ALERT_Y, 0); scene.add(freshG);
+const freshLabel = pill('freshness window', '#ffb454'); freshLabel.position.set(0, -1.3, 0); freshG.add(freshLabel);
+/* ---- station 3b: seen gate (pink) + memory block ---- */
+const seenG = gate('#FF8FD0', 0xFF8FD0); seenG.position.set(X.seen, ALERT_Y, 0); scene.add(seenG);
+const seenLabel = pill('de-dupe · seen before?', '#FF8FD0'); seenLabel.position.set(0, -1.3, 0); seenG.add(seenLabel);
+const memG = new THREE.Group(); memG.position.set(X.seen, ALERT_Y - 2.0, 0.3); scene.add(memG);
+const memBox = new THREE.Mesh(new RoundedBoxGeometry(1.6, 1.05, 1.15, 4, 0.1), glass('#FF8FD0', 0.22, { transmission: 0.7, thickness: 0.8, envMapIntensity: 0.25 })); memG.add(memBox);
+memG.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.6, 1.05, 1.15)), new THREE.LineBasicMaterial({ color: 0xFF8FD0, transparent: true, opacity: 0.35 })));
+const memLabel = pill('seen-post memory', '#FF8FD0'); memLabel.position.set(1.75, 0.15, 0.3); memG.add(memLabel);
+const memStack = [];
+const stackGeo = new RoundedBoxGeometry(0.64, 0.06, 0.42, 2, 0.02), stackMat = glow(0xFF8FD0, 0.25);
+for (let i = 0; i < 12; i++) { const m = new THREE.Mesh(stackGeo, stackMat); m.position.set(-0.34 + (i % 2) * 0.68, -0.44 + Math.floor(i / 2) * 0.14, 0); m.visible = false; memG.add(m); memStack.push(m); }
+let absorbed = 0, memPulse = 0;
+// a chute from the gate down into the memory
+{ const chute = new THREE.CatmullRomCurve3([new THREE.Vector3(X.seen + 0.1, ALERT_Y - 0.1, 0), new THREE.Vector3(X.seen + 0.6, ALERT_Y - 0.9, 0.2), new THREE.Vector3(X.seen + 0.2, ALERT_Y - 1.5, 0.3)]); scene.add(new THREE.Mesh(new THREE.TubeGeometry(chute, 24, 0.02, 8, false), new THREE.MeshStandardMaterial({ color: 0x3a2a33, emissive: 0xFF8FD0, emissiveIntensity: 0.35, metalness: 0.6, roughness: 0.4 }))); }
+
+/* ---- station 4: a Slack window, with alerts arriving one by one ---- */
+const slackG = new THREE.Group(); slackG.position.set(X.slack, ALERT_Y + 0.35, 0); slackG.rotation.y = -0.4; scene.add(slackG);
+const SW = 1280, SH = 880;   // canvas px; the panel keeps the same aspect
+const slackCanvas = document.createElement('canvas'); slackCanvas.width = SW; slackCanvas.height = SH; const sx = slackCanvas.getContext('2d');
+const slackTex = new THREE.CanvasTexture(slackCanvas); slackTex.colorSpace = THREE.SRGBColorSpace; slackTex.anisotropy = 8;
+const PW = 4.4, PH = PW * SH / SW;
+const slackPanel = new THREE.Mesh(new THREE.PlaneGeometry(PW, PH), new THREE.MeshBasicMaterial({ map: slackTex, transparent: true, toneMapped: false })); slackPanel.position.z = 0.04; slackPanel.renderOrder = 2; slackG.add(slackPanel);
+const slackBack = new THREE.Mesh(new RoundedBoxGeometry(PW + 0.16, PH + 0.16, 0.08, 3, 0.06), new THREE.MeshPhysicalMaterial({ color: 0x101114, roughness: 0.45, metalness: 0.35, clearcoat: 0.6, clearcoatRoughness: 0.4, envMapIntensity: 0.4, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 })); slackBack.position.z = -0.03; slackG.add(slackBack);
+const slackPing = new THREE.Mesh(new THREE.RingGeometry(0.2, 0.24, 48), new THREE.MeshBasicMaterial({ color: 0xa6dfd3, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })); slackPing.position.set(PW / 2 + 0.22, PH / 2 + 0.2, 0.1); slackG.add(slackPing);
+const slackDot = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 12), glow(0xa6dfd3, 2)); slackDot.position.copy(slackPing.position); slackDot.scale.setScalar(0); slackG.add(slackDot);
+const slackLabel = pill('slack · alerts channel', '#f1f1ee'); slackLabel.position.set(PW / 2 + 0.3, -PH / 2 - 0.25, 0); slackG.add(slackLabel);
+slackG.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 3.3, 12), metal(0x3a3d44, 0.4)), 0, -PH / 2 - 1.25, -0.05));
+let slackP = 0, slackPulse = 0;
+const courier = { t0: -1, mesh: null };
+// five alerts, cycled in a loop; every field is illustrative
+const ALERTS = [
+  { title: 'Which attribution tool actually works for LinkedIn ads?', sub: 'r/marketing', score: 42, com: 17, term: 'attribution', body: 'We run ads on LinkedIn and can’t tie pipeline back to them. Tried two tools so far and neither matched our CRM…', when: '9:41' },
+  { title: 'Anyone switched off <competitor> this year? Looking for alternatives', sub: 'r/B2BSaaS', score: 118, com: 63, term: '<competitor>', body: 'Renewal is up in two months and the price jumped again. What are people using for account-level analytics now?', when: '9:46' },
+  { title: 'How do you prove marketing-sourced revenue to the board?', sub: 'r/startups', score: 77, com: 29, term: 'revenue attribution', body: 'Our CFO wants one number. Multi-touch feels like fiction, first-touch undersells content. How are you handling it?', when: '9:52' },
+  { title: 'Is LinkedIn ads ROI actually measurable for a 30-person team?', sub: 'r/PPC', score: 54, com: 21, term: 'linkedin ads roi', body: 'Spending ~$8k/mo. The platform says it works, the CRM says otherwise. Would love to hear what moved the needle.', when: '9:57' },
+  { title: 'Marketing analytics stack for a lean team: what would you pick in 2026?', sub: 'r/marketing', score: 203, com: 88, term: 'marketing analytics', body: 'No data engineer, HubSpot + GA4 + a warehouse nobody queries. Looking for something a marketer can run alone.', when: '10:03' },
+];
+const slackState = { shown: [], next: 0, lastAt: -99, flash: 0 };     // shown: [{a, born}]
+function wrap(x, text, maxW) { const words = text.split(' '), out = []; let line = ''; for (const w of words) { const t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t; } if (line) out.push(line); return out; }
+function drawSlack(p, t) {   // p 0..1: window assembled; t: time (for arrival animation)
+  const x = sx; x.clearRect(0, 0, SW, SH);
+  // window chrome
+  x.fillStyle = '#1a1d21'; roundRect(x, 0, 0, SW, SH, 26); x.fill();
+  x.fillStyle = '#0f1114'; x.fillRect(0, 0, SW, 76); roundRect(x, 0, 0, SW, 76, 26); x.fill(); x.fillRect(0, 40, SW, 36);
+  ['#ff5f57', '#febc2e', '#28c840'].forEach((c, i) => { x.fillStyle = c; x.beginPath(); x.arc(40 + i * 30, 38, 8, 0, 7); x.fill(); });
+  x.fillStyle = '#f1f1ee'; x.font = '700 30px Elms Sans, Arial'; x.textBaseline = 'middle'; x.textAlign = 'left'; x.fillText('# alerts', 150, 38);
+  x.fillStyle = '#8a8b90'; x.font = '400 24px Elms Sans, Arial'; x.fillText('Reddit mentions, posted by n8n', 290, 40);
+  x.fillStyle = '#8a8b90'; x.font = '400 22px Elms Sans, Arial'; x.textAlign = 'right'; x.fillText('12 members', SW - 40, 40); x.textAlign = 'left';
+  // sidebar strip
+  x.fillStyle = '#121417'; x.fillRect(0, 76, 150, SH - 76); x.fillStyle = '#2a2d33'; x.fillRect(150, 76, 2, SH - 76);
+  x.fillStyle = '#5c5e66'; x.font = '500 20px Elms Sans, Arial'; ['general', 'marketing', 'alerts', 'random'].forEach((n, i) => { const on = n === 'alerts'; if (on) { x.fillStyle = '#2b3a46'; roundRect(x, 12, 110 + i * 46, 126, 36, 8); x.fill(); } x.fillStyle = on ? '#f1f1ee' : '#5c5e66'; x.fillText('# ' + n, 24, 128 + i * 46); });
+  // composer
+  x.fillStyle = '#0f1114'; roundRect(x, 180, SH - 86, SW - 220, 56, 14); x.fill(); x.strokeStyle = '#2a2d33'; x.lineWidth = 2; x.stroke(); x.fillStyle = '#5c5e66'; x.font = '400 22px Elms Sans, Arial'; x.fillText('Message #alerts', 204, SH - 58);
+  if (p < 0.02) { slackTex.needsUpdate = true; return; }
+  // messages: newest at the bottom; each arrival slides up and the older ones shift
+  x.save(); x.beginPath(); x.rect(152, 76, SW - 152, SH - 76 - 100); x.clip();
+  const MX = 180, MW = SW - MX - 40, blockH = 262;
+  const items = slackState.shown; const newest = items[items.length - 1];
+  const k = newest ? clamp((t - newest.born) / 0.6, 0, 1) : 1, e = 1 - Math.pow(1 - k, 3);
+  let y = SH - 100 - 24 - blockH + (1 - e) * (blockH + 40);   // bottom of the newest block, animating in
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i], a = it.a, top = y, isNew = i === items.length - 1;
+    if (top + blockH < 76) break;
+    x.globalAlpha = isNew ? e : 1;
+    if (isNew && e < 1) { x.fillStyle = `rgba(166,223,211,${0.14 * (1 - e)})`; roundRect(x, MX - 14, top - 10, MW + 28, blockH, 14); x.fill(); }
+    else if (isNew) { const h = Math.max(0, 1 - (t - it.born - 0.6) / 1.6); if (h > 0) { x.fillStyle = `rgba(166,223,211,${0.10 * h})`; roundRect(x, MX - 14, top - 10, MW + 28, blockH, 14); x.fill(); } }
+    x.fillStyle = '#ff6a3d'; roundRect(x, MX, top, 44, 44, 11); x.fill(); x.fillStyle = '#fff'; x.font = '700 22px Elms Sans, Arial'; x.textAlign = 'center'; x.fillText('r', MX + 22, top + 23); x.textAlign = 'left';
+    x.fillStyle = '#f1f1ee'; x.font = '700 24px Elms Sans, Arial'; x.textBaseline = 'middle'; x.fillText('reddit-monitor', MX + 58, top + 14); const nw = x.measureText('reddit-monitor').width;
+    x.fillStyle = '#5B9BF6'; roundRect(x, MX + 58 + nw + 10, top + 3, 50, 22, 5); x.fill(); x.fillStyle = '#fff'; x.font = '700 14px Elms Sans, Arial'; x.fillText('APP', MX + 58 + nw + 19, top + 14);
+    x.fillStyle = '#8a8b90'; x.font = '400 20px Elms Sans, Arial'; x.fillText(a.when + ' AM', MX + 58 + nw + 72, top + 15);
+    // block: accent bar + fields
+    x.fillStyle = '#a6dfd3'; roundRect(x, MX + 58, top + 44, 5, blockH - 70, 3); x.fill();
+    const bx = MX + 80, bw = MW - 80; let by = top + 50;
+    x.textBaseline = 'top'; x.fillStyle = '#5B9BF6'; x.font = '700 27px Elms Sans, Arial'; const tl = wrap(x, a.title, bw).slice(0, 2); tl.forEach(l => { x.fillText(l, bx, by); by += 34; });
+    x.fillStyle = '#8a8b90'; x.font = '400 21px Elms Sans, Arial'; x.fillText(`${a.sub}  ·  u/author  ·  ▲ ${a.score}  ·  ${a.com} comments`, bx, by + 4); by += 34;
+    x.fillStyle = '#a6dfd3'; x.font = '500 21px Elms Sans, Arial'; x.fillText('matched: “' + a.term + '”', bx, by + 4); by += 36;
+    x.fillStyle = '#c9cacd'; x.font = '400 22px Elms Sans, Arial'; wrap(x, a.body, bw).slice(0, 2).forEach(l => { x.fillText(l, bx, by); by += 30; });
+    x.globalAlpha = 1; y -= blockH + 16;
+  }
+  x.restore(); x.globalAlpha = 1;
+  slackTex.needsUpdate = true;
+}
+drawSlack(0, 0);
+
+/* ---- sparks: pooled points, fired at the moments that matter ---- */
+const sparks = (() => {
+  const MAX = 900; const pos = new Float32Array(MAX * 3), vel = new Float32Array(MAX * 3), col = new Float32Array(MAX * 3), life = new Float32Array(MAX * 2).fill(-10);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aVel', new THREE.BufferAttribute(vel, 3)); g.setAttribute('aCol', new THREE.BufferAttribute(col, 3)); g.setAttribute('aLife', new THREE.BufferAttribute(life, 2));
+  const m = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uDpr: { value: DPR } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: `attribute vec3 aVel; attribute vec3 aCol; attribute vec2 aLife; uniform float uTime, uDpr; varying vec3 vCol; varying float vA;
+      void main(){ float age = uTime - aLife.x; float k = age / max(0.01, aLife.y); vA = (age < 0.0 || k > 1.0) ? 0.0 : 1.0 - k; vec3 p = position + aVel * age + vec3(0.0, -1.4, 0.0) * age * age;
+      vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_PointSize = (vA > 0.0 ? (4.0 + 9.0 * vA) : 0.0) * uDpr * (6.0 / max(1.0, -mv.z)); gl_Position = projectionMatrix * mv; vCol = aCol; }`,
+    fragmentShader: `varying vec3 vCol; varying float vA; void main(){ vec2 q = gl_PointCoord - 0.5; float d = length(q); if (d > 0.5) discard; float a = vA * smoothstep(0.5, 0.1, d); gl_FragColor = vec4(vCol * 2.4, a); }` });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; scene.add(pts);
+  let head = 0;
+  function fire(x, y, z, color, n = 20, spd = 1.6, dur = 0.7, now = 0) {
+    for (let i = 0; i < n; i++) { const k = head; head = (head + 1) % MAX; const a = Math.random() * 6.283, b = (Math.random() - 0.5) * 2.4, s = spd * (0.4 + Math.random() * 0.8);
+      pos[k * 3] = x; pos[k * 3 + 1] = y; pos[k * 3 + 2] = z; vel[k * 3] = Math.cos(a) * Math.cos(b) * s; vel[k * 3 + 1] = Math.sin(b) * s + 0.6; vel[k * 3 + 2] = Math.sin(a) * Math.cos(b) * s;
+      col[k * 3] = color.r; col[k * 3 + 1] = color.g; col[k * 3 + 2] = color.b; life[k * 2] = now; life[k * 2 + 1] = dur * (0.6 + Math.random() * 0.6); }
+    g.attributes.position.needsUpdate = g.attributes.aVel.needsUpdate = g.attributes.aCol.needsUpdate = g.attributes.aLife.needsUpdate = true;
+  }
+  return { fire, m };
+})();
+
+/* ---- the stream of thread-cards: real little Reddit cards from a texture atlas ---- */
+const atlas = (() => {
+  const cols = 4, rows = 2, tw = 256, th = 160; const c = document.createElement('canvas'); c.width = cols * tw; c.height = rows * th; const x = c.getContext('2d');
+  for (let i = 0; i < cols * rows; i++) {
+    const ox = (i % cols) * tw, oy = Math.floor(i / cols) * th; x.save(); x.translate(ox, oy);
+    x.fillStyle = '#2b2d33'; roundRect(x, 4, 4, tw - 8, th - 8, 20); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.08)'; x.lineWidth = 2; x.stroke();
+    x.fillStyle = '#ff6a3d'; roundRect(x, 24, 24, 58 + (i % 3) * 14, 16, 8); x.fill();                 // subreddit tag
+    x.fillStyle = '#b9babd'; roundRect(x, 24, 58, 130 + ((i * 37) % 70), 14, 7); x.fill(); roundRect(x, 24, 82, 70 + ((i * 53) % 100), 14, 7); x.fill();   // title lines
+    x.fillStyle = '#7a7c83'; x.beginPath(); x.moveTo(30, 128); x.lineTo(39, 114); x.lineTo(48, 128); x.closePath(); x.fill(); roundRect(x, 58, 119, 26, 9, 4); x.fill(); roundRect(x, 96, 119, 44, 9, 4); x.fill();   // upvotes · comments
+    x.restore();
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+})();
+const N = coarse ? 150 : 230;
+const cardGeo = new THREE.PlaneGeometry(0.92, 0.575);
+const tiles = new Float32Array(N * 2); for (let i = 0; i < N; i++) { const k = (Math.random() * 8) | 0; tiles[i * 2] = (k % 4) * 0.25; tiles[i * 2 + 1] = Math.floor(k / 4) * 0.5; }
+cardGeo.setAttribute('aTile', new THREE.InstancedBufferAttribute(tiles, 2));
+const cardMat = new THREE.MeshStandardMaterial({ map: atlas, transparent: true, alphaTest: 0.4, roughness: 0.55, metalness: 0.05, envMapIntensity: 0.4, side: THREE.DoubleSide });
+cardMat.onBeforeCompile = sh => {
+  sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aTile;').replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\n vMapUv = uv * vec2(0.25, 0.5) + aTile;\n#endif');
+  // instance colours brighter than white glow (so matched cards bloom)
+  sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n#ifdef USE_INSTANCING_COLOR\n totalEmissiveRadiance += diffuseColor.rgb * max(0.0, length(vColor) - 1.3) * 1.1;\n#endif');
+};
+courier.mesh = new THREE.InstancedMesh(cardGeo, cardMat, 1); courier.mesh.frustumCulled = false; courier.mesh.visible = false; scene.add(courier.mesh);
+const cards = new THREE.InstancedMesh(cardGeo, cardMat, N); cards.instanceMatrix.setUsage(THREE.DynamicDrawUsage); cards.frustumCulled = false; scene.add(cards);
+const speed = 2.3, span = X.end - X.start + 10;
+const P = [];
+for (let i = 0; i < N; i++) P.push({ u: Math.random(), z: (Math.random() - 0.5) * 2.0, y: (Math.random() - 0.5) * 0.5, rot: (Math.random() - 0.5) * 0.5, matched: Math.random() < 0.2, stale: Math.random() < 0.3, seen: Math.random() < 0.3, wob: Math.random() * 6.28, spd: 0.85 + Math.random() * 0.3, px: -999 });
+const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), S = new THREE.Vector3(), V = new THREE.Vector3(), E = new THREE.Euler(), col = new THREE.Color();
+let lensFlash = 0, freshFlash = 0, seenFlash = 0;
+function updateCards(t) {
+  for (let i = 0; i < N; i++) {
+    const p = P[i];
+    const x = X.start - 6 + (((p.u + t * speed * p.spd / span) % 1) * span);
+    const crossed = e => p.px < e && x >= e && x - p.px < 1;   // crossed station e this frame (not a wrap)
+    let y = LANE_Y + p.y + Math.sin(t * 1.3 + p.wob) * 0.05, z = p.z, s = 1, rx = 0, ry = p.rot, rz = 0;
+    let c = C.dim, k = 0.95, op = 1;
+    if (x > X.lens) {
+      if (!p.matched) { const d = clamp((x - X.lens) / 5, 0, 1); y -= d * d * 3.0; op = 1 - d; s = 1 - d * 0.4; rx = d * 1.1; }
+      else {
+        const d = clamp((x - X.lens) / 1.6, 0, 1); y = lerp(y, ALERT_Y, smooth(d)); z = lerp(z, 0, smooth(d)); ry = lerp(p.rot, 0, d);
+        const hit = Math.max(0, 1 - Math.abs(x - X.lens - 0.3) / 0.7); s = 1 + hit * 0.3; c = C.mint; k = 1.9 + hit * 0.8;
+        if (crossed(X.lens)) { lensFlash = 1; sparks.fire(X.lens + 0.1, ALERT_Y * 0.6 + 0.3, 0, C.mint, 22, 1.8, 0.7, t); }
+        if (x > X.fresh && p.stale) { const e = clamp((x - X.fresh) / 3, 0, 1); c = C.amber; k = 1.9; y -= e * e * 3.6; rz = e * 1.5; op = 1 - e; s = 1 - e * 0.3; if (crossed(X.fresh)) { freshFlash = 1; sparks.fire(X.fresh, ALERT_Y, 0, C.amber, 16, 1.4, 0.8, t); } }
+        else if (x > X.seen && p.seen) { const e = clamp((x - X.seen) / 1.5, 0, 1); c = C.pink; k = 1.9; y = lerp(ALERT_Y, memG.position.y + 0.1, smooth(e)); z = lerp(0, memG.position.z, smooth(e)); s = 1 - e * 0.72; op = 1 - e * 0.5; ry = e * 1.5; if (crossed(X.seen)) { seenFlash = 1; sparks.fire(X.seen, ALERT_Y, 0, C.pink, 14, 1.2, 0.7, t); } if (e > 0.98 && p.px < x && !p.abs) { p.abs = true; absorbed++; memPulse = 1; memStack.forEach((m, j) => m.visible = j < (absorbed % 13)); } }
+        else if (x > X.seen + 0.9) { const e = clamp((x - (X.seen + 0.9)) / 1.3, 0, 1); s = 1 - smooth(e); op = 1 - e; c = C.mint; k = 1.9; }   // survivors merge into the line; a single courier carries each alert to Slack
+        else if (crossed(X.fresh)) sparks.fire(X.fresh, ALERT_Y, 0, C.mint, 6, 0.8, 0.5, t);
+        else if (crossed(X.seen)) sparks.fire(X.seen, ALERT_Y, 0, C.mint, 6, 0.8, 0.5, t);
+      }
+    }
+    if (x < p.px) p.abs = false;   // wrapped: reset
+    p.px = x;
+    const xx = Math.min(x, X.slack);
+    V.set(xx, y, z); E.set(rx, ry, rz); Q.setFromEuler(E); S.set(Math.max(0.001, s), Math.max(0.001, s), 1);
+    M.compose(V, Q, S); cards.setMatrixAt(i, M);
+    col.copy(c).multiplyScalar(k * (0.35 + 0.65 * op)); cards.setColorAt(i, col);
+  }
+  cards.instanceMatrix.needsUpdate = true; if (cards.instanceColor) cards.instanceColor.needsUpdate = true;
+}
+
+/* ---- camera stations (scroll-scrubbed) ---- */
+const KEY = {
+  hero:  { pos: [X.start + 5, 2.4, 13.5], look: [X.lens - 7.5, 1.3, 0], f: [X.clock, 2.5, 5] },
+  clock: { pos: [X.clock + 2.4, 3.4, 7.0], look: [X.clock, 1.7, -0.4], f: [X.clock + 1, 4, 5] },
+  lens:  { pos: [X.lens - 3.2, 2.3, 7.2], look: [X.lens + 0.4, 0.9, 0], f: [X.lens - 1.5, 3, 5] },
+  gates: { pos: [X.fresh + 1.4, 2.0, 9.4], look: [X.seen - 1.4, 0.4, 0], f: [X.fresh + 2, 3, 5] },
+  slack: { pos: [X.slack - 2.0, 2.7, 6.4], look: [X.slack, 1.95, 0], f: [X.slack - 2, 3.5, 5] },
+  end:   { pos: [X.end + 1, 4.6, 12.5], look: [X.slack - 4.5, 1.0, 0], f: [X.slack - 3, 3.5, 6] },
+};
+// each station holds while its caption is on screen, and travels in the gaps between captions
+const STATIONS = [
+  { p: 0.00, ...KEY.hero }, { p: 0.06, ...KEY.hero },
+  { p: 0.15, ...KEY.clock }, { p: 0.27, ...KEY.clock },
+  { p: 0.34, ...KEY.lens }, { p: 0.47, ...KEY.lens },
+  { p: 0.54, ...KEY.gates }, { p: 0.67, ...KEY.gates },
+  { p: 0.74, ...KEY.slack }, { p: 0.85, ...KEY.slack },
+  { p: 0.92, ...KEY.end }, { p: 1.00, ...KEY.end },
+];
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), tgtPos = new THREE.Vector3(), tgtLook = new THREE.Vector3(), tgtFocus = new THREE.Vector3();
+function cameraAt(p) {
+  let a = STATIONS[0], b = STATIONS[1];
+  for (let i = 0; i < STATIONS.length - 1; i++) if (p >= STATIONS[i].p) { a = STATIONS[i]; b = STATIONS[i + 1]; }
+  const t = smooth(clamp((p - a.p) / Math.max(1e-4, b.p - a.p), 0, 1));
+  tgtPos.set(lerp(a.pos[0], b.pos[0], t), lerp(a.pos[1], b.pos[1], t), lerp(a.pos[2], b.pos[2], t));
+  tgtLook.set(lerp(a.look[0], b.look[0], t), lerp(a.look[1], b.look[1], t), lerp(a.look[2], b.look[2], t));
+  tgtFocus.set(lerp(a.f[0], b.f[0], t), lerp(a.f[1], b.f[1], t), lerp(a.f[2], b.f[2], t));
+  if (W / H < 0.85) { tgtPos.z += 4.5; tgtPos.y += 0.4; tgtLook.y -= p < 0.1 ? 1.4 : 0.9; }   // portrait: step back, keep the machine above the caption
+}
+
+/* ---- pointer: slight parallax ---- */
+const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
+addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty = (e.clientY / H) * 2 - 1; }, { passive: true });
+function resize() { W = innerWidth; H = innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); camera.aspect = W / H; camera.fov = W / H < 0.85 ? 54 : 40; camera.updateProjectionMatrix(); water.getRenderTarget().setSize(Math.round(W * DPR * (coarse ? 0.3 : 0.4)), Math.round(H * DPR * (coarse ? 0.3 : 0.4))); fly.resize(); }
+addEventListener('resize', resize);
+
+/* ---- butterfly cursor (same as the main site) ---- */
+const fly = (() => {
+  const cv = document.getElementById('fly'); const c2 = cv.getContext('2d');
+  const Pm = { wingspan: 20, flapHz: 3, follow: 0.07, wander: 14 };
+  const st = { x: -100, y: -100, px: -100, py: -100, tx: -100, ty: -100, vx: 0, vy: 0, bank: 0, heading: 0, hover: 0, hoverT: 0, seen: false, mounted: false, dpr: 1, w: 0, h: 0 };
+  const mq = matchMedia('(hover: hover) and (pointer: fine)');
+  const onMove = e => { st.tx = e.clientX; st.ty = e.clientY; if (!st.seen) { st.x = st.px = st.tx; st.y = st.py = st.ty; st.seen = true; } st.hoverT = e.target && e.target.closest && e.target.closest('a, button, input') ? 1 : 0; };
+  const onLeave = () => { st.seen = false; };
+  function mount() { if (st.mounted || reduce || !mq.matches) return; st.mounted = true; cv.hidden = false; addEventListener('pointermove', onMove, { passive: true }); document.addEventListener('mouseleave', onLeave); resize(); }
+  function unmount() { if (!st.mounted) return; st.mounted = false; cv.hidden = true; removeEventListener('pointermove', onMove); document.removeEventListener('mouseleave', onLeave); st.seen = false; }
+  function resize() { st.dpr = Math.min(2, devicePixelRatio || 1); st.w = innerWidth; st.h = innerHeight; cv.width = Math.floor(st.w * st.dpr); cv.height = Math.floor(st.h * st.dpr); c2.setTransform(st.dpr, 0, 0, st.dpr, 0, 0); }
+  mq.addEventListener ? mq.addEventListener('change', () => mq.matches ? mount() : unmount()) : mq.addListener(() => mq.matches ? mount() : unmount());
+  function wing(side, sp, s) { c2.save(); c2.scale(side, 1); c2.beginPath(); c2.moveTo(0, -1 * s); c2.bezierCurveTo(6 * s * sp, -14 * s * sp, 22 * s * sp, -12 * s * sp, 20 * s * sp, -2 * s); c2.bezierCurveTo(19 * s * sp, 2 * s, 12 * s * sp, 3 * s, 7 * s * sp, 2 * s); c2.bezierCurveTo(14 * s * sp, 8 * s * sp, 10 * s * sp, 15 * s * sp, 3 * s * sp, 11 * s * sp); c2.bezierCurveTo(1 * s, 9 * s * sp, 0, 5 * s, 0, 3 * s); c2.closePath(); const g = c2.createLinearGradient(0, -14 * s, 0, 14 * s); g.addColorStop(0, '#FF8FD0'); g.addColorStop(1, '#5B9BF6'); c2.fillStyle = g; c2.globalAlpha = 0.92; c2.fill(); c2.globalAlpha = 0.5; c2.strokeStyle = 'rgba(255,255,255,.55)'; c2.lineWidth = 0.6; c2.stroke(); c2.restore(); }
+  function frame(t) {
+    if (!st.mounted) return; c2.clearRect(0, 0, st.w, st.h); if (!st.seen) return;
+    const wx = Math.sin(t * 0.00071) * Pm.wander * 0.7 + Math.sin(t * 0.00113 + 1.7) * Pm.wander * 0.3, wy = Math.cos(t * 0.00059) * Pm.wander * 0.6 + Math.sin(t * 0.00097 + 0.4) * Pm.wander * 0.4;
+    const gx = st.tx + wx, gy = st.ty + wy - 10; st.px = st.x; st.py = st.y; st.x += (gx - st.x) * Pm.follow; st.y += (gy - st.y) * Pm.follow; st.vx = st.x - st.px; st.vy = st.y - st.py;
+    const speed = Math.hypot(st.vx, st.vy);
+    if (speed > 0.15) { const h = Math.atan2(st.vy, st.vx) + Math.PI / 2; let dh = h - st.heading; dh = Math.atan2(Math.sin(dh), Math.cos(dh)); st.heading += dh * 0.12; st.bank = lerp(st.bank, clamp(dh * 2.2, -0.9, 0.9), 0.15); } else { st.bank = lerp(st.bank, 0, 0.08); st.heading = lerp(st.heading, 0, 0.03); }
+    st.hover = lerp(st.hover, st.hoverT, 0.12);
+    const flapHz = Pm.flapHz * (1 - st.hover * 0.45) + speed * 0.05, flap = 0.5 + 0.5 * Math.sin(t / 1000 * flapHz * Math.PI * 2), spread = 0.22 + 0.78 * flap, s = (Pm.wingspan / 20) * (1 + st.hover * 0.45);
+    c2.save(); c2.translate(st.x, st.y); c2.rotate(st.heading); c2.transform(Math.cos(st.bank * 0.6), 0, 0, 1, 0, 0);
+    c2.globalAlpha = 0.25; c2.fillStyle = '#5B9BF6'; c2.beginPath(); c2.ellipse(0, 2, 10 * s * spread + 2, 6 * s, 0, 0, 7); c2.filter = 'blur(4px)'; c2.fill(); c2.filter = 'none'; c2.globalAlpha = 1;
+    wing(1, spread, s); wing(-1, spread, s);
+    c2.fillStyle = '#f6f6f3'; c2.beginPath(); c2.ellipse(0, 2 * s, 1.3 * s, 7 * s, 0, 0, 7); c2.fill();
+    c2.strokeStyle = 'rgba(246,246,243,.8)'; c2.lineWidth = 0.8; c2.beginPath(); c2.moveTo(0, -5 * s); c2.quadraticCurveTo(-3 * s, -10 * s, -5 * s, -11 * s); c2.moveTo(0, -5 * s); c2.quadraticCurveTo(3 * s, -10 * s, 5 * s, -11 * s); c2.stroke(); c2.restore();
+  }
+  mount(); return { frame, resize, st };
+})();
+
+/* ---- frame loop ---- */
+let last = performance.now(), t0 = last, pulseT = 0, lensGlow = 0, freshGlow = 0, seenGlow = 0, slackPingT = 9;
+const billboards = [clockLabel, lensLabel, freshLabel, seenLabel, memLabel, slackLabel];
+function frame(now) {
+  const dt = Math.min(50, now - last) / 1000; last = now; const t = (now - t0) / 1000 * (reduce ? 0.4 : 1);
+  const prog = stage.prog;
+  cameraAt(prog);
+  // camera easing + parallax
+  ptr.x = lerp(ptr.x, ptr.tx, 0.05); ptr.y = lerp(ptr.y, ptr.ty, 0.05);
+  const kc = SNAP ? 1 : 1 - Math.exp(-dt * 4.2); camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc); focus.position.lerp(tgtFocus, kc * 0.9);
+  camera.position.set(camPos.x + ptr.x * 0.35, camPos.y - ptr.y * 0.25, camPos.z); camera.lookAt(camLook);
+  // the stream
+  updateCards(t);
+  sparks.m.uniforms.uTime.value = t; sky.update(t, dt); water.material.uniforms.uTime.value = t; mist.update(t);
+  flowTex.offset.x -= dt * 0.9;
+  // clock: the hand goes round every 4s; at the top it fires a sweep + beam
+  const period = 4, ph = (t % period) / period; handPivot.rotation.z = -ph * Math.PI * 2;
+  if (ph < 0.05 && pulseT > 0.5) { pulseT = 0; const sw = sweeps.find(s => s.t < 0) || sweeps[0]; sw.t = 0; sparks.fire(X.clock, 2.7, -0.5, C.blue, 18, 1.3, 0.6, t); }
+  pulseT += dt;
+  sweeps.forEach(sw => { if (sw.t >= 0) { sw.t += dt; const r = 0.3 + sw.t * 6; sw.m.scale.setScalar(r); sw.m.material.opacity = Math.max(0, 0.7 * (1 - sw.t / 2.4)); if (sw.t > 2.4) sw.t = -1; } else sw.m.material.opacity = 0; });
+  beam.material.opacity = Math.max(0, 0.28 * (1 - pulseT / 0.7));
+  hand.material.emissiveIntensity = 1.4 + Math.max(0, 2.5 * (1 - pulseT / 0.5));
+  // lens: watch tiles orbit slowly and face the camera; the halo flares when a match passes
+  watchTiles.forEach(tl => { const a = tl.userData.a + t * 0.22; tl.position.set(0.14, Math.sin(a) * 1.55, Math.cos(a) * 1.55); tl.lookAt(camera.position); });
+  lensGlow = lerp(lensGlow, lensFlash, 0.2); lensFlash = 0; lensHalo.material.emissiveIntensity = 1.0 + lensGlow * 4; lensDisc.material.opacity = 0.4 + lensGlow * 0.3;
+  // gates: dashed rings spin, flare on a drop
+  freshGlow = lerp(freshGlow, freshFlash, 0.2); freshFlash = 0; seenGlow = lerp(seenGlow, seenFlash, 0.2); seenFlash = 0;
+  freshG.userData.dashTex.offset.x += dt * 0.35; seenG.userData.dashTex.offset.x -= dt * 0.35;
+  freshG.userData.dash.material.emissiveIntensity = 1.6 + freshGlow * 3; seenG.userData.dash.material.emissiveIntensity = 1.6 + seenGlow * 3;
+  // memory block ripples when it swallows a repeat
+  memPulse = lerp(memPulse, 0, 0.08); memBox.scale.setScalar(1 + memPulse * 0.08); memBox.material.opacity = 0.22 + memPulse * 0.3; stackMat.emissiveIntensity = 0.25 + memPulse * 1.2;
+  // the Slack window: assembles as the camera arrives; then one courier card brings a new alert every 3 s (looping through five), with a ping + glow
+  const want = clamp((prog - 0.72) / 0.14, 0, 1); slackP = lerp(slackP, want, 1 - Math.exp(-dt * 5));
+  // one courier card at a time: departs the seen gate every 3 s, rides the line, and the alert lands the moment it reaches the window
+  const CYCLE = 3, RIDE = 1.9;
+  if (want > 0.3 && courier.t0 < 0 && t - slackState.lastAt > (slackState.shown.length ? CYCLE - RIDE : 0.6)) { courier.t0 = t; }
+  if (courier.t0 >= 0) {
+    const u = clamp((t - courier.t0) / RIDE, 0, 1), eu = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    const cx = lerp(X.seen + 0.4, X.slack - 0.55, eu), cy = ALERT_Y + Math.sin(u * Math.PI) * 0.35 + 0.3 * smooth(clamp((u - 0.7) / 0.3, 0, 1)), sc = 1 - smooth(clamp((u - 0.86) / 0.14, 0, 1));
+    V.set(cx, cy, 0.05); E.set(0, 0, 0); Q.setFromEuler(E); S.set(Math.max(0.001, sc), Math.max(0.001, sc), 1); M.compose(V, Q, S); courier.mesh.setMatrixAt(0, M); courier.mesh.instanceMatrix.needsUpdate = true;
+    col.copy(C.mint).multiplyScalar(2.0); courier.mesh.setColorAt(0, col); courier.mesh.instanceColor.needsUpdate = true; courier.mesh.visible = true;
+    if (u >= 1) { courier.t0 = -1; courier.mesh.visible = false; slackState.lastAt = t; slackState.shown.push({ a: ALERTS[slackState.next], born: t }); slackState.next = (slackState.next + 1) % ALERTS.length; if (slackState.shown.length > 4) slackState.shown.shift(); slackPulse = 1; slackState.dirty = true; sparks.fire(X.slack - 0.7, ALERT_Y + 0.5, 0.2, C.mint, 16, 1.2, 0.6, t); }
+  }
+  if (want < 0.1 && (slackState.shown.length || courier.t0 >= 0)) { slackState.shown.length = 0; slackState.next = 0; slackState.dirty = true; courier.t0 = -1; courier.mesh.visible = false; }
+  { const newest = slackState.shown[slackState.shown.length - 1]; const animating = newest && t - newest.born < 2.4; const assembling = Math.abs(slackP - want) > 0.002 || (slackP > 0.02 && slackP < 0.98); if (want > 0 && (animating || assembling || slackState.dirty)) { drawSlack(slackP, t); slackState.dirty = false; } }
+  slackG.position.y = ALERT_Y + 0.35 + Math.sin(t * 0.9) * 0.04;
+  if (slackPulse) { slackPingT = 0; slackPulse = 0; }
+  slackPingT += dt; const pk = clamp(slackPingT / 0.9, 0, 1); slackPing.scale.setScalar(1 + pk * 3); slackPing.material.opacity = (1 - pk) * 0.8 * want; slackDot.scale.setScalar(want * (1 + 0.6 * Math.max(0, 1 - pk * 2)));
+  slackBack.material.emissive = slackBack.material.emissive || new THREE.Color(0xa6dfd3); slackBack.material.emissive.setHex(0xa6dfd3); slackBack.material.emissiveIntensity = 0.14 * Math.max(0, 1 - pk * 1.5) * want;
+  billboards.forEach(l => l.lookAt(camera.position));
+  composer.render();
+  fly.frame(now);
+  requestAnimationFrame(frame);
+}
+resize(); cameraAt(stage.prog); camPos.copy(tgtPos); camLook.copy(tgtLook); focus.position.copy(tgtFocus);
+requestAnimationFrame(frame);
+</script>
