@@ -1,0 +1,1290 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notion to Webflow Publisher</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Archivo:wdth,wght@62..125,300..700&display=swap" rel="stylesheet">
+<style>
+/* The Press. One automation, shown as a machine in a daylit paper studio: a fixed 3D stage on a drafting table.
+   Scrolling moves the camera from station to station while the press keeps a mechanical beat. Below it, the runbook. */
+:root{
+  --bg:#efe9df; --ink:#1c1a17; --ink-soft:#6b6358; --ink-mid:#3d3832; --pill:#1c1a17; --pill-ink:#f4efe7; --line:#dcd2c2; --card:#f7f3eb;
+  --blue:#4353ff; --coral:#e8553d; --brass:#b8924a; --graphite:#2d2c2b;
+  --font:'Elms Sans','Archivo','Helvetica Neue',Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a,button{color:inherit;font:inherit}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;transition:filter .9s ease}
+body.hush #gl{filter:blur(9px) saturate(.85) brightness(1.04)}
+.hushveil{position:fixed;inset:0;z-index:2;pointer-events:none;background:rgba(239,233,223,.42);opacity:0;transition:opacity .9s ease}
+body.hush .hushveil{opacity:1}
+.scrim{position:fixed;left:0;right:0;bottom:0;height:46%;z-index:2;pointer-events:none;background:linear-gradient(to top,rgba(239,233,223,.92),rgba(239,233,223,.5) 45%,rgba(239,233,223,0))}
+.vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(60,40,20,0) 58%,rgba(60,40,20,.16) 100%)}
+.grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.10;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .16 0 0 0 0 .12 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 1.6s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+
+.ui{position:fixed;inset:0;z-index:4;pointer-events:none}
+.ui > *{pointer-events:auto}
+.ui.off > :not(.mark):not(.actions){opacity:0!important;pointer-events:none!important}
+.mark{position:absolute;top:calc(28px + env(safe-area-inset-top,0px));left:max(28px,env(safe-area-inset-left,0px));font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:14px}
+.mark svg{display:block}
+.actions{position:absolute;top:calc(22px + env(safe-area-inset-top,0px));right:max(24px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center}
+.pill{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 26px;border-radius:999px;background:var(--pill);color:var(--pill-ink);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transition:transform .25s cubic-bezier(.2,.7,.2,1),background .25s;text-decoration:none;white-space:nowrap}
+.pill:hover{transform:translateY(-2px);background:#33302b}
+.pill:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.pill .dot{width:5px;height:5px;border-radius:999px;background:var(--pill-ink)}
+.pill.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #cfc4b2}
+.pill.ghost:hover{background:rgba(28,26,23,.05)}
+
+/* captions: one per station, pinned bottom-left, swapped by scroll */
+.cap{position:absolute;left:max(28px,env(safe-area-inset-left,0px));bottom:calc(36px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100vw - 56px));opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;pointer-events:none}
+.cap.on{opacity:1;transform:none;pointer-events:auto}
+.cap em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.cap em b{font-weight:600;color:var(--ink)}
+.cap h2{margin:0 0 10px;font-weight:500;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1.05}
+.cap p{margin:0;font-size:16px;line-height:1.5;color:var(--ink-mid);max-width:44ch}
+.cap .key{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.cap .key i{font-style:normal;display:inline-flex;align-items:center;gap:7px}
+.cap .key i::before{content:'';width:8px;height:8px;border-radius:2px;background:var(--c,#000)}
+
+.hero-title{position:absolute;left:max(28px,env(safe-area-inset-left,0px));right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);pointer-events:none;transition:opacity .5s ease}
+.hero-title em{display:block;font-style:normal;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
+.hero-title h1{margin:0;font-weight:500;font-size:clamp(44px,7.6vw,128px);letter-spacing:-.035em;line-height:.92;max-width:9ch}
+.hero-title p{margin:22px 0 0;font-size:clamp(16px,1.4vw,20px);color:var(--ink-mid);max-width:34ch}
+.hero-title .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.hero-title .row > *{pointer-events:auto}
+
+.progress{position:absolute;right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px}
+.progress i{width:6px;height:6px;border-radius:999px;background:#cbbfad;transition:background .3s,transform .3s}
+.progress i.on{background:var(--ink);transform:scale(1.4)}
+
+.end{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:calc(112px + env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(28px,env(safe-area-inset-left,0px));opacity:0;transition:opacity .6s ease;pointer-events:none}
+.end.on{opacity:1;pointer-events:auto}
+.end .big{margin:0;font-weight:500;font-size:clamp(34px,min(6.2vw,9vh),100px);letter-spacing:-.035em;line-height:.95;max-width:13ch}
+.end .sub{margin:22px 0 0;font-size:clamp(17px,1.5vw,22px);color:var(--ink-mid);max-width:40ch}
+.end .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;align-items:center}
+.end .next{margin-top:48px;font-size:14px;color:var(--ink-soft)}
+.end .next a{color:var(--ink);text-decoration:none;font-weight:500}
+
+.scroll{position:absolute;right:max(28px,env(safe-area-inset-right,0px));bottom:calc(32px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);transition:opacity .6s ease}
+.scroll i{display:block;width:44px;height:2px;background:var(--ink-soft);animation:line 2.2s cubic-bezier(.7,0,.3,1) infinite}
+@keyframes line{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+
+#fly{position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;display:block}
+/* the intro: a bottle of ink waits to be clicked; the page doesn't scroll until Inky has said hi */
+html.intro,html.intro body{overflow:hidden}
+html.intro .ui > :not(.mark):not(.actions){opacity:0!important;pointer-events:none!important}
+.introui{position:fixed;left:0;right:0;bottom:calc(48px + env(safe-area-inset-bottom,0px));z-index:5;display:flex;flex-direction:column;align-items:center;gap:14px;opacity:0;pointer-events:none;transition:opacity .5s ease}
+html.intro .introui{opacity:1;pointer-events:auto}
+html.intro.spilled .introui{opacity:0;pointer-events:none}
+.inkbtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:12px;height:52px;padding:0 26px;border-radius:999px;background:var(--pill);color:var(--pill-ink);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transition:transform .25s cubic-bezier(.2,.7,.2,1)}
+.inkbtn:hover{transform:translateY(-2px)}
+.inkbtn:focus-visible,.skip:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.inkbtn .drop{width:11px;height:15px;background:var(--coral);border-radius:50% 50% 50% 50%/62% 62% 38% 38%;transform:rotate(180deg);animation:drip 1.6s ease-in-out infinite}
+@keyframes drip{0%,100%{transform:rotate(180deg) translateY(0)}50%{transform:rotate(180deg) translateY(-3px)}}
+.skip{all:unset;cursor:pointer;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);padding:6px 10px}
+.bubble{position:fixed;left:-200px;top:-200px;z-index:5;pointer-events:none;background:#fffdf8;color:var(--ink);font-weight:600;font-size:18px;line-height:1.2;padding:12px 18px;border-radius:18px;box-shadow:0 14px 30px -14px rgba(60,40,20,.45),0 0 0 1px rgba(60,40,20,.08);opacity:0;transform:translate(-50%,-100%) translateY(6px);transition:opacity .3s ease,transform .3s ease;white-space:nowrap}
+.bubble.on{opacity:1;transform:translate(-50%,-100%)}
+.wipe{position:fixed;inset:0;z-index:3;pointer-events:none;background:var(--coral);visibility:hidden;clip-path:circle(0 at 50% 50%)}
+.bubble::after{content:'';position:absolute;left:50%;bottom:-7px;width:14px;height:14px;background:#fffdf8;transform:translateX(-50%) rotate(45deg);box-shadow:3px 3px 0 -2px rgba(60,40,20,.06)}
+.runway{position:relative;z-index:0;height:960svh;pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------------- the runbook ---------------- */
+.doc{position:relative;z-index:3;background:var(--bg);padding:0 0 120px}
+.doc::before{content:'';position:absolute;left:0;right:0;top:-220px;height:220px;background:linear-gradient(to bottom,rgba(239,233,223,0),var(--bg));pointer-events:none}
+.doc-in{width:min(1240px,calc(100% - 56px));margin:0 auto}
+.doc-head{padding:140px 0 56px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:end}
+.doc-head em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:18px}
+.doc-head h2{margin:0;font-weight:500;font-size:clamp(34px,4.6vw,68px);letter-spacing:-.03em;line-height:1}
+.doc-head p{margin:20px 0 0;font-size:18px;line-height:1.5;color:var(--ink-mid);max-width:52ch}
+.facts{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.facts div{background:var(--card);padding:18px 20px}
+.facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.facts dd{margin:0;font-size:16px;font-weight:500}
+.doc-grid{display:grid;grid-template-columns:220px 1fr;gap:64px;padding-top:56px}
+.toc{position:sticky;top:120px;align-self:start;display:flex;flex-direction:column;gap:4px;font-size:13px;letter-spacing:.04em}
+.toc a{text-decoration:none;color:var(--ink-soft);padding:8px 0;display:flex;gap:12px;transition:color .25s}
+.toc a span{font-variant-numeric:tabular-nums;color:#b3a794}
+.toc a:hover,.toc a.on{color:var(--ink)}
+.toc .foot{margin-top:28px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:12px;line-height:1.5}
+article{min-width:0}
+.sec{padding:0 0 72px;margin-bottom:72px;border-bottom:1px solid var(--line)}
+.sec:last-child{border:0;margin:0;padding:0}
+.sec h3{margin:0 0 26px;font-weight:500;font-size:clamp(24px,2.4vw,34px);letter-spacing:-.02em;display:flex;gap:18px;align-items:baseline}
+.sec h3 span{font-size:13px;letter-spacing:.1em;color:var(--ink-soft);font-weight:500}
+.sec p{margin:0 0 16px;font-size:17px;line-height:1.6;color:var(--ink-mid);max-width:64ch}
+.sec p:last-child{margin-bottom:0}
+.lede{font-size:clamp(20px,1.8vw,26px)!important;line-height:1.35!important;color:var(--ink)!important;letter-spacing:-.01em;max-width:30ch!important}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.steps li{background:var(--card);display:grid;grid-template-columns:72px 1fr;gap:20px;padding:24px 26px 26px 22px;align-items:start}
+.steps .n{font-size:13px;letter-spacing:.08em;color:var(--ink-soft);font-variant-numeric:tabular-nums;padding-top:4px;display:flex;align-items:center;gap:10px}
+.steps .n::before{content:'';width:8px;height:8px;border-radius:2px;background:var(--c,#555)}
+.steps h4{margin:0 0 6px;font-weight:500;font-size:18px;letter-spacing:-.01em}
+.steps p{font-size:15px!important;color:#5c554b!important;margin:0!important;max-width:60ch!important}
+.steps .node{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:#efe8dc;border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+.rules{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.rules li{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.rules b{display:block;font-weight:500;font-size:17px;margin-bottom:8px}
+.rules span{font-size:15px;color:#5c554b;line-height:1.5;display:block}
+.map{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:18px;overflow:hidden;font-size:15px;background:var(--card)}
+.map th,.map td{text-align:left;padding:14px 20px;border-bottom:1px solid var(--line)}
+.map tr:last-child td{border-bottom:0}
+.map th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;background:#f1ebe0}
+.map td code{font-family:var(--mono);font-size:13px;color:var(--coral)}
+.map td.to code{color:var(--blue)}
+.note{font-size:14px!important;color:var(--ink-soft)!important;margin-top:16px!important}
+.item{margin:28px 0 0;background:#fffdf9;border:1px solid var(--line);border-radius:20px;max-width:660px;overflow:hidden;box-shadow:0 18px 40px -28px rgba(60,40,20,.35)}
+.item .bar{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.item .bar b{font-weight:600;color:var(--ink);letter-spacing:.02em;text-transform:none;font-size:15px}
+.item .tag{background:var(--blue);color:#fff;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:600;letter-spacing:.1em}
+.item dl{margin:0;display:grid;grid-template-columns:150px 1fr}
+.item dt,.item dd{margin:0;padding:12px 22px;border-bottom:1px solid #efe7da;font-size:14px}
+.item dt{color:var(--ink-soft)}
+.item dd{color:var(--ink);min-width:0;overflow-wrap:anywhere}
+.item dd code{font-family:var(--mono);font-size:12.5px;color:var(--ink-mid)}
+.item dd i{font-style:normal;display:inline-block;border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:12px;color:var(--ink-soft);margin-left:6px}
+.item .thumb{display:inline-block;width:64px;height:36px;border-radius:6px;background:linear-gradient(135deg,#d8cdbb,#efe5d4);vertical-align:middle}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:8px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 22px}
+.stats b{display:block;font-weight:500;font-size:clamp(30px,3vw,44px);letter-spacing:-.03em;line-height:1;margin-bottom:10px}
+.stats span{font-size:14px;color:var(--ink-soft)}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pills i{font-style:normal;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border-radius:999px;background:#e6ddcf}
+.doc-foot{margin-top:96px;padding-top:40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.doc-foot .nm{font-size:14px;color:var(--ink-soft)}
+.doc-foot .nm a{color:var(--ink);text-decoration:none;font-weight:500}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:980px){
+  .doc-head{grid-template-columns:1fr;gap:32px;padding-top:110px}
+  .doc-grid{grid-template-columns:1fr;gap:0}
+  .toc{display:none}
+}
+@media (max-width:760px){
+  .cap{bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+  .cap h2{font-size:24px}.cap p{font-size:15px}
+  .hero-title{top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:none}
+  .hero-title h1{font-size:12.5vw}
+  .progress{display:none}
+  .scroll{display:none}
+  .mark span{display:none}
+  .doc-in{width:calc(100% - 40px)}
+  .steps li{grid-template-columns:1fr;gap:10px;padding:20px}
+  .facts{grid-template-columns:1fr 1fr}
+  .map th,.map td{padding:12px 14px}
+  .item dl{grid-template-columns:110px 1fr}
+  .item dt,.item dd{padding:11px 14px}
+}
+@media (prefers-reduced-motion:reduce){.inkbtn .drop{animation:none}#gl,.hushveil{transition:none}.scroll i,.grain{animation:none}.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+</style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="scrim" aria-hidden="true"></div>
+<div class="hushveil" aria-hidden="true"></div>
+
+<div class="ui" id="ui">
+  <a class="mark" href="../index.html#from-notion-to-webflow" id="mark" aria-label="Back to the projects forest"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3 5 9l6 6"/></svg><span>Vasant Suraj</span></a>
+  <div class="actions"><a class="pill" href="mailto:vasantsuraj02@gmail.com">Let's talk <span class="dot" aria-hidden="true"></span></a></div>
+
+  <div class="hero-title" id="heroTitle">
+    <em>Automation · Publishing</em>
+    <h1>Notion to Webflow Publisher</h1>
+    <p>Writers paste the post into Notion and flip two keys. A complete Webflow draft comes out the other end, ready for review.</p>
+    <div class="row"><a class="pill ghost" href="#doc">Read the runbook</a></div>
+  </div>
+
+  <div class="cap" data-i="1"><em><b>01</b> · Approve</em><h2>Two keys, one lever.</h2><p>The writer pastes the post into the Notion board once. The press only moves when it is set to Approved to upload and has not been drafted to Webflow yet. Both, or nothing happens.</p><div class="key"><i style="--c:#4353ff">approved to upload</i><i style="--c:#2d2c2b">drafted to webflow · no</i></div></div>
+  <div class="cap" data-i="2"><em><b>02</b> · Convert</em><h2>Notion blocks in, clean HTML out.</h2><p>The page body is read block by block. Each heading, paragraph, list, quote, code block and image is pressed into the HTML that Webflow's rich-text field expects.</p><div class="key"><i style="--c:#c9bfae">notion block</i><i style="--c:#e8553d">html</i></div></div>
+  <div class="cap" data-i="3"><em><b>03</b> · Map</em><h2>Author and category, matched to Webflow.</h2><p>The Author and Category selects are matched to their Webflow reference items. A name with no match stops the run with a reason, instead of a broken post.</p><div class="key"><i style="--c:#e8553d">from notion</i><i style="--c:#4353ff">matched in webflow</i></div></div>
+  <div class="cap" data-i="4"><em><b>04</b> · Bind and file</em><h2>Every block, gathered into one Webflow draft.</h2><p>The blocks are bound in order with the slug, meta title, meta description and thumbnail clipped on, then filed into the Webflow CMS. Every field filled, saved as a draft, never published by the machine.</p><div class="key"><i style="--c:#4353ff">webflow cms</i><i style="--c:#e8553d">draft</i></div></div>
+  <div class="cap" data-i="5"><em><b>05</b> · Write back</em><h2>Notion is told, and a human reviews.</h2><p>Status becomes pushed to webflow and Drafted to Webflow flips to Yes, so the post can never run twice. Slack tells the reviewer, who reviews the draft in Webflow and publishes.</p></div>
+
+  <div class="end" id="end">
+    <p class="big">From the better part of an hour per post to a Webflow draft in minutes.</p>
+    <p class="sub">Writers never need Webflow access. Reviewers only review.</p>
+    <div class="row"><a class="pill" href="#doc">Read the runbook <span class="dot" aria-hidden="true"></span></a><span class="pill ghost">n8n</span><span class="pill ghost">Notion</span><span class="pill ghost">Webflow CMS</span><span class="pill ghost">Slack</span></div>
+    <p class="next">Next automation → <a href="#" id="nextLink">SEO Pre-Live Checks</a></p>
+  </div>
+
+  <div class="progress" id="progress" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="scroll" id="scrollHint" aria-hidden="true">Scroll to run it <i></i></div>
+</div>
+
+<div class="introui" id="introUi"><button class="inkbtn" id="inkBtn" type="button"><span class="drop" aria-hidden="true"></span>Click the ink bottle</button><button class="skip" id="skipIntro" type="button">Skip intro</button></div>
+<div class="bubble" id="bubble" aria-live="polite"></div>
+<div class="wipe" id="wipe" aria-hidden="true"></div>
+<canvas id="fly" aria-hidden="true"></canvas>
+<div class="runway" id="runway" aria-hidden="true"></div>
+<h1 class="sr">Notion to Webflow Publisher. When an editor approves a finished blog post in Notion, n8n converts the page to HTML, maps the author and category to Webflow references, creates a Webflow CMS draft with every SEO field, updates Notion and confirms in Slack.</h1>
+
+<!-- ============================ RUNBOOK ============================ -->
+<section class="doc" id="doc">
+  <div class="doc-in">
+    <header class="doc-head">
+      <div class="rv"><em>Runbook</em><h2>How the Notion to Webflow Publisher works</h2><p>The full picture of the press above: writers work in Notion, the machine builds the Webflow draft, and a reviewer only reviews.</p></div>
+      <dl class="facts rv">
+        <div><dt>Trigger</dt><dd>Notion status change</dd></div>
+        <div><dt>Runs</dt><dd>On event</dd></div>
+        <div><dt>Stack</dt><dd>n8n · Notion · Webflow · Slack</dd></div>
+        <div><dt>Webflow access</dt><dd>Reviewers only</dd></div>
+      </dl>
+    </header>
+
+    <div class="doc-grid">
+      <nav class="toc" id="toc" aria-label="Runbook sections">
+        <a href="#d-problem"><span>01</span>Problem</a>
+        <a href="#d-flow"><span>02</span>Flow</a>
+        <a href="#d-map"><span>03</span>Mapping</a>
+        <a href="#d-guard"><span>04</span>Guardrails</a>
+        <a href="#d-result"><span>05</span>The result</a>
+        <a href="#d-outcome"><span>06</span>Outcome</a>
+        <a href="#d-ops"><span>07</span>Operating it</a>
+        <div class="foot">Database names, channel names, credentials and internal identifiers are left out on purpose.</div>
+      </nav>
+
+      <article>
+        <section class="sec rv" id="d-problem">
+          <h3><span>01</span>Problem</h3>
+          <p class="lede">A blog post was copied and pasted through too many places before it reached Webflow.</p>
+          <p>Writers moved each draft through several tools to edit out the AI feel, then rebuilt it in the Webflow CMS by hand: pasting the body, fixing the formatting, and re-entering the slug, meta title, meta description, thumbnail, author and category. That took the better part of an hour per post, fields were often missed, and every writer needed Webflow access and had to learn how its CMS works.</p>
+          <p>The brief: writers paste the post once, into a Notion board, and flip its status. The machine builds the Webflow draft. Writers never need Webflow; reviewers only review.</p>
+        </section>
+
+        <section class="sec rv" id="d-flow">
+          <h3><span>02</span>Flow</h3>
+          <p>One n8n workflow, started by a change in Notion. Each run handles one post.</p>
+          <ol class="steps">
+            <li><div class="n" style="--c:#4353ff">01</div><div><h4>Wait for approval</h4><p>n8n watches the blog upload database in Notion. A run starts only when Status is Approved to upload and Drafted to Webflow is No. Both must hold.</p><span class="node">Notion Trigger · IF</span></div></li>
+            <li><div class="n" style="--c:#e8553d">02</div><div><h4>Convert the body</h4><p>The page body is read block by block and converted to HTML for the Webflow rich-text field.</p><span class="node">Notion · Code</span></div></li>
+            <li><div class="n" style="--c:#b8924a">03</div><div><h4>Map the references</h4><p>The Author and Category selects are matched to their Webflow reference items, so the post links to real CMS entries instead of plain text.</p><span class="node">Webflow · Code</span></div></li>
+            <li><div class="n" style="--c:#4353ff">04</div><div><h4>Create the draft</h4><p>A blog post is created in the Webflow CMS as a draft with name, slug, meta title, meta description, thumbnail, author and category. The SEO values are fields in Notion, carried across as written.</p><span class="node">Webflow</span></div></li>
+            <li><div class="n" style="--c:#2d2c2b">05</div><div><h4>Write back to Notion</h4><p>Status becomes pushed to webflow and Drafted to Webflow becomes Yes, which closes the trigger for this post.</p><span class="node">Notion</span></div></li>
+            <li><div class="n" style="--c:#2d2c2b">06</div><div><h4>Hand over for review</h4><p>A confirmation with the draft link goes to the drafting channel. The reviewer opens the draft in Webflow, checks it and publishes. Writers never touch Webflow.</p><span class="node">Slack</span></div></li>
+          </ol>
+        </section>
+
+        <section class="sec rv" id="d-map">
+          <h3><span>03</span>Mapping</h3>
+          <p>What goes where. The body becomes rich text; every other field is carried from a Notion property.</p>
+          <table class="map">
+            <thead><tr><th>From Notion</th><th>Into Webflow</th></tr></thead>
+            <tbody>
+              <tr><td>Heading blocks</td><td class="to"><code>&lt;h2&gt;</code> <code>&lt;h3&gt;</code></td></tr>
+              <tr><td>Paragraphs</td><td class="to"><code>&lt;p&gt;</code></td></tr>
+              <tr><td>Bulleted and numbered lists</td><td class="to"><code>&lt;ul&gt;</code> <code>&lt;ol&gt;</code> <code>&lt;li&gt;</code></td></tr>
+              <tr><td>Quotes</td><td class="to"><code>&lt;blockquote&gt;</code></td></tr>
+              <tr><td>Code blocks</td><td class="to"><code>&lt;pre&gt;</code></td></tr>
+              <tr><td>Images</td><td class="to"><code>&lt;img&gt;</code></td></tr>
+              <tr><td>Author select</td><td class="to">Author reference item</td></tr>
+              <tr><td>Category select</td><td class="to">Category reference item</td></tr>
+              <tr><td>Slug, meta title, meta description, thumbnail</td><td class="to">The matching CMS fields, as written</td></tr>
+            </tbody>
+          </table>
+          <p class="note">The block rows show the usual mapping; the exact conversion lives in the workflow.</p>
+        </section>
+
+        <section class="sec rv" id="d-guard">
+          <h3><span>04</span>Guardrails</h3>
+          <ul class="rules">
+            <li><b style="color:var(--blue)">Two-flag trigger</b><span>A run needs Approved to upload and Drafted to Webflow = No. The second flag flips to Yes after the push, so a drafted post can never be pushed again by accident.</span></li>
+            <li><b>Draft, never live</b><span>Every post lands as a draft. A person reviews it from the Slack link and decides when it goes out.</span></li>
+            <li><b style="color:var(--coral)">Missing thumbnail</b><span>One of the common failures. Add the image in Notion and approve the post again.</span></li>
+            <li><b style="color:var(--coral)">Unmapped author or category</b><span>A select with no matching Webflow reference item stops the run. Create the reference in Webflow first.</span></li>
+            <li><b style="color:var(--coral)">Slug already used</b><span>Webflow will not take a slug that exists. Change it in Notion and approve again.</span></li>
+            <li><b>Very long posts</b><span>Posts of roughly 20 pages or more can hang the push, so they go to manual upload.</span></li>
+          </ul>
+        </section>
+
+        <section class="sec rv" id="d-result">
+          <h3><span>05</span>The result</h3>
+          <p>One CMS item per approved post, complete on arrival. Example values are illustrative.</p>
+          <div class="item" aria-label="Example Webflow CMS draft">
+            <div class="bar"><b>Blog posts · new item</b><span class="tag">DRAFT</span></div>
+            <dl>
+              <dt>Name</dt><dd>How to plan a content calendar</dd>
+              <dt>Slug</dt><dd><code>plan-a-content-calendar</code></dd>
+              <dt>Meta title</dt><dd>How to plan a content calendar that holds</dd>
+              <dt>Meta description</dt><dd>A simple way to plan a quarter of posts without losing the thread.</dd>
+              <dt>Thumbnail</dt><dd><span class="thumb" aria-hidden="true"></span></dd>
+              <dt>Author</dt><dd>Author name <i>reference</i></dd>
+              <dt>Category</dt><dd>Guides <i>reference</i></dd>
+              <dt>Post body</dt><dd><code>&lt;h2&gt;Start with the goal&lt;/h2&gt;&lt;p&gt;…&lt;/p&gt;</code></dd>
+            </dl>
+          </div>
+        </section>
+
+        <section class="sec rv" id="d-outcome">
+          <h3><span>06</span>Outcome</h3>
+          <div class="stats">
+            <div><b>Minutes</b><span>from approval to a complete Webflow draft, instead of the better part of an hour</span></div>
+            <div><b>Once</b><span>each post is pushed, guaranteed by the two-flag trigger</span></div>
+            <div><b>0</b><span>Webflow logins or CMS training needed by writers</span></div>
+          </div>
+          <p style="margin-top:26px">Writers paste once and stay in Notion. Every field arrives filled, and the reviewer hears about it in Slack and only has to review the draft in Webflow.</p>
+        </section>
+
+        <section class="sec rv" id="d-ops">
+          <h3><span>07</span>Operating it</h3>
+          <ul class="rules">
+            <li><b>Push a post</b><span>Paste the post into the Notion board and set Status to Approved to upload. The draft and the Slack link arrive a few minutes later.</span></li>
+            <li><b>Add an author or category</b><span>Create the matching reference item in Webflow, named exactly like the Notion select.</span></li>
+            <li><b>Fix a failed run</b><span>Correct the thumbnail, reference or slug in Notion, then approve the post again.</span></li>
+            <li><b>Very long posts</b><span>Anything around 20 pages or more is uploaded by hand.</span></li>
+          </ul>
+          <div class="pills" style="margin-top:28px"><i>n8n</i><i>Notion Trigger</i><i>IF</i><i>Code</i><i>Webflow CMS</i><i>Notion</i><i>Slack</i></div>
+        </section>
+      </article>
+    </div>
+
+    <footer class="doc-foot">
+      <a class="pill ghost" href="#top">Back to the press</a>
+      <p class="nm">Next automation → <a href="#" id="nextLink2">SEO Pre-Live Checks</a></p>
+    </footer>
+  </div>
+</section>
+
+<script>
+/* UI layer: scroll → station. Runs before the 3D module so the page reads even if WebGL is unavailable. */
+(() => {
+  const q = location.search, root = document.documentElement;
+  if (!/[?&](snap|nointro)\b/.test(q) || /[?&]intro\b/.test(q)) { root.classList.add('intro'); if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; scrollTo(0, 0); }
+  setTimeout(() => { if (!window.__pressReady) root.classList.remove('intro', 'spilled'); }, 8000);
+  // during the intro the page stays at the top, even if the browser (or a preview) tries to restore an old scroll position
+  const toTop = () => { if (scrollY) scrollTo({ top: 0, behavior: 'instant' }); };
+  addEventListener('scroll', () => { if (root.classList.contains('intro')) toTop(); }, { passive: true });
+  addEventListener('load', () => { if (root.classList.contains('intro')) toTop(); });
+  window.__endIntro = () => { toTop(); root.classList.remove('intro', 'spilled'); onScroll(); };
+  const caps = [...document.querySelectorAll('.cap')], dots = [...document.querySelectorAll('.progress i')];
+  const runway = document.getElementById('runway'), ui = document.getElementById('ui'), hero = document.getElementById('heroTitle'), hint = document.getElementById('scrollHint'), end = document.getElementById('end');
+  const S = window.__stage = { prog: 0, station: 0, doc: 0 };
+  // stations: 0 hero · 1 approve · 2 convert · 3 map · 4 draft · 5 write back · 6 receipt
+  const CUT = [0.08, 0.325, 0.475, 0.615, 0.765, 0.89];
+  function onScroll() {
+    const H = innerHeight, max = Math.max(1, runway.offsetHeight - H);
+    const pr = Math.max(0, Math.min(1, scrollY / max));
+    let st = 0; while (st < CUT.length && pr >= CUT[st]) st++;
+    S.prog = pr; S.station = st; S.doc = Math.max(0, Math.min(1, (scrollY - (runway.offsetHeight - H * 0.9)) / (H * 0.5)));
+    caps.forEach(c => c.classList.toggle('on', Number(c.dataset.i) === st));
+    dots.forEach((d, i) => d.classList.toggle('on', i === st));
+    hero.style.opacity = String(1 - Math.min(1, pr / 0.06));
+    hint.style.opacity = String(pr < 0.02 ? 1 : 0);
+    end.classList.toggle('on', st === 6 && S.doc < 0.5);
+    document.body.classList.toggle('hush', st === 6 && S.doc < 0.5);
+    ui.classList.toggle('off', S.doc >= 0.5);
+  }
+  addEventListener('scroll', onScroll, { passive: true }); addEventListener('resize', onScroll); onScroll();
+  // runbook reveals + toc highlight
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  const links = [...document.querySelectorAll('.toc a')];
+  const io2 = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-30% 0px -55% 0px' });
+  document.querySelectorAll('.sec').forEach(s => io2.observe(s));
+})();
+</script>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(hover: none)').matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = t => t * t * (3 - 2 * t);
+const sstep = (a, b, v) => smooth(clamp((v - a) / (b - a), 0, 1));
+const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+let W = innerWidth, H = innerHeight;
+const stage = window.__stage; const SNAP = /snap/.test(location.search); const WARP = +(new URLSearchParams(location.search).get('warp') || 1);
+
+/* =====================================================================
+   RENDERER · daylight · shadows (no bloom on this page)
+   ===================================================================== */
+const canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+const DPR = Math.min(coarse ? 1.25 : 1.5, devicePixelRatio || 1);
+renderer.setPixelRatio(DPR);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const CREAM = new THREE.Color('#e9e1d3');
+renderer.setClearColor(CREAM, 1);
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(CREAM, 34, 80);
+const camera = new THREE.PerspectiveCamera(36, W / H, 0.1, 160);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+// window light from the upper left, a warm fill from the room, a cool bounce from the right
+scene.add(new THREE.HemisphereLight(0xfff4e6, 0x9c8b73, 0.8));
+const sun = new THREE.DirectionalLight(0xfff0da, 2.2);
+sun.position.set(-7, 13, 9); sun.target.position.set(0, 0, 0); scene.add(sun, sun.target);
+sun.castShadow = true; sun.shadow.mapSize.set(coarse ? 1024 : 2048, coarse ? 1024 : 2048);
+Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 12, bottom: -12, near: 1, far: 60 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.025;
+const bounce = new THREE.DirectionalLight(0xdfe4ff, 0.35); bounce.position.set(9, 4, -6); scene.add(bounce);
+
+const C = { blue: new THREE.Color('#4353ff'), coral: new THREE.Color('#e8553d'), brass: new THREE.Color('#b8924a'), ink: new THREE.Color('#1c1a17'), off: new THREE.Color('#5a5650') };
+
+/* ---- stations along x on one long drafting table ---- */
+const X = { stack: -12, lever: -14.3, beltA: -10.9, stamp: -5.0, rack: 1.9 };
+const TABLE_Y = 0, BELT_Y = 0.62, PLINTH_Y = 0.62;
+
+/* ---- helpers ---- */
+const at = (m, x, y, z) => { m.position.set(x, y, z); return m; };
+const keepIt = m => { shadow(m); m.userData.keep = true; return m; };
+const shadow = (m, cast = true, recv = true) => { m.traverse(o => { if (o.isMesh) { o.castShadow = cast; o.receiveShadow = recv; } }); return m; };
+function roundRect(x, X0, Y0, w, h, r) { x.beginPath(); x.moveTo(X0 + r, Y0); x.arcTo(X0 + w, Y0, X0 + w, Y0 + h, r); x.arcTo(X0 + w, Y0 + h, X0, Y0 + h, r); x.arcTo(X0, Y0 + h, X0, Y0, r); x.arcTo(X0, Y0, X0 + w, Y0, r); x.closePath(); }
+const MAT = {
+  brass: new THREE.MeshStandardMaterial({ color: 0xb8924a, metalness: 1, roughness: 0.3, envMapIntensity: 0.9 }),
+  brassDark: new THREE.MeshStandardMaterial({ color: 0x8f6f35, metalness: 1, roughness: 0.42, envMapIntensity: 0.8 }),
+  graphite: new THREE.MeshStandardMaterial({ color: 0x2d2c2b, metalness: 0.55, roughness: 0.42, envMapIntensity: 0.6 }),
+  graphiteMatte: new THREE.MeshStandardMaterial({ color: 0x3a3836, metalness: 0.2, roughness: 0.72, envMapIntensity: 0.4 }),
+  paper: new THREE.MeshStandardMaterial({ color: 0xf8f4ec, roughness: 0.9 }),
+  paperEdge: new THREE.MeshStandardMaterial({ color: 0xe6dccb, roughness: 0.92 }),
+  paperInk: new THREE.MeshStandardMaterial({ color: 0xf0cdbd, roughness: 0.9 }),
+  coral: new THREE.MeshStandardMaterial({ color: 0xe8553d, roughness: 0.55 }),
+  wood: new THREE.MeshStandardMaterial({ color: 0xb48858, roughness: 0.62 }),
+  hole: new THREE.MeshBasicMaterial({ color: 0x141312 }),
+};
+const labels = [];
+function label(text, { color = '#1c1a17', size = 0.2, weight = 600 } = {}) {   // a plain-text billboard, no box
+  const c = document.createElement('canvas'); c.width = 2048; c.height = 128;
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const draw = () => { const x = c.getContext('2d'); x.clearRect(0, 0, 2048, 128); x.font = `${weight} 56px 'Elms Sans', Archivo, Arial, sans-serif`; x.letterSpacing = '8px'; x.fillStyle = color; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text.toUpperCase(), 1024, 66); tex.needsUpdate = true; };
+  draw();
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(16 * size, size), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false, fog: false }));
+  m.renderOrder = 5; labels.push({ m, draw }); scene.add(m); return m;
+}
+function plaque(lines, w, h, { bg = '#c9a35a', ink = '#2a2116', px = 512 } = {}) {   // an engraved brass plate
+  const c = document.createElement('canvas'); c.width = px; c.height = Math.round(px * h / w);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const draw = (ls = lines) => {
+    const x = c.getContext('2d'), Wc = c.width, Hc = c.height;
+    x.fillStyle = bg; x.fillRect(0, 0, Wc, Hc);
+    const g = x.createLinearGradient(0, 0, Wc, Hc); g.addColorStop(0, 'rgba(255,255,255,.22)'); g.addColorStop(.5, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(0,0,0,.12)'); x.fillStyle = g; x.fillRect(0, 0, Wc, Hc);
+    x.strokeStyle = 'rgba(42,33,22,.55)'; x.lineWidth = Math.max(2, Hc * 0.04); roundRect(x, Hc * 0.08, Hc * 0.08, Wc - Hc * 0.16, Hc * 0.84, Hc * 0.1); x.stroke();
+    x.fillStyle = ink; x.textAlign = 'center'; x.textBaseline = 'middle';
+    ls.forEach((l, i) => { x.font = `${l.w || 700} ${l.s * Hc}px ${l.mono ? "ui-monospace, Menlo, monospace" : "'Elms Sans', Archivo, Arial, sans-serif"}`; x.letterSpacing = (l.ls || 0) + 'px'; x.fillStyle = l.c || ink; x.fillText(l.t, Wc / 2, l.y * Hc); });
+    tex.needsUpdate = true;
+  };
+  draw();
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: tex, metalness: 0.5, roughness: 0.38, envMapIntensity: 0.7 }));
+  m.userData.draw = draw; labels.push({ m, draw: () => draw() }); return m;
+}
+
+/* =====================================================================
+   THE STUDIO: a paper sweep, and a long drafting table with a grid top
+   ===================================================================== */
+{
+  // paper sweep: floor running into a curved cove and a back wall, like a photo studio
+  const y0 = -3.6, zc = -9, R = 8, prof = [];
+  for (let z = 44; z > zc; z -= 4) prof.push([z, y0]);
+  for (let i = 0; i <= 16; i++) { const a = (i / 16) * Math.PI / 2; prof.push([zc - R * Math.sin(a), y0 + R - R * Math.cos(a)]); }
+  for (let y = y0 + R + 4; y <= 60; y += 8) prof.push([zc - R, y]);
+  const xs = [-90, -30, 30, 90], pos = [], idx = [];
+  prof.forEach(([z, y]) => xs.forEach(x => pos.push(x, y, z)));
+  for (let i = 0; i < prof.length - 1; i++) for (let j = 0; j < xs.length - 1; j++) { const a = i * xs.length + j, b = a + 1, c = a + xs.length, d = c + 1; idx.push(a, c, b, b, c, d); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const sweep = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0xf1e9dc, roughness: 1, side: THREE.DoubleSide }));
+  sweep.receiveShadow = true; sweep.userData.keep = true; scene.add(sweep);
+
+  // drafting table: grid paper top, wooden edge, brass nosing, steel trestles
+  const gc = document.createElement('canvas'); gc.width = gc.height = 1024; const x = gc.getContext('2d');
+  x.fillStyle = '#f4efe5'; x.fillRect(0, 0, 1024, 1024);
+  for (let i = 0; i <= 16; i++) { const p = i * 64; x.fillStyle = i % 4 === 0 ? 'rgba(67,83,255,.30)' : 'rgba(67,83,255,.14)'; const w = i % 4 === 0 ? 4 : 2; x.fillRect(p - w / 2, 0, w, 1024); x.fillRect(0, p - w / 2, 1024, w); }
+  const gt = new THREE.CanvasTexture(gc); gt.wrapS = gt.wrapT = THREE.RepeatWrapping; gt.colorSpace = THREE.SRGBColorSpace; gt.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const TL = 60, TD = 7.2, TC = -2; gt.repeat.set(TL / 4, TD / 4);
+  const top = new THREE.MeshStandardMaterial({ map: gt, roughness: 0.85 });
+  const table = new THREE.Mesh(new THREE.BoxGeometry(TL, 0.26, TD), [MAT.wood, MAT.wood, top, MAT.wood, MAT.wood, MAT.wood]);
+  at(table, TC, TABLE_Y - 0.13, 0); table.receiveShadow = true; table.castShadow = true; table.userData.keep = true; scene.add(table);
+  { const nose = shadow(at(new THREE.Mesh(new THREE.BoxGeometry(TL + 0.04, 0.05, 0.05), MAT.brass), TC, TABLE_Y - 0.02, TD / 2 + 0.01)); nose.userData.keep = true; scene.add(nose); }
+  for (const lx of [-30, -15.5, -3, 9, 25.5]) for (const lz of [-2.9]) scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.16, 3.4, 0.16), MAT.graphiteMatte), lx, -1.97, lz)));
+}
+
+/* =====================================================================
+   PAPER BLOCKS: one Notion page, block by block (texture atlas: Notion look / HTML look)
+   ===================================================================== */
+const TYPES = {
+  title:     { h: 0.24, tag: 'h2' },
+  paragraph: { h: 0.16, tag: 'p' },
+  image:     { h: 0.30, tag: 'img' },
+  list:      { h: 0.20, tag: 'ul' },
+  quote:     { h: 0.18, tag: 'blockquote' },
+  code:      { h: 0.22, tag: 'pre' },
+};
+const TKEYS = Object.keys(TYPES);
+const SEQ = ['title', 'paragraph', 'image', 'paragraph', 'list', 'quote', 'paragraph', 'code'];
+const CYC = 10, PLEN = 8;   // a page is 8 blocks, then a 2-beat page change
+const valid = b => b >= 0 && (b % CYC) < PLEN;
+const typeOf = b => SEQ[((b % CYC) + CYC) % CYC] || 'paragraph';
+const postOf = b => Math.floor(b / CYC);
+const BW = 1.7, BD = 1.1;
+const TW = 384, TH = 248;
+const atlasC = document.createElement('canvas'); atlasC.width = TW * TKEYS.length; atlasC.height = TH * 2;
+const atlas = new THREE.CanvasTexture(atlasC); atlas.colorSpace = THREE.SRGBColorSpace; atlas.anisotropy = 8;
+function drawAtlas() {
+  const x = atlasC.getContext('2d');
+  const bar = (X0, Y0, w, h, c) => { x.fillStyle = c; roundRect(x, X0, Y0, w, h, h / 2); x.fill(); };
+  TKEYS.forEach((key, i) => {
+    // row 0: the Notion look (white page, grey text bars, a drag handle)
+    let ox = i * TW, oy = 0;
+    x.save(); x.translate(ox, oy);
+    x.fillStyle = '#fbfaf7'; x.fillRect(0, 0, TW, TH);
+    x.fillStyle = 'rgba(55,53,47,.18)'; for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) { x.beginPath(); x.arc(22 + c * 9, TH / 2 - 9 + r * 9, 2.6, 0, 7); x.fill(); }
+    const L = 48, ink = '#37352f', grey = 'rgba(55,53,47,.42)', light = 'rgba(55,53,47,.22)';
+    if (key === 'title') { bar(L, 70, 230, 34, ink); bar(L, 128, 290, 12, light); bar(L, 152, 200, 12, light); }
+    if (key === 'paragraph') { [300, 286, 296, 180].forEach((w, r) => bar(L, 62 + r * 36, w, 14, grey)); }
+    if (key === 'image') { x.fillStyle = '#ece9e3'; roundRect(x, L, 34, TW - L - 30, TH - 68, 10); x.fill(); x.fillStyle = 'rgba(55,53,47,.28)'; x.beginPath(); x.moveTo(L + 30, TH - 52); x.lineTo(L + 120, 96); x.lineTo(L + 180, 160); x.lineTo(L + 220, 124); x.lineTo(TW - 60, TH - 52); x.closePath(); x.fill(); x.beginPath(); x.arc(TW - 92, 78, 18, 0, 7); x.fill(); }
+    if (key === 'list') { [250, 210, 270].forEach((w, r) => { x.fillStyle = ink; x.beginPath(); x.arc(L + 6, 74 + r * 48, 6, 0, 7); x.fill(); bar(L + 26, 67 + r * 48, w, 14, grey); }); }
+    if (key === 'quote') { x.fillStyle = ink; x.fillRect(L, 50, 6, 150); [270, 240, 160].forEach((w, r) => bar(L + 26, 62 + r * 42, w, 15, grey)); }
+    if (key === 'code') { x.fillStyle = '#f2f0ec'; roundRect(x, L, 30, TW - L - 30, TH - 60, 10); x.fill(); const cs = ['#e8553d', '#4353ff', 'rgba(55,53,47,.5)', '#b8924a']; [[60, 120, 0], [90, 160, 2], [90, 110, 1], [60, 70, 3], [60, 200, 2]].forEach(([ix, w, c], r) => bar(L + ix - 20, 52 + r * 30, w, 12, cs[c])); }
+    x.restore();
+    // row 1: the HTML look (pressed: the tag in coral ink, tidy graphite lines, a closing tag)
+    ox = i * TW; oy = TH;
+    x.save(); x.translate(ox, oy);
+    x.fillStyle = '#fdf8ee'; x.fillRect(0, 0, TW, TH);
+    x.strokeStyle = 'rgba(232,85,61,.75)'; x.lineWidth = 7; roundRect(x, 12, 12, TW - 24, TH - 24, 14); x.stroke();
+    const tg = TYPES[key].tag;
+    x.fillStyle = '#e8553d'; x.font = `800 ${tg.length > 4 ? 52 : 78}px ui-monospace, Menlo, monospace`; x.textBaseline = 'middle'; x.fillText(`<${tg}>`, 34, 78);
+    x.globalAlpha = 0.8;
+    const lines = { title: [[230, 18]], paragraph: [[290, 11], [230, 11]], image: [[170, 11], [230, 11]], list: [[220, 11], [250, 11]], quote: [[260, 11], [190, 11]], code: [[150, 11], [230, 11]] }[key];
+    lines.forEach(([w, h], r) => { if (key === 'list') { x.fillStyle = '#2d2c2b'; x.fillRect(36, 148 + r * 30, 10, 10); } bar(key === 'list' ? 58 : 34, 146 + r * 30, w, h, '#2d2c2b'); });
+    x.globalAlpha = 1;
+    x.restore();
+  });
+  atlas.needsUpdate = true;
+}
+drawAtlas();
+const blockMat = {};   // [type][0 notion, 1 html]
+TKEYS.forEach((key, i) => {
+  blockMat[key] = [0, 1].map(row => { const t = atlas.clone(); t.repeat.set(1 / TKEYS.length, 0.5); t.offset.set(i / TKEYS.length, row === 0 ? 0.5 : 0); t.needsUpdate = true; return new THREE.MeshStandardMaterial({ map: t, roughness: 0.88 }); });
+});
+const slabGeo = {}; TKEYS.forEach(k => { slabGeo[k] = new RoundedBoxGeometry(BW, TYPES[k].h, BD, 2, 0.025); });
+const topGeo = new THREE.PlaneGeometry(BW - 0.06, BD - 0.06); topGeo.rotateX(-Math.PI / 2);
+const POOL = 34, pool = [];
+for (let i = 0; i < POOL; i++) {
+  const g = new THREE.Group(); const body = new THREE.Mesh(slabGeo.paragraph, MAT.paperEdge); const top = new THREE.Mesh(topGeo, blockMat.paragraph[0]);
+  body.castShadow = body.receiveShadow = true; top.receiveShadow = true; g.add(body, top); g.visible = false; scene.add(g);
+  pool.push({ g, body, top, type: null });
+}
+function placeBlock(k, x, y, z, stamped, rz = 0, s = 1) {   // y = bottom of the block
+  const p = pool[((k % POOL) + POOL) % POOL], type = typeOf(k), h = TYPES[type].h;
+  if (p.type !== type) { p.body.geometry = slabGeo[type]; p.type = type; }
+  p.top.position.y = h / 2 + 0.002; p.top.material = blockMat[type][stamped ? 1 : 0]; p.body.material = stamped ? MAT.paperInk : MAT.paperEdge;
+  p.g.position.set(x, y + (h / 2) * s, z); p.g.rotation.set(0, 0, rz); p.g.scale.setScalar(s); p.g.visible = true;
+  return p;
+}
+
+/* =====================================================================
+   STATION 0 · the Notion page: a standing stack of blocks on a plinth
+   ===================================================================== */
+{
+  const plinth = shadow(at(new THREE.Mesh(new RoundedBoxGeometry(2.3, PLINTH_Y, 1.7, 2, 0.04), MAT.graphite), X.stack, PLINTH_Y / 2, 0));
+  scene.add(plinth);
+  scene.add(at(new THREE.Mesh(new THREE.BoxGeometry(BW + 0.08, 0.006, BD + 0.08), MAT.hole), X.stack, PLINTH_Y + 0.004, 0));
+  const trim = shadow(at(new THREE.Mesh(new THREE.BoxGeometry(2.34, 0.05, 1.74), MAT.brass), X.stack, PLINTH_Y - 0.03, 0)); scene.add(trim);
+  const tag = plaque([{ t: 'NOTION PAGE', y: 0.36, s: 0.26, ls: 6 }, { t: 'blog upload database', y: 0.7, s: 0.2, w: 500 }], 1.2, 0.34);
+  at(tag, X.stack, 0.3, 0.852); scene.add(tag);
+}
+const stackLabel = label('notion page', { size: 0.24 }); at(stackLabel, X.stack, 3.15, 0);
+
+/* =====================================================================
+   STATION 1 · the two-key lever: Approved to upload + not yet drafted
+   ===================================================================== */
+const lever = {};
+{
+  const g = new THREE.Group(); at(g, X.lever, 0, 0.3); scene.add(g);
+  const base = shadow(at(new THREE.Mesh(new RoundedBoxGeometry(1.5, 0.9, 1.1, 2, 0.05), MAT.graphite), 0, 0.45, 0)); g.add(base);
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(1.56, 0.06, 1.16), MAT.brass), 0, 0.88, 0)));
+  // the slot the lever runs in
+  g.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.02, 0.16), MAT.hole), 0, 0.915, 0));
+  // two key barrels on the front face, with their lamps above and plates below
+  lever.keys = []; lever.lamps = [];
+  [[-0.36, 'APPROVED', 'to upload'], [0.36, 'DRAFTED', 'to webflow · no']].forEach(([kx, a, b], i) => {
+    const barrel = shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.08, 32), MAT.brass), kx, 0.5, 0.58)); barrel.rotation.x = Math.PI / 2; g.add(barrel);
+    g.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.14, 0.01), MAT.hole), kx, 0.5, 0.625));
+    const key = new THREE.Group(); at(key, kx, 0.5, 0.63);
+    const bow = shadow(new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.026, 12, 28), MAT.brassDark)); at(bow, 0, 0, 0.15); bow.rotation.y = Math.PI / 2;
+    const shank = shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.05, 0.12), MAT.brassDark), 0, 0, 0.06));
+    key.add(bow, shank); g.add(key); lever.keys.push(key);
+    const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.06, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x6b6660, toneMapped: false })); lamp.userData.v = 0;
+    at(lamp, kx, 0.76, 0.5); lamp.rotation.x = Math.PI / 2; g.add(lamp); lever.lamps.push(lamp);
+    const pl = plaque([{ t: a, y: 0.4, s: 0.32, ls: 4 }, { t: b, y: 0.74, s: 0.24, w: 500 }], 0.5, 0.2); at(pl, kx, 0.22, 0.555); g.add(pl);
+  });
+  // the lever: a pivot hub, a graphite arm and a brass ball
+  const pivot = new THREE.Group(); at(pivot, 0, 0.92, 0); g.add(pivot);
+  const hub = shadow(new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.34, 28), MAT.brass)); hub.rotation.x = Math.PI / 2; pivot.add(hub);
+  const arm = shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 1.4, 16), MAT.graphite), 0, 0.7, 0)); pivot.add(arm);
+  const ball = shadow(at(new THREE.Mesh(new THREE.SphereGeometry(0.15, 28, 18), MAT.brass), 0, 1.45, 0)); pivot.add(ball);
+  lever.pivot = pivot; lever.group = g;
+}
+const leverLabel = label('two-key trigger', { size: 0.24 }); at(leverLabel, X.lever - 0.85, 2.8, 0.3);
+
+/* =====================================================================
+   INKY: the ink that runs the press. On the first visit it spills out of a bottle, says hi,
+   then turns both keys and swings on the lever as you scroll.
+   ===================================================================== */
+const INK = new THREE.MeshPhysicalMaterial({ color: 0xe8553d, roughness: 0.2, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 0.7 });
+const CORK = new THREE.MeshStandardMaterial({ color: 0xa87a4f, roughness: 0.9 });
+const inky = (() => {
+  const root = new THREE.Group(), bod = new THREE.Group(); root.add(bod); scene.add(root);
+  const prof = [[0, 0], [0.2, 0.01], [0.31, 0.08], [0.355, 0.22], [0.34, 0.38], [0.28, 0.53], [0.19, 0.66], [0.09, 0.76], [0.02, 0.82], [0, 0.83]].map(([x, y]) => new THREE.Vector2(x, y));
+  bod.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 40), INK));
+  const white = new THREE.MeshStandardMaterial({ color: 0xfffdf7, roughness: 0.3 }), black = new THREE.MeshStandardMaterial({ color: 0x141312, roughness: 0.2 });
+  const eyes = [], pupils = [];
+  for (const sx of [-1, 1]) {
+    const e = new THREE.Mesh(new THREE.SphereGeometry(0.09, 24, 16), white); e.position.set(sx * 0.11, 0.45, 0.265); bod.add(e); eyes.push(e);
+    const p = new THREE.Mesh(new THREE.SphereGeometry(0.045, 16, 12), black); p.position.set(sx * 0.11, 0.445, 0.345); bod.add(p); pupils.push(p);
+  }
+  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.013, 8, 20, Math.PI), black); mouth.rotation.set(-0.3, 0, Math.PI); mouth.position.set(0, 0.32, 0.33); bod.add(mouth);
+  const arms = [];
+  for (const sx of [-1, 1]) { const piv = new THREE.Group(); piv.position.set(sx * 0.31, 0.38, 0.02); const a = new THREE.Mesh(new THREE.CapsuleGeometry(0.048, 0.2, 6, 12), INK); a.position.y = -0.14; piv.add(a); piv.rotation.z = sx * 0.35; bod.add(piv); arms.push(piv); }
+  for (const sx of [-1, 1]) { const f = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 10), INK); f.scale.set(1.2, 0.55, 1.5); f.position.set(sx * 0.14, 0.03, 0.07); root.add(f); }
+  const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.064, 0.13, 20), CORK); hat.position.set(0.05, 0.86, 0); hat.rotation.z = -0.25; bod.add(hat);
+  shadow(root); root.visible = false; root.userData.keep = true;
+  return { root, bod, arms, eyes, pupils, hat, ry: -0.4 };
+})();
+
+/* ---- the bottle it comes out of, and the ink it leaves on the table ---- */
+const BOT = new THREE.Vector3(X.lever - 2.0, 0, 2.05), PUD = new THREE.Vector3(BOT.x + 0.8, 0, BOT.z), I0 = new THREE.Vector3(X.lever - 0.6, 0, 1.6);
+const bottle = (() => {
+  const tip = new THREE.Group(); at(tip, BOT.x + 0.22, 0, BOT.z); scene.add(tip);
+  const g = new THREE.Group(); g.position.x = -0.22; tip.add(g);
+  const prof = [[0, 0], [0.2, 0], [0.22, 0.02], [0.22, 0.3], [0.2, 0.36], [0.1, 0.42], [0.075, 0.46], [0.075, 0.56], [0.086, 0.58], [0.086, 0.6], [0.06, 0.6]].map(([x, y]) => new THREE.Vector2(x, y));
+  const glassM = new THREE.MeshPhysicalMaterial({ color: 0x3a2a22, roughness: 0.1, metalness: 0, transparent: true, opacity: 0.5, clearcoat: 1, envMapIntensity: 1.1, depthWrite: false });
+  const glassMesh = new THREE.Mesh(new THREE.LatheGeometry(prof, 40), glassM); glassMesh.renderOrder = 2; g.add(glassMesh);
+  const inkIn = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.3, 32), INK); inkIn.geometry.translate(0, 0.15, 0); inkIn.position.y = 0.015; g.add(inkIn);
+  const lab = plaque([{ t: 'INK', y: 0.55, s: 0.5, ls: 6 }], 0.28, 0.12, { bg: '#f1e6d2', ink: '#2d2c2b' }); at(lab, 0, 0.19, 0.222); g.add(lab);
+  const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.064, 0.13, 20), CORK); cork.position.y = 0.64; g.add(cork);
+  shadow(g);
+  // a soft coral ring on the table: "click me"
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.42, 0.47, 64), new THREE.MeshBasicMaterial({ color: 0xe8553d, transparent: true, opacity: 0.6, depthWrite: false, toneMapped: false }));
+  ring.rotation.x = -Math.PI / 2; at(ring, BOT.x, 0.006, BOT.z); scene.add(ring);
+  // the flying cork, separate from the one in the bottle
+  const fly = shadow(new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.064, 0.13, 20), CORK)); fly.visible = false; scene.add(fly);
+  // the puddle: an irregular disc of ink on the table that stays behind as a stain
+  const N = 64, pos = [0, 0, 0];
+  for (let i = 0; i <= N; i++) { const a = (i / N) * Math.PI * 2, r = 0.75 * (1 + 0.12 * Math.sin(a * 3 + 1) + 0.08 * Math.sin(a * 7 + 2) + 0.05 * Math.sin(a * 13)); pos.push(Math.cos(a) * r, 0, Math.sin(a) * r); }
+  const idx = []; for (let i = 1; i <= N; i++) idx.push(0, i + 1, i);
+  const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); pg.setIndex(idx); pg.computeVertexNormals();
+  const pm = INK.clone(); pm.polygonOffset = true; pm.polygonOffsetFactor = -2; pm.polygonOffsetUnits = -2;
+  const puddle = new THREE.Mesh(pg, pm); at(puddle, PUD.x - 0.1, 0.004, PUD.z); puddle.receiveShadow = true; puddle.visible = false; scene.add(puddle);
+  [tip, ring, fly, puddle].forEach(o => { o.userData.keep = true; });
+  return { tip, g, glassMesh, inkIn, cork, ring, fly, puddle };
+})();
+
+/* ---- the intro: wait for a click on the bottle, spill, form, wave, hop over to the press ---- */
+const intro = { on: document.documentElement.classList.contains('intro'), state: 'wait', t0: 0, u: 0, k: 1, hidden: false, snap: false };
+const wipe = document.getElementById('wipe');
+const bubble = document.getElementById('bubble');
+function startSpill(skip) {
+  if (intro.state !== 'wait') return;
+  intro.state = 'run'; intro.t0 = performance.now() / 1000 - (skip ? 6 : 0);
+  document.documentElement.classList.add('spilled');
+}
+if (intro.on) {
+  intro.k = 0; intro.hidden = true;
+  const btn = document.getElementById('inkBtn'), skip = document.getElementById('skipIntro');
+  btn && btn.addEventListener('click', () => startSpill(false));
+  skip && skip.addEventListener('click', () => startSpill(true));
+  const ray = new THREE.Raycaster(), v2 = new THREE.Vector2();
+  const hit = e => { v2.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(v2, camera); return ray.intersectObjects([bottle.g, bottle.ring], true).length > 0; };
+  addEventListener('pointermove', e => { if (intro.state === 'wait') canvas.style.cursor = hit(e) ? 'pointer' : ''; }, { passive: true });
+  addEventListener('pointerdown', e => { if (intro.state === 'wait' && hit(e)) { canvas.style.cursor = ''; startSpill(false); } });
+} else intro.state = 'done';
+const INTRO_CAM = { pos: new THREE.Vector3(BOT.x, 1.05, BOT.z + 3.4), look: new THREE.Vector3(BOT.x, 0.36, BOT.z) };
+const corkFrom = new THREE.Vector3(BOT.x, 0.64, BOT.z), corkTo = new THREE.Vector3();
+let bubbleText = '';
+function setBubble(text) { if (text === bubbleText) return; bubbleText = text; if (text) bubble.textContent = text; bubble.classList.toggle('on', !!text); }
+function updateIntro(t) {
+  let u = intro.state === 'wait' ? 0 : intro.state === 'done' ? 9 : performance.now() / 1000 - intro.t0;
+  if (SNAP && intro.state === 'run' && window.__freezeIntro != null) { u = window.__freezeIntro; intro.t0 = performance.now() / 1000 - u; }   // test hook (screenshots only)
+  intro.u = u;
+  // the bottle tips over (and settles with a little bounce)
+  const a = clamp(u / 0.42, 0, 1); let ang = -(Math.PI / 2) * a * a; if (u > 0.42) { const b = clamp((u - 0.42) / 0.3, 0, 1); ang += 0.12 * Math.sin(b * Math.PI) * (1 - b); }
+  if (intro.state === 'wait') ang = Math.sin(t * 2.2) * 0.03 * (reduce ? 0 : 1);
+  bottle.tip.rotation.z = ang; bottle.inkIn.scale.y = 1 - 0.8 * sstep(0.3, 1.2, u);
+  bottle.ring.visible = intro.state === 'wait'; bottle.ring.material.opacity = 0.35 + 0.3 * Math.sin(t * 3);
+  bottle.ring.scale.setScalar(1 + 0.05 * Math.sin(t * 3));
+  // the cork pops, flies, and lands on Inky's head as a hat
+  const c = clamp((u - 0.15) / 1.85, 0, 1);
+  bottle.cork.visible = u < 0.15;
+  inky.hat.visible = u >= 2.0;
+  if (u >= 0.15 && u < 2.0) {
+    corkTo.set(PUD.x + 0.05, 0.86, PUD.z);
+    bottle.fly.visible = true; bottle.fly.position.lerpVectors(corkFrom, corkTo, c); bottle.fly.position.y += Math.sin(c * Math.PI) * 1.7; bottle.fly.rotation.set(c * 9, 0, c * 6);
+  } else bottle.fly.visible = false;
+  // the ink spreads, then gathers back up into a character
+  const s1 = 1 - Math.pow(1 - sstep(0.35, 1.15, u), 3), s2 = sstep(1.2, 1.95, u);
+  bottle.puddle.visible = u > 0.35; bottle.puddle.scale.setScalar(Math.max(0.001, (0.15 + 0.85 * s1) * (1 - 0.6 * s2)));
+  setBubble(u > 2.25 && u < 3.4 ? "Hi! I'm Inky." : u >= 3.4 && u < 4.3 ? "I'll run the press for you." : '');
+  // the camera drifts from the bottle to where Inky forms
+  const sh = 0.45 * sstep(0.3, 1.6, u); INTRO_CAM.pos.set(BOT.x + sh, 1.05, BOT.z + 3.4); INTRO_CAM.look.set(BOT.x + sh, 0.36 + 0.1 * sstep(1.2, 2.2, u), BOT.z);
+  // an ink wipe covers the screen from Inky, the press appears behind it, and the wipe opens again around Inky at the lever
+  const REVEAL = 4.65;
+  if (intro.hidden && u >= REVEAL) { intro.hidden = false; intro.snap = true; introHide.forEach(o => { o.visible = true; }); }
+  intro.k = u >= REVEAL ? 1 : 0;
+  if (u > 4.15 && u < 5.3) {
+    const R = Math.hypot(innerWidth, innerHeight), grow = sstep(4.15, REVEAL, u), shrink = sstep(REVEAL + 0.05, 5.25, u), r = (u < REVEAL ? grow * grow : 1 - shrink * (2 - shrink)) * R;
+    _q.copy(inky.root.position); _q.y += 0.45; _q.project(camera);
+    wipe.style.clipPath = `circle(${r.toFixed(1)}px at ${((_q.x + 1) / 2 * innerWidth).toFixed(1)}px ${((1 - _q.y) / 2 * innerHeight).toFixed(1)}px)`; wipe.style.visibility = 'visible';
+  } else if (wipe.style.visibility !== 'hidden') wipe.style.visibility = 'hidden';
+  if (intro.state === 'run' && u >= 5.3) { intro.state = 'done'; window.__endIntro ? window.__endIntro() : document.documentElement.classList.remove('intro', 'spilled'); setBubble(''); window.__stageIntroDone && window.__stageIntroDone(); }
+  return u;
+}
+
+/* ---- where Inky is, from the intro time and the scroll ---- */
+const KEYX = [-0.36, 0.36];
+function leverPhase(prog) {
+  const L = LEVER, sub = (w, a, b) => sstep(w[0] + (w[1] - w[0]) * a, w[0] + (w[1] - w[0]) * b, prog);
+  return { w1: sub(L.k1, 0, 0.45), t1: sub(L.k1, 0.45, 1), w2: sub(L.k2, 0, 0.45), t2: sub(L.k2, 0.45, 1), jp: sub(L.pull, 0, 0.25), pl: sub(L.pull, 0.25, 0.85), dr: sub(L.pull, 0.85, 1) };
+}
+const ballAt = a => new THREE.Vector3(X.lever - 1.45 * Math.sin(a), 0.92 + 1.45 * Math.cos(a), 0.3);
+const ANG_UP = 0.55, ANG_DOWN = -0.85;
+const hangAt = a => ballAt(a).add(new THREE.Vector3(0, -0.98, 0.42));
+const _p = new THREE.Vector3(), _q = new THREE.Vector3();
+let blinkT = 2, lastProgInky = 0;
+function updateInky(t, dt, prog, u) {
+  const I = inky; let ry = -0.4, sqz = 0, armL = 0.35, armR = 0.35, reachR = 0, armsUp = 0;
+  if (u < 1.25) { I.root.visible = false; return; }
+  I.root.visible = true;
+  if (u < 4.65) {   // forming, waving, then a little hop of excitement before the wipe
+    const r = sstep(1.25, 1.95, u), h = sstep(3.5, 4.3, u);
+    _p.copy(PUD); _p.y = Math.abs(Math.sin(h * Math.PI * 2)) * 0.3;
+    I.root.position.copy(_p);
+    const wob = (1 - r) * 0.6 + Math.sin(clamp((u - 1.95) / 0.5, 0, 1) * Math.PI * 3) * 0.08 * (1 - clamp((u - 1.95) / 0.5, 0, 1));
+    I.bod.scale.set(1 + wob, Math.max(0.001, r), 1 + wob);
+    const eye = u < 1.85 ? 0.001 : Math.min(1.15, 1.15 * sstep(1.85, 2.05, u)) - 0.15 * sstep(2.05, 2.2, u);
+    I.eyes.forEach(e => e.scale.setScalar(Math.max(0.001, eye))); I.pupils.forEach(p => p.scale.setScalar(Math.max(0.001, eye)));
+    if (u > 2.15 && u < 3.7) { armR = Math.PI - 0.45 + 0.4 * Math.sin(t * 13); }   // waving hello
+    ry = h > 0 && h < 1 ? Math.sin(h * Math.PI) * 0.9 : 0;
+    if (h > 0 && h < 1) sqz = Math.max(0, 0.18 - Math.abs(Math.sin(h * Math.PI * 2)) * 0.5);
+  } else {          // after the intro: scroll drives it
+    const ph = leverPhase(prog), K0 = new THREE.Vector3(X.lever + KEYX[0], 0, 1.36), K1 = new THREE.Vector3(X.lever + KEYX[1], 0, 1.36);
+    _p.copy(I0); ry = -0.4;
+    if (ph.w1 > 0) { _p.lerpVectors(I0, K0, ph.w1); _p.y = Math.abs(Math.sin(ph.w1 * Math.PI * 2)) * 0.22; ry = ph.w1 < 1 ? Math.PI / 2 : Math.PI; }
+    if (ph.t1 > 0 && ph.w2 === 0) { reachR = sstep(0, 0.2, ph.t1) * (1 - sstep(0.85, 1, ph.t1)); ry = Math.PI; }
+    if (ph.w2 > 0) { _p.lerpVectors(K0, K1, ph.w2); _p.y = Math.abs(Math.sin(ph.w2 * Math.PI)) * 0.22; ry = ph.w2 < 1 ? Math.PI / 2 : Math.PI; }
+    if (ph.t2 > 0 && ph.jp === 0) { reachR = sstep(0, 0.2, ph.t2) * (1 - sstep(0.85, 1, ph.t2)); ry = Math.PI; }
+    if (ph.jp > 0) { const H = hangAt(ANG_UP); _p.lerpVectors(K1, H, smooth(ph.jp)); _p.y += Math.sin(ph.jp * Math.PI) * 0.4; armsUp = ph.jp; ry = -0.2; }
+    if (ph.pl > 0) { _p.copy(hangAt(lerp(ANG_UP, ANG_DOWN, easeIO(ph.pl)))); armsUp = 1; ry = -0.2; }
+    if (ph.dr > 0) { const H = hangAt(ANG_DOWN); _q.set(H.x + 0.1, 0, 1.3); _p.lerpVectors(H, _q, ph.dr); _p.y = lerp(H.y, 0, ph.dr * ph.dr); armsUp = 1 - ph.dr; ry = -0.3; }
+    if (ph.dr > 0.9) sqz = 0.2 * Math.sin(clamp((ph.dr - 0.9) / 0.1, 0, 1) * Math.PI);   // lands with a squash
+    I.root.position.copy(_p);
+    I.bod.scale.set(1, 1 + 0.03 * Math.sin(t * 2.4), 1);
+    I.eyes.forEach(e => e.scale.setScalar(1)); I.pupils.forEach(p => p.scale.setScalar(1));
+  }
+  // squash and stretch, arms, blink, turn
+  if (sqz) I.bod.scale.set(I.bod.scale.x * (1 + sqz), I.bod.scale.y * (1 - sqz), I.bod.scale.z * (1 + sqz));
+  I.arms[0].rotation.set(0, 0, -lerp(armL, Math.PI - 0.35, armsUp));
+  I.arms[1].rotation.set(-reachR * 1.5, 0, lerp(armR, Math.PI - 0.35, armsUp) * (1 - reachR * 0.6));
+  blinkT -= dt; if (blinkT < 0) blinkT = 2.6 + Math.random() * 2.5;
+  if (blinkT < 0.12 && u > 2.3) I.eyes.forEach(e => e.scale.y = 0.12);
+  I.ry = SNAP ? ry : lerp(I.ry, ry, 1 - Math.exp(-dt * 9)); I.root.rotation.y = I.ry;
+  // the speech bubble follows its head
+  if (bubbleText) { _q.copy(I.root.position); _q.y += 1.0; _q.project(camera); bubble.style.left = ((_q.x + 1) / 2 * innerWidth).toFixed(1) + 'px'; bubble.style.top = ((1 - _q.y) / 2 * innerHeight).toFixed(1) + 'px'; }
+}
+
+/* =====================================================================
+   THE BELT: indexing conveyor from the stack to the end of the table
+   ===================================================================== */
+const BELT_END = 5.45, BELT_LEN = BELT_END - X.beltA, BELT_C = (X.beltA + BELT_END) / 2;
+const SLOT = 2.3, X0 = -9.6, STAMP_SLOT = 2;   // X0 + STAMP_SLOT * SLOT = X.stamp
+const belt = {};
+{
+  const bc = document.createElement('canvas'); bc.width = 128; bc.height = 32; const x = bc.getContext('2d');
+  x.fillStyle = '#2b2927'; x.fillRect(0, 0, 128, 32); x.fillStyle = '#3d3a37'; x.fillRect(0, 0, 10, 32); x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(10, 0, 3, 32);
+  const bt = new THREE.CanvasTexture(bc); bt.wrapS = bt.wrapT = THREE.RepeatWrapping; bt.colorSpace = THREE.SRGBColorSpace; bt.repeat.set(BELT_LEN / 0.35, 1); bt.anisotropy = 8;
+  belt.tex = bt;
+  scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(BELT_LEN, 0.3, 1.46), MAT.graphiteMatte), BELT_C, 0.42, 0)));
+  const surf = new THREE.Mesh(new THREE.PlaneGeometry(BELT_LEN, 1.34), new THREE.MeshStandardMaterial({ map: bt, roughness: 0.8 })); surf.rotation.x = -Math.PI / 2; at(surf, BELT_C, BELT_Y - 0.03, 0); surf.receiveShadow = true; scene.add(surf);
+  for (const z of [-0.76, 0.76]) scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(BELT_LEN + 0.2, 0.1, 0.06), MAT.brass), BELT_C, BELT_Y + 0.0, z)));
+  belt.rollers = [];
+  for (const rx of [X.beltA, BELT_END]) { const r = shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 1.4, 24), MAT.graphite), rx, 0.4, 0)); r.rotation.x = Math.PI / 2; scene.add(r); belt.rollers.push(r);
+    for (const z of [-0.74, 0.74]) { const cap = shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.05, 24), MAT.brass), rx, 0.4, z)); cap.rotation.x = Math.PI / 2; scene.add(cap); } }
+  for (let lx = X.beltA + 1; lx < BELT_END; lx += 2.3) for (const z of [-0.55, 0.55]) scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.28, 0.12), MAT.graphite), lx, 0.13, z)));
+  // a strip of lamps along the front of the belt: the light that runs down the line
+  const N = 34; const leds = new THREE.InstancedMesh(new THREE.BoxGeometry(0.16, 0.05, 0.02), new THREE.MeshBasicMaterial({ toneMapped: false }), N);
+  const M = new THREE.Matrix4(); for (let i = 0; i < N; i++) { M.makeTranslation(X.beltA + 0.3 + i * ((BELT_LEN - 0.6) / (N - 1)), 0.42, 0.735); leds.setMatrixAt(i, M); leds.setColorAt(i, C.off); }
+  scene.add(leds); belt.leds = leds; belt.N = N;
+}
+const ledCol = new THREE.Color(), LAMP_OFF = new THREE.Color('#6b6660');
+
+/* =====================================================================
+   STATION 2 · the stamp: a press head that turns each block into its tag
+   ===================================================================== */
+const stamp = {};
+{
+  const g = new THREE.Group(); at(g, X.stamp, 0, 0); scene.add(g);
+  g.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(0.6, 3.9, 0.55, 2, 0.05), MAT.graphite), 0, 1.95, -1.35)));
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.1, 0.9), MAT.brass), 0, 0.05, -1.35)));
+  g.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(0.7, 0.5, 1.95, 2, 0.06), MAT.graphite), 0, 3.7, -0.62)));
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.05, 1.99), MAT.brass), 0, 3.97, -0.62)));
+  g.add(shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.3, 32), MAT.brass), 0, 3.38, 0)));
+  const piston = shadow(new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 1, 20), MAT.brass)); g.add(piston);
+  const head = new THREE.Group(); g.add(head);
+  head.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(1.9, 0.32, 1.3, 2, 0.05), MAT.graphite), 0, 0.2, 0)));
+  head.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(1.78, 0.04, 1.18), MAT.coral), 0, 0.02, 0)));
+  head.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(1.94, 0.04, 1.34), MAT.brass), 0, 0.36, 0)));
+  // the die plate on the crossbar shows the tag being pressed
+  const die = plaque([{ t: '<h2>', y: 0.55, s: 0.56, mono: true, c: '#c2412b' }], 0.9, 0.34, { bg: '#d2ad62' }); at(die, 0, 3.7, 0.356); g.add(die);
+  stamp.g = g; stamp.head = head; stamp.piston = piston; stamp.die = die; stamp.tag = 'h2';
+}
+const stampLabel = label('convert · html', { size: 0.24 }); at(stampLabel, X.stamp, 4.45, 0);
+
+/* ---- ink: a pool of coral droplets thrown out by each press ---- */
+const ink = (() => {
+  const N = 260, g = new THREE.BufferGeometry();
+  const p0 = new Float32Array(N * 3), vel = new Float32Array(N * 3), life = new Float32Array(N * 2).fill(-10);
+  g.setAttribute('position', new THREE.BufferAttribute(p0, 3)); g.setAttribute('aVel', new THREE.BufferAttribute(vel, 3)); g.setAttribute('aLife', new THREE.BufferAttribute(life, 2));
+  const m = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, uniforms: { uTime: { value: 0 }, uScale: { value: H * 0.5 }, uCol: { value: new THREE.Color('#e8553d') } },
+    vertexShader: `attribute vec3 aVel; attribute vec2 aLife; uniform float uTime, uScale; varying float vA;
+      void main(){ float age = uTime - aLife.x; float k = age / aLife.y; vA = (k < 0.0 || k > 1.0) ? 0.0 : 1.0 - k * k;
+        vec3 p = position + aVel * age + vec3(0.0, -4.5, 0.0) * age * age; p.y = max(p.y, position.y - 0.01);
+        vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_PointSize = vA > 0.0 ? (0.035 * uScale / -mv.z) * (0.6 + 0.4 * vA) : 0.0; gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform vec3 uCol; varying float vA; void main(){ vec2 d = gl_PointCoord - 0.5; float r = length(d); if (r > 0.5 || vA <= 0.0) discard; gl_FragColor = vec4(uCol, vA * smoothstep(0.5, 0.3, r)); }` });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; scene.add(pts);
+  let head = 0;
+  function fire(x, y, z, n, t) {
+    for (let i = 0; i < n; i++) { const j = head; head = (head + 1) % N; const a = Math.random() * Math.PI * 2, sp = 0.6 + Math.random() * 1.4;
+      p0[j * 3] = x + Math.cos(a) * 0.8; p0[j * 3 + 1] = y; p0[j * 3 + 2] = z + Math.sin(a) * 0.5;
+      vel[j * 3] = Math.cos(a) * sp; vel[j * 3 + 1] = 0.6 + Math.random() * 1.2; vel[j * 3 + 2] = Math.sin(a) * sp * 0.7;
+      life[j * 2] = t; life[j * 2 + 1] = 0.35 + Math.random() * 0.35; }
+    g.attributes.position.needsUpdate = g.attributes.aVel.needsUpdate = g.attributes.aLife.needsUpdate = true;
+  }
+  return { m, fire };
+})();
+
+/* =====================================================================
+   THE POSTS: each Notion page is 8 blocks; the press runs one page per 10 beats (8 blocks + a 2-beat page change)
+   ===================================================================== */
+const POSTS = [
+  { t: 'How to plan a content calendar', a: 0, c: 0 },
+  { t: 'Writing briefs that hold up', a: 1, c: 1 },
+  { t: 'A guide to internal linking', a: 2, c: 2 },
+  { t: 'What makes a good meta description', a: 0, c: 1 },
+  { t: 'Turning a webinar into a post', a: 1, c: 2 },
+];
+const AUTHORS = ['Author A', 'Author B', 'Author C'], CATS = ['Guides', 'Product', 'Research'];
+const postAt = P => POSTS[((P % POSTS.length) + POSTS.length) % POSTS.length];
+const slugify = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const FONT = "'Elms Sans', Archivo, Arial, sans-serif";
+function wrapText(x, text, X0, Y0, maxW, lh, maxLines = 2) {
+  const words = text.split(' '); let line = '', y = Y0, n = 0;
+  for (let i = 0; i < words.length; i++) { const test = line ? line + ' ' + words[i] : words[i];
+    if (x.measureText(test).width > maxW && line) { if (++n >= maxLines) { x.fillText(line + '…', X0, y); return; } x.fillText(line, X0, y); line = words[i]; y += lh; } else line = test; }
+  x.fillText(line, X0, y);
+}
+
+/* ---- the Notion board behind the stack: the writer pastes the post here and sets its status ---- */
+const board = (() => {
+  const c = document.createElement('canvas'); c.width = 1200; c.height = 780;
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  let key = '';
+  function draw(state) {
+    const k = JSON.stringify(state); if (k === key) return; key = k;
+    const x = c.getContext('2d');
+    x.fillStyle = '#fffefb'; x.fillRect(0, 0, 1200, 780);
+    x.fillStyle = 'rgba(55,53,47,.6)'; x.font = `700 28px ${FONT}`; x.textBaseline = 'alphabetic'; x.letterSpacing = '4px'; x.fillText('NOTION', 54, 62); x.letterSpacing = '0px';
+    x.fillStyle = '#37352f'; x.font = `800 64px ${FONT}`; x.fillText('Blog upload', 50, 130);
+    const cols = [['Writing', state.writing, '#e6e3de', '#55524c'], ['Approved to upload', state.approved, '#dcdfff', '#3443d9'], ['Pushed to Webflow', state.pushed, '#e3efe0', '#3f6e3a']];
+    cols.forEach(([name, list, chip, chipInk], i) => {
+      const X0 = 40 + i * 380, Y0 = 170;
+      x.font = `700 28px ${FONT}`; const w = x.measureText(name).width + 34;
+      x.fillStyle = chip; roundRect(x, X0, Y0, w, 48, 24); x.fill(); x.fillStyle = chipInk; x.fillText(name, X0 + 17, Y0 + 34);
+      list.slice(-3).forEach((P, r) => {
+        const cy = Y0 + 70 + r * 170;
+        x.fillStyle = 'rgba(15,15,15,.07)'; roundRect(x, X0 + 3, cy + 5, 356, 152, 14); x.fill();
+        x.fillStyle = '#ffffff'; roundRect(x, X0, cy, 356, 152, 14); x.fill(); x.strokeStyle = 'rgba(55,53,47,.18)'; x.lineWidth = 3; x.stroke();
+        x.fillStyle = '#37352f'; x.font = `700 31px ${FONT}`; wrapText(x, postAt(P).t, X0 + 20, cy + 48, 320, 38, 2);
+        x.fillStyle = chip; roundRect(x, X0 + 20, cy + 104, 170, 32, 16); x.fill(); x.fillStyle = chipInk; x.font = `700 19px ${FONT}`; x.fillText(name.split(' ')[0], X0 + 34, cy + 127);
+      });
+    });
+    tex.needsUpdate = true;
+  }
+  const g = new THREE.Group(); at(g, X.stack - 1.3, 0, -2.6); g.rotation.y = 0.16; scene.add(g);
+  const panel = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 2.99), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.82 })); at(panel, 0, 2.95, 0.04); panel.receiveShadow = true; g.add(panel);
+  g.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(4.78, 3.17, 0.07, 2, 0.02), MAT.graphite), 0, 2.95, 0)));
+  for (const lx of [-1.9, 1.9]) g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.4, 0.08), MAT.graphite), lx, 0.7, -0.02)));
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.05, 0.4), MAT.brass), 0, 0.03, 0)));
+  return { draw, g, reset: () => { key = ''; } };
+})();
+const boardLabel = label('notion board · writers paste here', { size: 0.24 }); at(boardLabel, X.stack - 1.3, 4.85, -2.5);
+
+/* =====================================================================
+   STATION 3 · the reference rack: Author and Category matched to Webflow reference items
+   ===================================================================== */
+const rack = {};
+{
+  const g = new THREE.Group(); at(g, X.rack, 0, -1.7); scene.add(g);
+  g.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(3.3, 2.2, 0.12, 2, 0.03), MAT.graphiteMatte), 0, 1.75, 0)));
+  for (const lx of [-1.45, 1.45]) g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.7, 0.1), MAT.graphite), lx, 0.35, 0)));
+  g.add(at(plaque([{ t: 'WEBFLOW REFERENCES', y: 0.55, s: 0.42, ls: 5 }], 1.7, 0.2), 0, 2.66, 0.07));
+  rack.plates = { a: [], c: [] };
+  const rows = [['a', AUTHORS, 2.1, 'AUTHOR'], ['c', CATS, 1.3, 'CATEGORY']];
+  rows.forEach(([k, names, y, title]) => {
+    const tl = plaque([{ t: title, y: 0.56, s: 0.5, ls: 4 }], 0.64, 0.13, { bg: '#c9a35a' }); at(tl, -1.06, y + 0.29, 0.07); g.add(tl);
+    names.forEach((nm, i) => {
+      const px = -0.9 + i * 0.95;
+      const sock = new THREE.Mesh(new THREE.CircleGeometry(0.058, 24), MAT.hole); at(sock, px - 0.475, y, 0.064); g.add(sock);
+      const pl = plaque([{ t: nm, y: 0.56, s: 0.42, w: 600 }], 0.78, 0.34, { bg: '#ece4d4', ink: '#2d2c2b' }); at(pl, px, y, 0.075); g.add(pl);
+      const on = plaque([{ t: nm, y: 0.56, s: 0.42, w: 700, c: '#ffffff' }], 0.78, 0.34, { bg: '#4353ff', ink: '#ffffff' }); at(on, px, y, 0.079); on.visible = false; g.add(on);
+      rack.plates[k].push({ x: px, y, on, sx: px - 0.475 });
+    });
+  });
+  // two ink tokens per post (author, category): lifted off the title block, dropped into the socket of their match
+  rack.chips = [0, 1].map(() => { const m = shadow(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.05, 24), INK)); m.visible = false; scene.add(m); return m; });
+  rack.g = g;
+}
+const rackLabel = label('match · webflow references', { size: 0.24 }); at(rackLabel, X.rack, 3.25, -1.7);
+
+/* =====================================================================
+   STATION 4 · bind and file: blocks gather on a plate, get strapped with the SEO plates on top,
+   and slide into the Webflow CMS cabinet as a draft
+   ===================================================================== */
+const GATHER_SLOT = 7, XG = X0 + GATHER_SLOT * SLOT, PLATE_Y = BELT_Y;
+const cms = {};
+{
+  // the gather plate and the rollers out to the cabinet
+  scene.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(2.0, PLATE_Y, 1.5, 2, 0.04), MAT.graphite), XG, PLATE_Y / 2, 0)));
+  scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(2.04, 0.05, 1.54), MAT.brass), XG, PLATE_Y - 0.02, 0)));
+  for (let rx = XG + 1.15; rx < 9.1; rx += 0.32) { const r = shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.3, 14), MAT.brass), rx, PLATE_Y - 0.07, 0)); r.rotation.x = Math.PI / 2; scene.add(r); }
+  scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(9.1 - XG - 1.0, PLATE_Y - 0.14, 1.4), MAT.graphiteMatte), (XG + 1.0 + 9.1) / 2, (PLATE_Y - 0.14) / 2, 0)));
+  // straps and SEO plates that bind a finished page
+  const strapMat = MAT.brass, strap = new THREE.Group();
+  for (const z of [-0.32, 0.32]) {
+    strap.add(at(new THREE.Mesh(new THREE.BoxGeometry(BW + 0.08, 0.035, 0.09), strapMat), 0, 1, z));
+    for (const sx of [-(BW / 2 + 0.03), BW / 2 + 0.03]) { const b = at(new THREE.Mesh(new THREE.BoxGeometry(0.035, 1, 0.09), strapMat), sx, 0.5, z); strap.add(b); }
+  }
+  shadow(strap); strap.visible = false; scene.add(strap); cms.strap = strap;
+  cms.seo = ['SLUG', 'META TITLE', 'META DESC', 'THUMBNAIL'].map((t, i) => {
+    const gg = new THREE.Group(); gg.add(shadow(new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.04, 0.4), MAT.brassDark)));
+    const pl = plaque([{ t, y: 0.56, s: 0.36, ls: 2 }], 0.7, 0.36); pl.rotation.x = -Math.PI / 2; pl.position.y = 0.022; gg.add(pl);
+    gg.userData.off = [(i % 2 ? 0.4 : -0.4), (i < 2 ? -0.24 : 0.24)]; gg.visible = false; scene.add(gg); return gg;
+  });
+  // the cabinet: Webflow blue, a live CMS item on its face, an intake on the left
+  const CX = 10.35, CW = 2.5, CH = 3.7, CD = 1.8; cms.x = CX;
+  const blue = new THREE.MeshStandardMaterial({ color: 0x4353ff, roughness: 0.42, metalness: 0.15, envMapIntensity: 0.6 });
+  scene.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(CW, CH, CD, 3, 0.08), blue), CX, CH / 2, 0)));
+  scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(CW + 0.08, 0.08, CD + 0.08), MAT.brass), CX, CH + 0.02, 0)));
+  const intake = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 2.1), MAT.hole); intake.rotation.y = -Math.PI / 2; at(intake, CX - CW / 2 - 0.005, PLATE_Y + 1.05, 0); scene.add(intake);
+  const fc = document.createElement('canvas'); fc.width = 800; fc.height = 1040;
+  const ftex = new THREE.CanvasTexture(fc); ftex.colorSpace = THREE.SRGBColorSpace; ftex.anisotropy = 8;
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(2.08, 2.7), new THREE.MeshStandardMaterial({ map: ftex, roughness: 0.6 })); at(face, CX, 1.95, CD / 2 + 0.006); scene.add(face);
+  let fkey = '';
+  const ROWS = ['Name', 'Slug', 'Meta title', 'Meta description', 'Thumbnail', 'Author', 'Category', 'Post body'];
+  cms.drawFace = (P, lit, ready, force) => {
+    const k = P + '|' + lit + '|' + ready; if (k === fkey) return; fkey = k;
+    const x = fc.getContext('2d'), p = P >= 0 ? postAt(P) : null;
+    x.fillStyle = '#ffffff'; x.fillRect(0, 0, 800, 1040);
+    x.fillStyle = '#f3f4ff'; x.fillRect(0, 0, 800, 150);
+    x.fillStyle = '#4353ff'; x.font = `700 26px ${FONT}`; x.fillText('WEBFLOW CMS', 44, 58); x.letterSpacing = '0px';
+    x.fillStyle = '#1c1a17'; x.font = `700 46px ${FONT}`; x.fillText('Blog posts', 44, 116);
+    x.fillStyle = 'rgba(28,26,23,.45)'; x.font = `500 24px ${FONT}`; x.fillText(p ? 'New item' : 'Waiting for a post', 580, 116);
+    ROWS.forEach((r, i) => {
+      const y = 196 + i * 92, on = i < lit;
+      x.fillStyle = 'rgba(28,26,23,.5)'; x.font = `600 24px ${FONT}`; x.fillText(r, 44, y + 20);
+      x.fillStyle = on ? '#f6f6ff' : '#f4f2ee'; roundRect(x, 260, y - 14, 496, 54, 10); x.fill();
+      if (on && p) {
+        const v = [p.t, slugify(p.t), p.t, 'Written in Notion, carried as is', '', AUTHORS[p.a], CATS[p.c], '<h2>…</h2><p>…</p> · 8 blocks'][i];
+        x.fillStyle = '#1c1a17'; x.font = `${i === 7 ? '600 21px ui-monospace, Menlo, monospace' : `600 23px ${FONT}`}`;
+        if (i === 4) { x.fillStyle = '#d8cdbb'; roundRect(x, 276, y - 4, 92, 34, 6); x.fill(); x.fillStyle = '#1c1a17'; x.fillText('cover.jpg', 384, y + 20); }
+        else { let s = v; while (x.measureText(s).width > 410 && s.length > 4) s = s.slice(0, -2); if (s !== v) s = s.slice(0, -1) + '…'; x.fillText(s, 278, y + 20); }
+        x.fillStyle = '#4353ff'; x.beginPath(); x.arc(728, y + 13, 13, 0, 7); x.fill(); x.strokeStyle = '#fff'; x.lineWidth = 4; x.beginPath(); x.moveTo(721, y + 13); x.lineTo(727, y + 19); x.lineTo(736, y + 7); x.stroke();
+      } else { x.fillStyle = 'rgba(28,26,23,.14)'; roundRect(x, 278, y + 6, 160 + (i * 37) % 120, 12, 6); x.fill(); }
+    });
+    if (ready) { x.fillStyle = '#4353ff'; roundRect(x, 44, 942, 300, 64, 32); x.fill(); x.fillStyle = '#fff'; x.font = `700 26px ${FONT}`; x.fillText('Ready for review', 76, 984); }
+    ftex.needsUpdate = true;
+  };
+  cms.drawFace(-1, 0, false); cms.resetFace = () => { fkey = ''; };
+  // the DRAFT ribbon that drops across the top-right corner
+  const rc = document.createElement('canvas'); rc.width = 1024; rc.height = 160; const rx = rc.getContext('2d');
+  rx.fillStyle = '#e8553d'; rx.fillRect(0, 0, 1024, 160); rx.fillStyle = 'rgba(255,255,255,.9)'; rx.fillRect(0, 14, 1024, 4); rx.fillRect(0, 142, 1024, 4);
+  rx.fillStyle = '#fff'; rx.font = `800 92px ${FONT}`; rx.textAlign = 'center'; rx.textBaseline = 'middle'; rx.letterSpacing = '22px'; rx.fillText('DRAFT', 512, 84);
+  const rtex = new THREE.CanvasTexture(rc); rtex.colorSpace = THREE.SRGBColorSpace; rtex.anisotropy = 8;
+  const ribbon = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.34), new THREE.MeshStandardMaterial({ map: rtex, roughness: 0.6, side: THREE.DoubleSide }));
+  ribbon.castShadow = true; scene.add(ribbon); cms.ribbon = ribbon; cms.CD = CD; cms.CH = CH;
+  cms.ribbonAt = (d, bounce) => { at(ribbon, CX + 0.62, 3.0 + (1 - d) * 2.6 + bounce, CD / 2 + 0.03); ribbon.rotation.set(0, 0, -0.62); ribbon.visible = d > 0.001; };
+  cms.ribbonAt(0, 0);
+}
+const cmsLabel = label('webflow cms · draft', { size: 0.24 }); at(cmsLabel, cms.x, cms.CH + 0.55, 0);
+const bindLabel = label('bind + file', { size: 0.24 }); at(bindLabel, XG, 3.05, 0);
+
+/* =====================================================================
+   STATION 5 · write back: two flaps report to Notion, so the post can never run twice
+   ===================================================================== */
+const flaps = {};
+{
+  const FX = 14.2, g = new THREE.Group(); at(g, FX, 0, -0.4); scene.add(g); flaps.x = FX;
+  g.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(2.6, 2.1, 0.5, 2, 0.05), MAT.graphite), 0, 1.6, 0)));
+  for (const lx of [-1.1, 1.1]) g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.6, 0.12), MAT.brass), lx, 0.3, 0)));
+  g.add(at(plaque([{ t: 'BACK TO NOTION', y: 0.55, s: 0.48, ls: 6 }], 1.5, 0.2), 0, 2.42, 0.256));
+  const mk = (y, label2, a, b, bColor) => {
+    const lp = plaque([{ t: label2, y: 0.56, s: 0.5, ls: 3, c: '#f4efe7' }], 1.0, 0.12, { bg: '#2d2c2b', ink: '#f4efe7' }); at(lp, -0.62, y + 0.33, 0.256); g.add(lp);
+    const flap = new THREE.Group(); at(flap, 0, y, 0.28); g.add(flap);
+    const front = plaque([{ t: a, y: 0.56, s: 0.42, ls: 2 }], 2.2, 0.42, { bg: '#f4efe7', ink: '#2d2c2b' });
+    const back = plaque([{ t: b, y: 0.56, s: 0.42, ls: 2, c: '#fff' }], 2.2, 0.42, { bg: bColor, ink: '#fff' }); back.rotation.x = Math.PI;
+    front.position.z = 0.004; back.position.z = -0.004; flap.add(front, back);
+    for (const px of [-1.16, 1.16]) { const pin = at(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.1, 12), MAT.brass), px, 0, 0); pin.rotation.z = Math.PI / 2; flap.add(pin); }
+    return flap;
+  };
+  flaps.status = mk(1.8, 'STATUS', 'APPROVED TO UPLOAD', 'PUSHED TO WEBFLOW', '#3f6e3a');
+  flaps.drafted = mk(1.0, 'DRAFTED TO WEBFLOW', 'NO', 'YES', '#4353ff');
+}
+const flapLabel = label('write back · notion', { size: 0.24 }); at(flapLabel, flaps.x, 3.2, -0.4);
+
+/* ---- the receipt: a confirmation printed for the reviewer (the Slack message) ---- */
+const printer = {};
+{
+  const PX = 17.0, g = new THREE.Group(); at(g, PX, 0, 0.3); g.scale.setScalar(1.45); scene.add(g); printer.x = PX;
+  g.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(1.2, 0.7, 0.9, 2, 0.06), MAT.graphite), 0, 0.35, 0)));
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.05, 0.94), MAT.brass), 0, 0.7, 0)));
+  g.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.02, 0.06), MAT.hole), 0, 0.73, 0));
+  const c = document.createElement('canvas'); c.width = 420; c.height = 900; const x = c.getContext('2d');
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  printer.draw = (P) => {
+    const p = postAt(P);
+    x.fillStyle = '#fbf8f1'; x.fillRect(0, 0, 420, 900);
+    x.fillStyle = '#2d2c2b'; x.font = `800 40px ${FONT}`; x.textAlign = 'center'; x.fillText('DRAFT CREATED', 210, 70);
+    x.fillStyle = 'rgba(45,44,43,.35)'; for (let i = 0; i < 18; i++) x.fillRect(30 + i * 20, 100, 10, 3);
+    x.textAlign = 'left'; x.fillStyle = '#2d2c2b'; x.font = `700 31px ${FONT}`; wrapText(x, p.t, 34, 160, 352, 36, 3);
+    const rows = [['Status', 'Draft'], ['Author', AUTHORS[p.a]], ['Category', CATS[p.c]], ['Fields', '8 of 8']];
+    x.font = `600 25px ui-monospace, Menlo, monospace`;
+    rows.forEach(([a, b], i) => { x.fillStyle = 'rgba(45,44,43,.55)'; x.fillText(a, 34, 300 + i * 44); x.fillStyle = '#2d2c2b'; x.textAlign = 'right'; x.fillText(b, 386, 300 + i * 44); x.textAlign = 'left'; });
+    x.fillStyle = 'rgba(45,44,43,.35)'; for (let i = 0; i < 18; i++) x.fillRect(30 + i * 20, 490, 10, 3);
+    x.fillStyle = '#4353ff'; x.font = `800 30px ${FONT}`; x.fillText('Open preview link ↗', 34, 552);
+    x.fillStyle = '#2d2c2b'; x.font = `500 22px ${FONT}`; wrapText(x, 'Posted to the drafting channel. Review it in Webflow.', 34, 600, 352, 30, 3);
+    x.fillStyle = '#e8553d'; x.font = `800 30px ${FONT}`; x.fillText('Writer: no Webflow', 34, 740);
+    x.fillStyle = 'rgba(45,44,43,.6)'; x.font = `600 24px ${FONT}`; x.fillText('Reviewer: review + publish', 34, 780);
+    tex.needsUpdate = true;
+  };
+  const paper = new THREE.Mesh(new THREE.PlaneGeometry(0.78, 1.68), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, side: THREE.DoubleSide }));
+  paper.geometry.translate(0, 0.84, 0); at(paper, 0, 0.73, 0.02); paper.rotation.x = -0.12; paper.castShadow = true; g.add(paper);
+  printer.paper = paper; printer.tex = tex; printer.P = -99;
+}
+const printLabel = label('slack · ready for review', { size: 0.24 }); at(printLabel, printer.x, 3.75, 0.3);
+
+/* =====================================================================
+   THE MACHINE CLOCK: a mechanical beat. Each beat the belt indexes one slot, the next block peels off
+   the page, and the stamp presses during the dwell. A page is 8 blocks; then the next page rises.
+   ===================================================================== */
+const BEAT = 1.5, INDEX = 0.42, PRESS = [0.5, 0.6, 0.67, 0.86];
+const LEVER = { k1: [0.10, 0.145], k2: [0.15, 0.195], pull: [0.20, 0.29] };
+const BIND = [14.5, 15.6], PUSH = [15.8, 16.7];          // beats after a page's first block
+const CAB = { rows: 0.2, rowStep: 0.4, ribbon: [3.3, 3.9], flip: [4.2, 4.6], print: [4.8, 6.6] };   // beats after the push lands
+// the camera can arrive faster than the machine runs: below these points the press fast-forwards to the moment worth seeing
+const MIN_T = [[0.89, 21.6], [0.765, 20.0], [0.615, 13.6], [0.475, 5.9], [0.325, 2.4]];
+let T = 0, lastT = 0;
+const sumH = (from, to) => { let h = 0; for (let b = from; b <= to; b++) h += TYPES[typeOf(b)].h; return h; };
+function updateMachine(t, dt, prog) {
+  const running = progL >= LEVER.pull[1] - 0.002;
+  if (prog < 0.07) T = 0;
+  else if (running) { let minT = 0; for (const [p, m] of MIN_T) if (prog >= p) { minT = m; break; } T += (dt / BEAT) * (reduce ? 0.4 : 1) * WARP * (T < minT ? 7 : 1); }
+  const n = Math.floor(T), ph = T - n, e = T > 0 ? easeIO(clamp(ph / INDEX, 0, 1)) : 0, j = ((n % CYC) + CYC) % CYC;
+  pool.forEach(p => p.g.visible = false);
+
+  // ---- the page on the plinth (Notion side)
+  let stackPost;
+  if (j < PLEN) {   // blocks n+1.. of this page stand still; block n peels off
+    stackPost = postOf(n); const last = stackPost * CYC + PLEN - 1; let y = PLINTH_Y;
+    for (let b = last; b > n; b--) { placeBlock(b, X.stack, y, 0, false); y += TYPES[typeOf(b)].h; }
+    const u = e, x = lerp(X.stack, X0, u), yb = lerp(y, BELT_Y, u) + Math.sin(u * Math.PI) * 0.7;
+    placeBlock(n, x, yb, 0, false, -Math.sin(u * Math.PI) * 0.35);
+  } else {          // page change: the next page rises out of the plinth
+    stackPost = postOf(n) + 1; const first = stackPost * CYC, last = first + PLEN - 1, Ht = sumH(first, last);
+    const r = clamp(((j - PLEN) + e) / (CYC - PLEN), 0, 1); let y = PLINTH_Y - Ht * (1 - r);
+    for (let b = last; b >= first; b--) { placeBlock(b, X.stack, y, 0, false); y += TYPES[typeOf(b)].h; }
+  }
+
+  // ---- belt, gather plate, binding and the push into the cabinet
+  let bindQ = -1, bindP = 0, pushP = 0, bundleTop = 0;
+  for (let b = n - 1; b >= n - 24; b--) {
+    if (!valid(b)) continue;
+    const s = (n - 1 - b) + e, Q = postOf(b), jj = b - Q * CYC, tq = T - Q * CYC;
+    const stamped = (n - 1 - b) > STAMP_SLOT || ((n - 1 - b) === STAMP_SLOT && ph >= PRESS[1]);
+    if (s <= GATHER_SLOT - 1) { placeBlock(b, X0 + s * SLOT, BELT_Y, 0, stamped); continue; }
+    const ty = PLATE_Y + sumH(Q * CYC, b - 1);
+    if (s < GATHER_SLOT) { const u = s - (GATHER_SLOT - 1); placeBlock(b, lerp(X0 + (GATHER_SLOT - 1) * SLOT, XG, u), lerp(BELT_Y, ty, smooth(u)) + Math.sin(u * Math.PI) * 0.3, 0, true); continue; }
+    const pp = easeIO(clamp((tq - PUSH[0]) / (PUSH[1] - PUSH[0]), 0, 1)); if (pp >= 1) continue;
+    placeBlock(b, XG + pp * 4.0, ty, 0, true);
+    if (jj === PLEN - 1 || tq >= BIND[0]) { bindQ = Q; bindP = clamp((tq - BIND[0]) / (BIND[1] - BIND[0]), 0, 1); pushP = pp; bundleTop = PLATE_Y + sumH(Q * CYC, Q * CYC + PLEN - 1); }
+  }
+  // straps tighten and the SEO plates (fields from Notion) drop onto the bound page
+  if (bindQ >= 0 && bindP > 0 && pushP < 1) {
+    const bx = XG + pushP * 4.0, hgt = bundleTop - PLATE_Y + 0.04, sq = 1 + (1 - easeIO(clamp(bindP / 0.45, 0, 1))) * 0.35;
+    cms.strap.visible = true; cms.strap.position.set(bx, PLATE_Y - 0.02, 0); cms.strap.scale.set(sq, hgt, sq);
+    cms.seo.forEach((s, i) => { const d = clamp((bindP - 0.35 - i * 0.12) / 0.25, 0, 1); s.visible = d > 0; s.position.set(bx + s.userData.off[0], bundleTop + 0.06 + (1 - smooth(d)) * 1.4, s.userData.off[1]); });
+  } else { cms.strap.visible = false; cms.seo.forEach(s => s.visible = false); }
+
+  // ---- the stamp head presses the block under it during the dwell
+  const kUnder = n - 1 - STAMP_SLOT, hasBlock = valid(kUnder) && T > 0;
+  const contact = BELT_Y + (hasBlock ? TYPES[typeOf(kUnder)].h : 0) + 0.005, up = 2.35;
+  let d = 0; if (hasBlock) { if (ph >= PRESS[0] && ph < PRESS[1]) d = Math.pow((ph - PRESS[0]) / (PRESS[1] - PRESS[0]), 2); else if (ph >= PRESS[1] && ph < PRESS[2]) d = 1; else if (ph >= PRESS[2] && ph < PRESS[3]) d = 1 - smooth((ph - PRESS[2]) / (PRESS[3] - PRESS[2])); }
+  const hy = lerp(up, contact, d); stamp.head.position.y = hy;
+  const pTop = 3.23, pBot = hy + 0.38; stamp.piston.scale.y = Math.max(0.01, pTop - pBot); stamp.piston.position.y = (pTop + pBot) / 2;
+  if (hasBlock && Math.floor(lastT) === n && (lastT - n) < PRESS[1] && ph >= PRESS[1]) ink.fire(X.stamp, contact + 0.01, 0, 22, t);
+  if (hasBlock) { const want = TYPES[typeOf(kUnder)].tag; if (want !== stamp.tag && ph > INDEX * 0.6) { stamp.tag = want; stamp.die.userData.draw([{ t: `<${want}>`, y: 0.55, s: want.length > 4 ? 0.36 : 0.56, mono: true, c: '#c2412b' }]); } }
+
+  // ---- the reference rack: chips fly from the title block to their match while it dwells at the rack
+  { const P = Math.floor((T - 6.45) / CYC); const t0 = P * CYC + 6.45, f = clamp((T - t0) / 0.5, 0, 1);
+    const ok = P >= 0 && T >= t0, p = ok ? postAt(P) : null;
+    rack.chips.forEach((ch, i) => {
+      ch.visible = ok; if (!ok) return;
+      const tgt = rack.plates[i ? 'c' : 'a'][i ? p.c : p.a], ef = easeIO(f);
+      const sx = X.rack + (i ? 0.3 : -0.3), sy = BELT_Y + 0.3, sz = 0.1, tx = X.rack + tgt.sx, tyy = tgt.y, tz = -1.7 + 0.085;
+      ch.position.set(lerp(sx, tx, ef), lerp(sy, tyy, ef) + Math.sin(ef * Math.PI) * 0.9, lerp(sz, tz, ef));
+      ch.rotation.set(Math.PI / 2 + (1 - ef) * 6, 0, 0);
+    });
+    ['a', 'c'].forEach((k, i) => rack.plates[k].forEach((pl, idx) => { pl.on.visible = ok && f >= 1 && idx === (i ? p.c : p.a); }));
+  }
+
+  // ---- the cabinet, the write-back flaps and the receipt, timed from the latest push
+  const Pc = Math.floor((T - PUSH[1]) / CYC), u = T - (Pc * CYC + PUSH[1]), has = Pc >= 0;
+  const lit = has ? clamp(Math.floor((u - CAB.rows) / CAB.rowStep) + 1, 0, 8) : 0, ready = has && u >= CAB.print[0];
+  cms.drawFace(has ? Pc : -1, lit, ready);
+  { const dd = has ? clamp((u - CAB.ribbon[0]) / (CAB.ribbon[1] - CAB.ribbon[0]), 0, 1) : 0; const k = dd * dd; const bounce = dd >= 1 ? Math.max(0, Math.sin(clamp((u - CAB.ribbon[1]) / 0.5, 0, 1) * Math.PI)) * 0.12 * (1 - clamp((u - CAB.ribbon[1]) / 0.5, 0, 1)) : 0; cms.ribbonAt(k, bounce); }
+  { const fp = has ? clamp((u - CAB.flip[0]) / (CAB.flip[1] - CAB.flip[0]), 0, 1) : 0, f2 = has ? clamp((u - CAB.flip[0] - 0.25) / (CAB.flip[1] - CAB.flip[0]), 0, 1) : 0;
+    const flipA = x => x <= 0 ? 0 : x >= 1 ? Math.PI : Math.PI * (1 - Math.cos(x * Math.PI)) / 2 + Math.sin(x * Math.PI) * 0.18;
+    flaps.status.rotation.x = flipA(fp); flaps.drafted.rotation.x = flipA(f2); }
+  { const pr = has ? clamp((u - CAB.print[0]) / (CAB.print[1] - CAB.print[0]), 0, 1) : 0;
+    if (has && printer.P !== Pc) { printer.draw(Pc); printer.P = Pc; }
+    const s = Math.max(0.001, pr); printer.paper.visible = pr > 0; printer.paper.scale.y = s; printer.tex.repeat.set(1, s); printer.tex.offset.set(0, 1 - s); printer.paper.rotation.x = -0.12 - pr * 0.2; }
+
+  // ---- the Notion board: writing → approved → pushed
+  { const k1 = leverPhase(progL).t1; let st;
+    if (T <= 0) st = k1 > 0.97 ? { writing: [1, 2], approved: [0], pushed: [] } : { writing: [0, 1, 2], approved: [], pushed: [] };
+    else { const done = Math.floor((T - PUSH[1] - CAB.flip[0]) / CYC); const approved = [], pushed = [];
+      for (let P = Math.max(0, stackPost - 4); P <= stackPost; P++) (P <= done ? pushed : approved).push(P);
+      st = { writing: [stackPost + 1, stackPost + 2], approved, pushed }; }
+    board.draw(st); }
+
+  lastT = T;
+  // belt surface and rollers move only while indexing
+  const travel = T > 0 ? (n + e) * SLOT : 0; belt.tex.offset.x = -(travel / 0.35) % 1; belt.rollers.forEach(r => r.rotation.y = -travel / 0.2);
+  // the lever: two keys turn, then the lever comes down; the line lights from the stack outward
+  const LP = leverPhase(progL), k1 = LP.t1, k2 = LP.t2, pull = LP.pl;
+  lever.keys[0].rotation.z = -k1 * Math.PI / 2; lever.keys[1].rotation.z = -k2 * Math.PI / 2;
+  [k1, k2].forEach((k, i) => { const L = lever.lamps[i]; L.userData.v = SNAP ? (k > 0.97 ? 1 : 0) : lerp(L.userData.v, k > 0.97 ? 1 : 0, 1 - Math.exp(-dt * 14)); L.material.color.copy(LAMP_OFF).lerp(C.blue, L.userData.v); });
+  lever.pivot.rotation.z = lerp(ANG_UP, ANG_DOWN, easeIO(pull));
+  const fill = pull, pulse = running ? (ph / INDEX) : -1;
+  for (let i = 0; i < belt.N; i++) {
+    const f = i / (belt.N - 1); let v = clamp((fill * 1.25 - f) * 6, 0, 1) * 0.55;
+    if (pulse >= 0 && pulse <= 1.3) v = Math.max(v, 0.55 + 0.45 * Math.max(0, 1 - Math.abs(f - pulse) * 5));
+    ledCol.copy(C.off).lerp(C.blue, v); belt.leds.setColorAt(i, ledCol);
+  }
+  belt.leds.instanceColor.needsUpdate = true;
+}
+
+/* ---- camera stations (scroll-scrubbed; each holds while its caption shows) ---- */
+const KEY = {
+  hero:     { pos: [-21.0, 6.4, 10.4], look: [-15.6, 1.35, -0.6] },
+  approve:  { pos: [-16.5, 3.1, 6.4],  look: [-14.0, 0.5, 0.7], ox: -1.6 },
+  convert:  { pos: [-9.8, 5.0, 8.8],   look: [-5.0, 1.45, 0] },
+  map:      { pos: [-0.9, 4.0, 8.4],   look: [2.2, 1.35, -0.6] },
+  draft:    { pos: [5.0, 4.4, 10.6],   look: [8.9, 1.7, 0], ox: -1.5 },
+  write:    { pos: [12.4, 3.6, 8.8],   look: [15.6, 1.45, 0], ox: -0.6 },
+  end:      { pos: [1.5, 11, 32],      look: [1.5, 0.8, 0] },
+};
+const STATIONS = [
+  { p: 0.00, ...KEY.hero }, { p: 0.04, ...KEY.hero },
+  { p: 0.10, ...KEY.approve }, { p: 0.30, ...KEY.approve },
+  { p: 0.35, ...KEY.convert }, { p: 0.45, ...KEY.convert },
+  { p: 0.50, ...KEY.map }, { p: 0.59, ...KEY.map },
+  { p: 0.64, ...KEY.draft }, { p: 0.74, ...KEY.draft },
+  { p: 0.79, ...KEY.write }, { p: 0.86, ...KEY.write },
+  { p: 0.92, ...KEY.end }, { p: 1.00, ...KEY.end },
+];
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), tgtPos = new THREE.Vector3(), tgtLook = new THREE.Vector3();
+function cameraAt(p) {
+  let a = STATIONS[0], b = STATIONS[1];
+  for (let i = 0; i < STATIONS.length - 1; i++) if (p >= STATIONS[i].p) { a = STATIONS[i]; b = STATIONS[i + 1]; }
+  const t = smooth(clamp((p - a.p) / Math.max(1e-4, b.p - a.p), 0, 1));
+  tgtPos.set(lerp(a.pos[0], b.pos[0], t), lerp(a.pos[1], b.pos[1], t), lerp(a.pos[2], b.pos[2], t));
+  tgtLook.set(lerp(a.look[0], b.look[0], t), lerp(a.look[1], b.look[1], t), lerp(a.look[2], b.look[2], t));
+  if (W / H < 0.85) {   // portrait: centre the subject, step back, keep it above the caption
+    const ox = lerp(a.ox || 0, b.ox || 0, t); tgtPos.x += ox; tgtLook.x += ox;
+    const dx = tgtLook.x - tgtPos.x; tgtPos.x += dx * 0.55; tgtLook.x += 2.2 * (p < 0.1 ? 1 : 0.6);
+    const hp = 1 - sstep(0.04, 0.1, p); tgtPos.z += 5.5 + 1.6 * hp; tgtPos.y += 1.1; tgtLook.y -= 0.9 + 2.3 * hp;
+  }
+}
+
+/* ---- pointer: slight parallax ---- */
+const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
+addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty = (e.clientY / H) * 2 - 1; }, { passive: true });
+function resize() { W = innerWidth; H = innerHeight; renderer.setSize(W, H, false); camera.aspect = W / H; camera.fov = W / H < 0.85 ? 50 : 36; camera.updateProjectionMatrix(); ink.m.uniforms.uScale.value = H * DPR * 0.5; fly.resize(); }
+addEventListener('resize', resize);
+
+/* ---- butterfly cursor (same as the main site) ---- */
+const fly = (() => {
+  const cv = document.getElementById('fly'); const c2 = cv.getContext('2d');
+  const Pm = { wingspan: 20, flapHz: 3, follow: 0.07, wander: 14 };
+  const st = { x: -100, y: -100, px: -100, py: -100, tx: -100, ty: -100, vx: 0, vy: 0, bank: 0, heading: 0, hover: 0, hoverT: 0, seen: false, mounted: false, dpr: 1, w: 0, h: 0 };
+  const mq = matchMedia('(hover: hover) and (pointer: fine)');
+  const onMove = e => { st.tx = e.clientX; st.ty = e.clientY; if (!st.seen) { st.x = st.px = st.tx; st.y = st.py = st.ty; st.seen = true; } st.hoverT = e.target && e.target.closest && e.target.closest('a, button, input') ? 1 : 0; };
+  const onLeave = () => { st.seen = false; };
+  function mount() { if (st.mounted || reduce || !mq.matches) return; st.mounted = true; cv.hidden = false; addEventListener('pointermove', onMove, { passive: true }); document.addEventListener('mouseleave', onLeave); resize(); }
+  function unmount() { if (!st.mounted) return; st.mounted = false; cv.hidden = true; removeEventListener('pointermove', onMove); document.removeEventListener('mouseleave', onLeave); st.seen = false; }
+  function resize() { st.dpr = Math.min(2, devicePixelRatio || 1); st.w = innerWidth; st.h = innerHeight; cv.width = Math.floor(st.w * st.dpr); cv.height = Math.floor(st.h * st.dpr); c2.setTransform(st.dpr, 0, 0, st.dpr, 0, 0); }
+  mq.addEventListener ? mq.addEventListener('change', () => mq.matches ? mount() : unmount()) : mq.addListener(() => mq.matches ? mount() : unmount());
+  function wing(side, sp, s) { c2.save(); c2.scale(side, 1); c2.beginPath(); c2.moveTo(0, -1 * s); c2.bezierCurveTo(6 * s * sp, -14 * s * sp, 22 * s * sp, -12 * s * sp, 20 * s * sp, -2 * s); c2.bezierCurveTo(19 * s * sp, 2 * s, 12 * s * sp, 3 * s, 7 * s * sp, 2 * s); c2.bezierCurveTo(14 * s * sp, 8 * s * sp, 10 * s * sp, 15 * s * sp, 3 * s * sp, 11 * s * sp); c2.bezierCurveTo(1 * s, 9 * s * sp, 0, 5 * s, 0, 3 * s); c2.closePath(); const g = c2.createLinearGradient(0, -14 * s, 0, 14 * s); g.addColorStop(0, '#FF8FD0'); g.addColorStop(1, '#5B9BF6'); c2.fillStyle = g; c2.globalAlpha = 0.92; c2.fill(); c2.globalAlpha = 0.5; c2.strokeStyle = 'rgba(255,255,255,.55)'; c2.lineWidth = 0.6; c2.stroke(); c2.restore(); }
+  function frame(t) {
+    if (!st.mounted) return; c2.clearRect(0, 0, st.w, st.h); if (!st.seen) return;
+    const wx = Math.sin(t * 0.00071) * Pm.wander * 0.7 + Math.sin(t * 0.00113 + 1.7) * Pm.wander * 0.3, wy = Math.cos(t * 0.00059) * Pm.wander * 0.6 + Math.sin(t * 0.00097 + 0.4) * Pm.wander * 0.4;
+    const gx = st.tx + wx, gy = st.ty + wy - 10; st.px = st.x; st.py = st.y; st.x += (gx - st.x) * Pm.follow; st.y += (gy - st.y) * Pm.follow; st.vx = st.x - st.px; st.vy = st.y - st.py;
+    const speed = Math.hypot(st.vx, st.vy);
+    if (speed > 0.15) { const h = Math.atan2(st.vy, st.vx) + Math.PI / 2; let dh = h - st.heading; dh = Math.atan2(Math.sin(dh), Math.cos(dh)); st.heading += dh * 0.12; st.bank = lerp(st.bank, clamp(dh * 2.2, -0.9, 0.9), 0.15); } else { st.bank = lerp(st.bank, 0, 0.08); st.heading = lerp(st.heading, 0, 0.03); }
+    st.hover = lerp(st.hover, st.hoverT, 0.12);
+    const flapHz = Pm.flapHz * (1 - st.hover * 0.45) + speed * 0.05, flap = 0.5 + 0.5 * Math.sin(t / 1000 * flapHz * Math.PI * 2), spread = 0.22 + 0.78 * flap, s = (Pm.wingspan / 20) * (1 + st.hover * 0.45);
+    c2.save(); c2.translate(st.x, st.y); c2.rotate(st.heading); c2.transform(Math.cos(st.bank * 0.6), 0, 0, 1, 0, 0);
+    c2.globalAlpha = 0.25; c2.fillStyle = '#5B9BF6'; c2.beginPath(); c2.ellipse(0, 2, 10 * s * spread + 2, 6 * s, 0, 0, 7); c2.filter = 'blur(4px)'; c2.fill(); c2.filter = 'none'; c2.globalAlpha = 1;
+    wing(1, spread, s); wing(-1, spread, s);
+    c2.fillStyle = '#2d2c2b'; c2.beginPath(); c2.ellipse(0, 2 * s, 1.3 * s, 7 * s, 0, 0, 7); c2.fill();
+    c2.strokeStyle = 'rgba(45,44,43,.8)'; c2.lineWidth = 0.8; c2.beginPath(); c2.moveTo(0, -5 * s); c2.quadraticCurveTo(-3 * s, -10 * s, -5 * s, -11 * s); c2.moveTo(0, -5 * s); c2.quadraticCurveTo(3 * s, -10 * s, 5 * s, -11 * s); c2.stroke(); c2.restore();
+  }
+  mount(); return { frame, resize, st };
+})();
+
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { labels.forEach(l => l.draw()); drawAtlas(); board.reset(); cms.resetFace(); printer.P = -99; });
+
+/* ---- frame loop ---- */
+let last = performance.now(), t0 = last, progL = 0;
+// during the intro only the bottle (and the table it stands on) is in the world
+const introHide = scene.children.filter(o => !o.isLight && !o.userData.keep && o !== sun.target);
+const billboards = [stackLabel, leverLabel, stampLabel, boardLabel, rackLabel, bindLabel, cmsLabel, flapLabel, printLabel];
+function frame(now) {
+  const dt = Math.min(SNAP ? 0.5 : 0.05, (now - last) / 1000); last = now; const t = (now - t0) / 1000;
+  const prog = intro.state === 'done' ? stage.prog : 0;
+  cameraAt(prog);
+  const iu = updateIntro(t);
+  if (intro.k < 1) { const kk = smooth(intro.k); tgtPos.lerpVectors(INTRO_CAM.pos, tgtPos, kk); tgtLook.lerpVectors(INTRO_CAM.look, tgtLook, kk); if (W / H < 0.85) { tgtPos.z += 1.0 * (1 - kk); tgtPos.y += 0.25 * (1 - kk); } }
+  ptr.x = lerp(ptr.x, ptr.tx, 0.05); ptr.y = lerp(ptr.y, ptr.ty, 0.05);
+  const kc = SNAP || intro.snap ? 1 : 1 - Math.exp(-dt * 4.2); intro.snap = false; camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc);
+  camera.position.set(camPos.x + ptr.x * 0.3, camPos.y - ptr.y * 0.2, camPos.z); camera.lookAt(camLook);
+  progL = SNAP ? prog : lerp(progL, prog, 1 - Math.exp(-dt * 5));   // the lever and Inky ease toward the scroll, never snap
+  updateMachine(t, dt, prog);
+  updateInky(t, dt, progL, iu);
+  if (intro.hidden) introHide.forEach(o => { o.visible = false; });
+  ink.m.uniforms.uTime.value = t;
+  billboards.forEach(l => l.quaternion.copy(camera.quaternion));
+  renderer.render(scene, camera);
+  fly.frame(now);
+  requestAnimationFrame(frame);
+}
+resize(); cameraAt(stage.prog); if (intro.on) { camPos.copy(INTRO_CAM.pos); camLook.copy(INTRO_CAM.look); if (W / H < 0.85) { camPos.z += 1.0; camPos.y += 0.25; } } else { camPos.copy(tgtPos); camLook.copy(tgtLook); }
+window.__pressReady = true;
+requestAnimationFrame(frame);
+</script>
