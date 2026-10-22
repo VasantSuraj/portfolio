@@ -391,6 +391,30 @@ article{min-width:0}
   const io2 = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-30% 0px -55% 0px' });
   document.querySelectorAll('.sec').forEach(s => io2.observe(s));
 })();
+
+/* back to the forest: when the visitor came from the home page, the arrow is a real browser "back" (usually instant, no reload,
+   exactly where they left). Otherwise the link opens the home page at this page's card. */
+(() => {
+  const mark = document.getElementById('mark'); if (!mark) return;
+  const slug = (/#from-([\w-]+)$/.exec(mark.getAttribute('href')) || [])[1];
+  mark.addEventListener('click', e => {
+    let ref; try { ref = new URL(document.referrer); } catch (_) { return; }
+    const home = new URL('../', location.href).pathname;
+    const fromHome = ref.origin === location.origin && [home, home + 'index.html', home + 'index'].includes(ref.pathname);
+    if (!fromHome || history.length < 2) return;
+    e.preventDefault();
+    try { if (slug) sessionStorage.setItem('returnTo', slug); } catch (_) {}
+    history.back();
+  });
+  // in-page links (#doc, #top) scroll without adding history entries, so "back" always means the forest
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || e.defaultPrevented) return;
+    const id = a.getAttribute('href'); e.preventDefault(); if (id === '#') return;
+    const el = id === '#top' ? null : document.querySelector(id), how = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (el) el.scrollIntoView({ behavior: how }); else scrollTo({ top: 0, behavior: how });
+    history.replaceState(null, '', id);
+  });
+})();
 </script>
 
 <script type="importmap">
