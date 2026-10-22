@@ -322,7 +322,7 @@ const WORK = [
   { name: 'Routines', cat: 'Product page · CMS · Factors.ai', url: 'https://www.factors.ai/product/routines', img: 'thumbs/routines.jpg', line: 'CMS-driven product page with a dynamic template.', k: ['Role','Launch','Type'], v: ['CMS architecture\nDynamic template · Interactions', '2025', 'Product page'], tint: 'linear-gradient(135deg,#1f2a3a,#0f1626)' },
 ];
 const AUTOMATIONS = [
-  { name: 'Notion to Webflow Publisher', cat: 'Publishing', line: 'Approve in Notion, get a complete Webflow draft.', tags: ['n8n','Notion','Webflow','Slack'], one: 'When an editor marks a finished blog as approved in Notion, the content is converted to HTML, every SEO field is filled, and a Webflow CMS draft is created and confirmed in Slack.', trigger: 'Notion status change', outcome: 'A publish-ready Webflow draft appears minutes after the editor flips the status, with every SEO field filled.' },
+  { name: 'Notion to Webflow Publisher', cat: 'Publishing', url: 'automations/notion-to-webflow.html', line: 'Approve in Notion, get a complete Webflow draft.', tags: ['n8n','Notion','Webflow','Slack'], one: 'When an editor marks a finished blog as approved in Notion, the content is converted to HTML, every SEO field is filled, and a Webflow CMS draft is created and confirmed in Slack.', trigger: 'Notion status change', outcome: 'A publish-ready Webflow draft appears minutes after the editor flips the status, with every SEO field filled.' },
   { name: 'SEO Pre-Live Checks', cat: 'Publishing', line: 'Eight SEO checks on every new page before it goes live.', tags: ['n8n','Webflow','Slack'], one: 'When a page is published to the Webflow staging domain, eight SEO checks run against it and a pass/fail report lands in Slack.', trigger: 'Webflow publish to staging', outcome: 'Every new page is checked for eight SEO essentials before production, with no one remembering to do it.' },
   { name: 'Auto Internal Linking', cat: 'Publishing', line: 'New posts linked in and out across the blog at publish time.', tags: ['n8n','Webflow','Google Sheets','Search Console','Claude'], one: 'Two engines wire every new post into the site: one adds links from the new post outward, the other adds links from older posts into it, with a log of every change.', trigger: 'Webflow publish of a new post', outcome: 'Every new post is linked in both directions within minutes of publishing, with no editor involved.' },
   { name: 'AI Blog Drafts', cat: 'Content', line: 'Flag a sheet row, get a 3,000-word draft in Google Docs.', tags: ['n8n','Gemini','Google Sheets','Google Docs','Slack'], one: 'A flagged row in a Google Sheet (title, keywords, brief) becomes a complete 3,000–4,000-word draft in Google Docs, with a Slack notification.', trigger: 'Google Sheets row change', outcome: 'A full draft lands in Google Docs minutes after a row is flagged, instead of hours of writing per post.' },
@@ -484,6 +484,13 @@ const forest = (() => {
     e.preventDefault(); goTo(top() + next * Hs, { duration: 1.3 });
   });
   setTimeout(() => { if (!root.classList.contains('forest3d')) root.classList.add('no3d'); }, 12000);
+  // back from an automation page (its back arrow links here with #from-<page>): start in the forest at that card, not at the portrait
+  { const m = /^#from-([\w-]+)$/.exec(location.hash), c = m && cards.find(c => c.card.getAttribute('href') === `automations/${m[1]}.html`);
+    if (c) {
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      const go = () => { layout(); if (lenis) lenis.resize(); goTo(top() + c.s * Hs, { immediate: true }); };
+      go(); addEventListener('load', () => { go(); history.replaceState(null, '', location.pathname + location.search); });
+    } }
   window.__forest = { CATS, keys, cards, titles, totalS, fallS, landS, skyS, tms, beachTitle, cliffZ, lastZ, sAt, top, mix, Hs: () => Hs, setActive };
   return { shiftScroll, mix };
 })();
