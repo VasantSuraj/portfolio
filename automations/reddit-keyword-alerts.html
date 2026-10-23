@@ -154,15 +154,26 @@ article{min-width:0}
   .facts{grid-template-columns:1fr 1fr}
 }
 @media (prefers-reduced-motion:reduce){.scroll i{animation:none}.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+/* Let's talk: a glass thread card beside the alert line; everything else steps aside */
+#talk3d{position:fixed;inset:0;z-index:3;pointer-events:none;display:none}
+html.talking #talk3d{display:block}
+html.talking #talk3d .tb-live{pointer-events:auto}
+html.talking .cap,html.talking .hero-title,html.talking .end,html.talking .progress,html.talking .scroll,html.talking .scrim{opacity:0!important;pointer-events:none!important;transition:opacity .5s ease}
+html.talking .doc{visibility:hidden}
+.tb-look-glass{--tb-display:'Elms Sans',Arial,sans-serif;--tb-display-w:600;--tb-display-ls:-.035em;--tb-ink:#f1f1ee;--tb-field-ink:#f1f1ee;--tb-accent:#a6dfd3;--tb-accent-soft:rgba(166,223,211,.25);--tb-placeholder:rgba(241,241,238,.35);--tb-bad:#ff8a7a;--tb-ghost:#f1f1ee}
+.tb-look-glass .tb-btn{color:#0d0d0d;background:#a6dfd3;border-radius:999px;box-shadow:0 0 0 1px rgba(166,223,211,.4),0 0 24px rgba(166,223,211,.35)}
+.tb-look-glass .tb-btn:hover{filter:brightness(1.06)}
+.tb-look-glass .tb-knob{color:#f1f1ee;background:#1f2328;box-shadow:inset 0 0 0 1px #2f343b}
 </style>
 
 <canvas id="gl" aria-hidden="true"></canvas>
+<div id="talk3d"></div>
 <div class="vignette" aria-hidden="true"></div>
 <div class="scrim" aria-hidden="true"></div>
 
 <div class="ui" id="ui">
   <a class="mark" href="../index.html#from-reddit-keyword-alerts" id="mark" aria-label="Back to the projects forest"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3 5 9l6 6"/></svg><span>Vasant Suraj</span></a>
-  <div class="actions"><a class="pill" href="mailto:vasantsuraj02@gmail.com">Let's talk <span class="dot" aria-hidden="true"></span></a></div>
+  <div class="actions"><a class="pill" href="mailto:vasantsuraj02@gmail.com" data-contact aria-haspopup="dialog">Let's talk <span class="dot" aria-hidden="true"></span></a></div>
 
   <div class="hero-title" id="heroTitle">
     <em>Automation · Monitoring</em>
@@ -366,6 +377,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 
@@ -656,7 +668,7 @@ function drawSlack(p, t) {   // p 0..1: window assembled; t: time (for arrival a
     x.fillStyle = '#a6dfd3'; roundRect(x, MX + 58, top + 44, 5, blockH - 70, 3); x.fill();
     const bx = MX + 80, bw = MW - 80; let by = top + 50;
     x.textBaseline = 'top'; x.fillStyle = '#5B9BF6'; x.font = '700 27px Elms Sans, Arial'; const tl = wrap(x, a.title, bw).slice(0, 2); tl.forEach(l => { x.fillText(l, bx, by); by += 34; });
-    x.fillStyle = '#8a8b90'; x.font = '400 21px Elms Sans, Arial'; x.fillText(`${a.sub}  ·  u/author  ·  ▲ ${a.score}  ·  ${a.com} comments`, bx, by + 4); by += 34;
+    x.fillStyle = '#8a8b90'; x.font = '400 21px Elms Sans, Arial'; x.fillText(a.talk ? 'from the portfolio  ·  just now' : `${a.sub}  ·  u/author  ·  ▲ ${a.score}  ·  ${a.com} comments`, bx, by + 4); by += 34;
     x.fillStyle = '#a6dfd3'; x.font = '500 21px Elms Sans, Arial'; x.fillText('matched: “' + a.term + '”', bx, by + 4); by += 36;
     x.fillStyle = '#c9cacd'; x.font = '400 22px Elms Sans, Arial'; wrap(x, a.body, bw).slice(0, 2).forEach(l => { x.fillText(l, bx, by); by += 30; });
     x.globalAlpha = 1; y -= blockH + 16;
@@ -747,6 +759,115 @@ function updateCards(t) {
   cards.instanceMatrix.needsUpdate = true; if (cards.instanceColor) cards.instanceColor.needsUpdate = true;
 }
 
+/* =====================================================================
+   LET'S TALK: a glass "new thread" card that lights up beside the alert line, past the seen gate. It is not there while
+   you scroll; "Let's talk" brings it in and flies the camera to it. Sending drops a copy onto the line, it rides to the
+   alert window and lands as a new alert (a note from the portfolio, never what the visitor typed), then the camera comes
+   back to the card. The fields are live (talk/surface.js).
+   ===================================================================== */
+const TC = new THREE.Vector3(X.seen + 1.2, 4.3, 2.6), TRY = -0.12;
+const easeIO = v => v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2, sstep = (a, b, v) => smooth(clamp((v - a) / (b - a), 0, 1));
+const talk = { mode: 'off', t: 0, dur: 1.6, P: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], L: [new THREE.Vector3(), new THREE.Vector3()], surf: null, card: null, css: null, cssR: null, opener: null, mobile: null, up: 0, seq: -1, slack: false, landed: false };
+const talkPose = { pos: new THREE.Vector3(), look: new THREE.Vector3() }, slackPose = { pos: new THREE.Vector3(X.slack - 2.0, 2.7, 6.4), look: new THREE.Vector3(X.slack, 1.95, 0) };
+const TALK_ALERT = { talk: true, title: 'New message from your portfolio', term: "let's talk", body: 'Sent to WhatsApp. A reply follows on WhatsApp or by email.', when: '9:42' };
+const talkCourier = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.4), new THREE.MeshBasicMaterial({ color: 0xa6dfd3, transparent: true, opacity: 0.95, toneMapped: false, side: THREE.DoubleSide })); talkCourier.visible = false; scene.add(talkCourier);
+function glassTalk() {   // the form on dark glass: a mint edge, light type, mint labels, inset fields
+  const s = talk.surf, cv = talk.cv, x = cv.getContext('2d'), k = cv.width / s.fw, w = cv.width, h = cv.height, L = s.layout();
+  x.clearRect(0, 0, w, h);
+  const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#141920'); g.addColorStop(1, '#0b0d11'); x.fillStyle = g; roundRect(x, 0, 0, w, h, 26 * k); x.fill();
+  const hl = x.createRadialGradient(w * 0.2, 0, 0, w * 0.2, 0, w * 0.9); hl.addColorStop(0, 'rgba(166,223,211,.10)'); hl.addColorStop(1, 'rgba(166,223,211,0)'); x.fillStyle = hl; roundRect(x, 0, 0, w, h, 26 * k); x.fill();
+  x.strokeStyle = 'rgba(166,223,211,.55)'; x.lineWidth = 2.2 * k; roundRect(x, 1.5 * k, 1.5 * k, w - 3 * k, h - 3 * k, 25 * k); x.stroke();
+  x.fillStyle = '#a6dfd3'; roundRect(x, 0, 0, 7 * k, h, 3 * k); x.globalAlpha = 0; x.fill(); x.globalAlpha = 1;
+  for (const f of L.fields) { x.fillStyle = '#07090c'; roundRect(x, f.x * k, f.y * k, f.w * k, f.h * k, 9 * k); x.fill(); x.strokeStyle = '#2f353d'; x.lineWidth = 1.4 * k; roundRect(x, f.x * k, f.y * k, f.w * k, f.h * k, 9 * k); x.stroke(); }
+  const COL = { title: '#f1f1ee', intro: '#c9cacd', label: '#a6dfd3', note: '#8a8b90', msg: '#ff8a7a' };
+  for (const t of L.texts) {
+    x.font = t.font(k); x.textBaseline = 'middle'; try { x.letterSpacing = (t.ls * k) + 'px'; } catch (_) {}
+    for (const wd of t.words) { x.fillStyle = COL[t.kind] || COL.intro; x.fillText(wd.w, wd.x * k, (wd.y + wd.h / 2) * k); }
+    try { x.letterSpacing = '0px'; } catch (_) {}
+  }
+  for (const sl of L.seals) { const cx = (sl.x + sl.w / 2) * k, cy = (sl.y + sl.h / 2) * k, R = sl.w / 2 * k * 0.86;
+    x.lineCap = x.lineJoin = 'round'; x.strokeStyle = '#a6dfd3'; x.lineWidth = 5 * k; x.shadowColor = 'rgba(166,223,211,.8)'; x.shadowBlur = 12 * k; x.beginPath(); x.arc(cx, cy, R, 0, 7); x.stroke();
+    x.beginPath(); x.moveTo(cx - R * 0.42, cy + R * 0.02); x.lineTo(cx - R * 0.1, cy + R * 0.34); x.lineTo(cx + R * 0.46, cy - R * 0.3); x.stroke(); x.shadowBlur = 0; }
+  talk.tex.needsUpdate = true;
+}
+async function buildTalk(config, send) {
+  const mobile = W / H < 0.85;
+  if (talk.card && talk.mobile === mobile) return;
+  if (talk.card) { scene.remove(talk.card); talk.surf.destroy(); talk.tex.dispose(); }
+  const { createSurface } = await import('../talk/surface.js');
+  if (document.fonts) await Promise.all([document.fonts.load("600 50px 'Elms Sans'"), document.fonts.load("800 13px 'Elms Sans'")]).catch(() => {});
+  const MPPc = 0.0017, fw = mobile ? 344 : 600;
+  talk.surf = createSurface({ config, send, width: fw, mobile, look: 'tb-look-glass', onChange: () => glassTalk(), onClose: () => closeTalk(), onSent: () => { talk.seq = 0; talk.landed = false; } });
+  const s = talk.surf, cw = s.fw * MPPc, ch = s.fh * MPPc;
+  const kk = Math.min(3, 2048 / Math.max(s.fw, s.fh)); talk.cv = document.createElement('canvas'); talk.cv.width = Math.round(s.fw * kk); talk.cv.height = Math.round(s.fh * kk);
+  talk.tex = new THREE.CanvasTexture(talk.cv); talk.tex.colorSpace = THREE.SRGBColorSpace; talk.tex.anisotropy = 8;
+  const card = new THREE.Group(); card.position.copy(TC); card.rotation.y = TRY;
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(cw, ch), new THREE.MeshBasicMaterial({ map: talk.tex, transparent: true, toneMapped: false })); face.position.z = 0.012; face.renderOrder = 3; card.add(face);
+  const slab = new THREE.Mesh(new RoundedBoxGeometry(cw + 0.04, ch + 0.04, 0.02, 3, 0.04), new THREE.MeshPhysicalMaterial({ color: 0x0b0d11, roughness: 0.3, metalness: 0.3, clearcoat: 1, clearcoatRoughness: 0.2, emissive: 0xa6dfd3, emissiveIntensity: 0.05 })); card.add(slab);
+  card.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 2.2, 8), new THREE.MeshStandardMaterial({ color: 0xa6dfd3, emissive: 0xa6dfd3, emissiveIntensity: 0.8 })), 0, -ch / 2 - 1.1, -0.02));   // a thin lit stem down towards the water
+  card.scale.setScalar(0.001); card.visible = false; scene.add(card);
+  talk.css = new CSS3DObject(s.el); talk.css.scale.setScalar(MPPc); talk.css.position.set(0, 0, 0.014); card.add(talk.css);
+  talk.card = card; talk.mobile = mobile; talk.cw = cw; talk.ch = ch;
+  glassTalk();
+  const n = new THREE.Vector3(Math.sin(TRY), 0, Math.cos(TRY)), tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const needH = (ch + 0.25) * (mobile ? 1.08 : 1.26), needW = (cw + (mobile ? 0.05 : 0.6)) * 1.02, d = Math.max(needH / (2 * tn), needW / (2 * tn * camera.aspect));
+  talkPose.look.copy(TC).add(new THREE.Vector3(0, 0.06, 0)); talkPose.pos.copy(TC).addScaledVector(n, d).add(new THREE.Vector3(0, 0.06, 0));
+  slackPose.pos.set(X.slack - 2.0, 2.7 + (mobile ? 0.4 : 0), 6.4 + (mobile ? 4.5 : 0)); slackPose.look.set(X.slack, 1.95 - (mobile ? 0.6 : 0), 0);
+}
+function flyTo(pos, look, dur) {   // a gentle arc from wherever the camera is now
+  const P0 = camera.position.clone(); _tl.copy(camera.position).add(_tv.set(0, 0, -1).applyQuaternion(camera.quaternion).multiplyScalar(4));
+  talk.P[0].copy(P0); talk.P[1].set((P0.x + pos.x) / 2, Math.max(P0.y, pos.y) + 0.9, Math.max(P0.z, pos.z) + 1.2); talk.P[2].copy(pos);
+  talk.L[0].copy(_tl); talk.L[1].copy(look); talk.t = reduce ? dur : 0; talk.dur = dur;
+}
+const _tl = new THREE.Vector3(), _tv = new THREE.Vector3(), _tq = new THREE.Vector3();
+async function openTalk({ config, send, opener, fallback }) {
+  if (talk.mode === 'in' || talk.mode === 'on') return;
+  talk.opener = opener;
+  if (!talk.cssR) { talk.cssR = new CSS3DRenderer(); document.getElementById('talk3d').appendChild(talk.cssR.domElement); talk.cssR.setSize(W, H); }
+  document.documentElement.classList.add('talking'); document.documentElement.style.overflow = 'hidden';
+  try { await buildTalk(config, send); } catch (err) {
+    console.warn('[contact] card unavailable:', err && err.message); document.documentElement.classList.remove('talking'); document.documentElement.style.removeProperty('overflow'); talk.card = null; if (fallback) fallback(); return; }
+  talk.surf.reset(); talk.seq = -1; talk.card.visible = true;
+  flyTo(talkPose.pos, talkPose.look, 1.6); talk.L[0].copy(camLook); talk.mode = 'in';
+}
+function closeTalk() {
+  if (talk.mode === 'off' || talk.mode === 'out') return;
+  cameraAt(stage.prog); flyTo(tgtPos, tgtLook, 1.6); talk.mode = 'out'; talk.seq = -1; talkCourier.visible = false; talk.slack = false;
+  document.documentElement.classList.remove('talking');
+}
+function talkFrame(dt, t) {   // the camera (and the card) while Let's talk is open; true while it is in charge
+  if (talk.card) {
+    const want = talk.mode === 'in' || talk.mode === 'on' ? 1 : 0; talk.up = want ? Math.min(1, talk.up + dt / 0.7) : (talk.mode === 'off' ? Math.max(0, talk.up - dt / 0.4) : talk.up);
+    const v = want ? 1 - Math.pow(1 - talk.up, 3) : smooth(talk.up); talk.card.scale.setScalar(Math.max(0.001, v)); talk.card.visible = talk.up > 0.001;
+    talk.card.position.y = TC.y + Math.sin(t * 0.9) * 0.03;
+  }
+  if (talk.mode === 'off') return false;
+  talk.t = Math.min(talk.dur, talk.t + dt); const e = easeIO(talk.t / talk.dur), u = 1 - e;
+  camera.position.set(u * u * talk.P[0].x + 2 * u * e * talk.P[1].x + e * e * talk.P[2].x, u * u * talk.P[0].y + 2 * u * e * talk.P[1].y + e * e * talk.P[2].y, u * u * talk.P[0].z + 2 * u * e * talk.P[1].z + e * e * talk.P[2].z);
+  _tq.copy(talk.L[0]).lerp(talk.L[1], sstep(0.05, 0.8, talk.t / talk.dur)); camera.lookAt(_tq);
+  focus.position.lerp(_tv.copy(talk.seq >= 0.4 && talk.seq < 3.6 ? slackPose.look : TC).add(_tl.set(-1.2, 1.2, 3)), 0.06);
+  if (talk.mode === 'in' && talk.t >= talk.dur) { talk.mode = 'on'; talk.surf.focusFirst(); }
+  if (talk.mode === 'out' && talk.t >= talk.dur) { talk.mode = 'off'; camPos.copy(camera.position); camLook.copy(_tq); document.documentElement.style.removeProperty('overflow'); if (talk.opener && talk.opener.focus) talk.opener.focus({ preventScroll: true }); }
+  // after sending: a copy drops onto the line, rides to the alert window and lands as a new alert; then back to the card
+  if (talk.seq >= 0 && talk.mode === 'on') {
+    const q0 = talk.seq; talk.seq += dt; const q = talk.seq;
+    talk.slack = q > 0.2 && q < 4.6;
+    if (q0 < 0.35 && q >= 0.35) { flyTo(slackPose.pos, slackPose.look, 1.5); talk.L[0].copy(_tq); }
+    if (q < 2.6) {
+      const a = clamp(q / 0.7, 0, 1), b = clamp((q - 0.7) / 1.9, 0, 1), eb = b < 0.5 ? 2 * b * b : 1 - Math.pow(-2 * b + 2, 2) / 2;
+      _tv.copy(TC).lerp(_tl.set(X.seen + 0.4, ALERT_Y + 0.05, 0.05), smooth(a)); _tv.y += Math.sin(a * Math.PI) * 0.4;
+      if (b > 0) _tv.set(lerp(X.seen + 0.4, X.slack - 0.55, eb), ALERT_Y + Math.sin(b * Math.PI) * 0.35, 0.05);
+      talkCourier.position.copy(_tv); talkCourier.scale.setScalar(lerp(1.6, 0.6, smooth(a)) * (1 - smooth(clamp((b - 0.86) / 0.14, 0, 1))) + 0.001); talkCourier.rotation.y = lerp(TRY, 0, a); talkCourier.visible = true;
+    } else talkCourier.visible = false;
+    if (!talk.landed && q >= 2.6) { talk.landed = true; slackState.lastAt = t; slackState.shown.push({ a: TALK_ALERT, born: t }); if (slackState.shown.length > 4) slackState.shown.shift(); slackPulse = 1; slackState.dirty = true; sparks.fire(X.slack - 0.7, ALERT_Y + 0.5, 0.2, C.mint, 26, 1.4, 0.7, t); }
+    if (q0 < 4.4 && q >= 4.4) { flyTo(talkPose.pos, talkPose.look, 1.4); talk.L[0].copy(_tq); }
+    if (q > 6) talk.seq = -1;
+  }
+  return true;
+}
+addEventListener('keydown', e => { if (talk.mode !== 'on' && talk.mode !== 'in') return; if (e.key === 'Escape') { e.preventDefault(); closeTalk(); } else talk.surf && talk.surf.trap(e); });
+window.__talkScene = { open: o => { openTalk(o); } };
+
 /* ---- camera stations (scroll-scrubbed) ---- */
 const KEY = {
   hero:  { pos: [X.start + 5, 2.4, 13.5], look: [X.lens - 7.5, 1.3, 0], f: [X.clock, 2.5, 5] },
@@ -779,7 +900,7 @@ function cameraAt(p) {
 /* ---- pointer: slight parallax ---- */
 const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
 addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty = (e.clientY / H) * 2 - 1; }, { passive: true });
-function resize() { W = innerWidth; H = innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); camera.aspect = W / H; camera.fov = W / H < 0.85 ? 54 : 40; camera.updateProjectionMatrix(); water.getRenderTarget().setSize(Math.round(W * DPR * (coarse ? 0.3 : 0.4)), Math.round(H * DPR * (coarse ? 0.3 : 0.4))); fly.resize(); }
+function resize() { W = innerWidth; H = innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); if (talk.cssR) talk.cssR.setSize(W, H); camera.aspect = W / H; camera.fov = W / H < 0.85 ? 54 : 40; camera.updateProjectionMatrix(); water.getRenderTarget().setSize(Math.round(W * DPR * (coarse ? 0.3 : 0.4)), Math.round(H * DPR * (coarse ? 0.3 : 0.4))); fly.resize(); }
 addEventListener('resize', resize);
 
 /* ---- butterfly cursor (same as the main site) ---- */
@@ -821,8 +942,10 @@ function frame(now) {
   cameraAt(prog);
   // camera easing + parallax
   ptr.x = lerp(ptr.x, ptr.tx, 0.05); ptr.y = lerp(ptr.y, ptr.ty, 0.05);
-  const kc = SNAP ? 1 : 1 - Math.exp(-dt * 4.2); camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc); focus.position.lerp(tgtFocus, kc * 0.9);
-  camera.position.set(camPos.x + ptr.x * 0.35, camPos.y - ptr.y * 0.25, camPos.z); camera.lookAt(camLook);
+  if (!talkFrame(dt, t)) {
+    const kc = SNAP ? 1 : 1 - Math.exp(-dt * 4.2); camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc); focus.position.lerp(tgtFocus, kc * 0.9);
+    camera.position.set(camPos.x + ptr.x * 0.35, camPos.y - ptr.y * 0.25, camPos.z); camera.lookAt(camLook);
+  }
   // the stream
   updateCards(t);
   sparks.m.uniforms.uTime.value = t; sky.update(t, dt); water.material.uniforms.uTime.value = t; mist.update(t);
@@ -844,10 +967,10 @@ function frame(now) {
   // memory block ripples when it swallows a repeat
   memPulse = lerp(memPulse, 0, 0.08); memBox.scale.setScalar(1 + memPulse * 0.08); memBox.material.opacity = 0.22 + memPulse * 0.3; stackMat.emissiveIntensity = 0.25 + memPulse * 1.2;
   // the Slack window: assembles as the camera arrives; then one courier card brings a new alert every 3 s (looping through five), with a ping + glow
-  const want = clamp((prog - 0.72) / 0.14, 0, 1); slackP = lerp(slackP, want, 1 - Math.exp(-dt * 5));
+  const want = talk.slack ? 1 : clamp((prog - 0.72) / 0.14, 0, 1); slackP = lerp(slackP, want, 1 - Math.exp(-dt * 5));
   // one courier card at a time: departs the seen gate every 3 s, rides the line, and the alert lands the moment it reaches the window
   const CYCLE = 3, RIDE = 1.9;
-  if (want > 0.3 && courier.t0 < 0 && t - slackState.lastAt > (slackState.shown.length ? CYCLE - RIDE : 0.6)) { courier.t0 = t; }
+  if (want > 0.3 && !talk.slack && courier.t0 < 0 && t - slackState.lastAt > (slackState.shown.length ? CYCLE - RIDE : 0.6)) { courier.t0 = t; }
   if (courier.t0 >= 0) {
     const u = clamp((t - courier.t0) / RIDE, 0, 1), eu = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
     const cx = lerp(X.seen + 0.4, X.slack - 0.55, eu), cy = ALERT_Y + Math.sin(u * Math.PI) * 0.35 + 0.3 * smooth(clamp((u - 0.7) / 0.3, 0, 1)), sc = 1 - smooth(clamp((u - 0.86) / 0.14, 0, 1));
@@ -863,9 +986,11 @@ function frame(now) {
   slackBack.material.emissive = slackBack.material.emissive || new THREE.Color(0xa6dfd3); slackBack.material.emissive.setHex(0xa6dfd3); slackBack.material.emissiveIntensity = 0.14 * Math.max(0, 1 - pk * 1.5) * want;
   billboards.forEach(l => l.lookAt(camera.position));
   composer.render();
+  if (talk.cssR && talk.mode !== 'off') talk.cssR.render(scene, camera);
   fly.frame(now);
   requestAnimationFrame(frame);
 }
 resize(); cameraAt(stage.prog); camPos.copy(tgtPos); camLook.copy(tgtLook); focus.position.copy(tgtFocus);
 requestAnimationFrame(frame);
 </script>
+<script src="../site.js" defer></script>
