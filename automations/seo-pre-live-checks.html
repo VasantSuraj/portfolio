@@ -1,0 +1,1214 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SEO Pre-Live Checks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Archivo:wdth,wght@62..125,300..700&family=Fraunces:opsz,wght@9..144,300..700&display=swap" rel="stylesheet">
+<style>
+/* Opening Night. One automation, shown as a gallery the evening before it opens: a new page arrives from staging and is
+   walked from spotlight to spotlight, one check at a time. Scrolling moves the camera; each check lights up as you reach it. */
+:root{
+  --bg:#12201b; --ink:#efe8da; --ink-soft:#9db0a6; --ink-mid:#cfd6cf; --pill:#efe8da; --pill-ink:#12201b; --line:#253a33; --card:#172a24;
+  --gilt:#c9a24a; --p0:#d9483b; --p1:#e8a33d; --pass:#7cc29a;
+  --font:'Elms Sans','Archivo','Helvetica Neue',Arial,sans-serif;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a,button{color:inherit;font:inherit}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;transition:filter .9s ease}
+body.hush #gl{filter:blur(9px) saturate(.85) brightness(.85)}
+.hushveil{position:fixed;inset:0;z-index:2;pointer-events:none;background:rgba(18,32,27,.45);opacity:0;transition:opacity .9s ease}
+body.hush .hushveil{opacity:1}
+.scrim{position:fixed;left:0;right:0;bottom:0;height:48%;z-index:2;pointer-events:none;background:linear-gradient(to top,rgba(18,32,27,.9),rgba(18,32,27,.45) 45%,rgba(18,32,27,0))}
+.vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%)}
+.grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.08;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 1.6s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+
+.ui{position:fixed;inset:0;z-index:4;pointer-events:none}
+.ui > *{pointer-events:auto}
+.ui.off > :not(.mark):not(.actions){opacity:0!important;pointer-events:none!important}
+.mark{position:absolute;top:calc(28px + env(safe-area-inset-top,0px));left:max(28px,env(safe-area-inset-left,0px));font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:14px}
+.mark svg{display:block}
+.actions{position:absolute;top:calc(22px + env(safe-area-inset-top,0px));right:max(24px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center}
+.pill{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 26px;border-radius:999px;background:var(--pill);color:var(--pill-ink);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transition:transform .25s cubic-bezier(.2,.7,.2,1),background .25s;text-decoration:none;white-space:nowrap}
+.pill:hover{transform:translateY(-2px);background:#fff8ea}
+.pill:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.pill .dot{width:5px;height:5px;border-radius:999px;background:var(--pill-ink)}
+.pill.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #3a524a}
+.pill.ghost:hover{background:rgba(239,232,218,.06)}
+
+.cap{position:absolute;left:max(28px,env(safe-area-inset-left,0px));bottom:calc(36px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100vw - 56px));opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;pointer-events:none}
+.cap.on{opacity:1;transform:none;pointer-events:auto}
+.cap em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.cap em b{font-weight:600;color:var(--gilt)}
+.cap h2{margin:0 0 10px;font-weight:500;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1.05}
+.cap p{margin:0;font-size:16px;line-height:1.5;color:var(--ink-mid);max-width:44ch}
+.cap .key{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.cap .key i{font-style:normal;display:inline-flex;align-items:center;gap:7px}
+.cap .key i::before{content:'';width:9px;height:9px;border-radius:999px;background:var(--c,#fff)}
+
+.hero-title{position:absolute;left:max(28px,env(safe-area-inset-left,0px));right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);pointer-events:none;transition:opacity .5s ease}
+.hero-title em{display:block;font-style:normal;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
+.hero-title h1{margin:0;font-weight:500;font-size:clamp(44px,7.4vw,124px);letter-spacing:-.035em;line-height:.92;max-width:9ch}
+.hero-title p{margin:22px 0 0;font-size:clamp(16px,1.4vw,20px);color:var(--ink-mid);max-width:32ch}
+.hero-title .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.hero-title .row > *{pointer-events:auto}
+
+.progress{position:absolute;right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px}
+.progress i{width:6px;height:6px;border-radius:999px;background:#2f463e;transition:background .3s,transform .3s}
+.progress i.on{background:var(--gilt);transform:scale(1.4)}
+
+.end{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:calc(112px + env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(28px,env(safe-area-inset-left,0px));opacity:0;transition:opacity .6s ease;pointer-events:none}
+.end.on{opacity:1;pointer-events:auto}
+.end .big{margin:0;font-weight:500;font-size:clamp(34px,min(6.2vw,9vh),100px);letter-spacing:-.035em;line-height:.95;max-width:14ch}
+.end .sub{margin:22px 0 0;font-size:clamp(17px,1.5vw,22px);color:var(--ink-mid);max-width:42ch}
+.end .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;align-items:center}
+.end .next{margin-top:48px;font-size:14px;color:var(--ink-soft)}
+.end .next a{color:var(--ink);text-decoration:none;font-weight:500}
+
+.scroll{position:absolute;right:max(28px,env(safe-area-inset-right,0px));bottom:calc(32px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);transition:opacity .6s ease}
+.scroll i{display:block;width:44px;height:2px;background:var(--ink-soft);animation:line 2.2s cubic-bezier(.7,0,.3,1) infinite}
+@keyframes line{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+
+#fly{position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;display:block}
+.runway{position:relative;z-index:0;height:1300svh;pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------------- the runbook ---------------- */
+.doc{position:relative;z-index:3;background:var(--bg);padding:0 0 120px}
+.doc::before{content:'';position:absolute;left:0;right:0;top:-220px;height:220px;background:linear-gradient(to bottom,rgba(18,32,27,0),var(--bg));pointer-events:none}
+.doc-in{width:min(1240px,calc(100% - 56px));margin:0 auto}
+.doc-head{padding:140px 0 56px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:end}
+.doc-head em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:18px}
+.doc-head h2{margin:0;font-weight:500;font-size:clamp(34px,4.6vw,68px);letter-spacing:-.03em;line-height:1}
+.doc-head p{margin:20px 0 0;font-size:18px;line-height:1.5;color:var(--ink-mid);max-width:52ch}
+.facts{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.facts div{background:var(--card);padding:18px 20px}
+.facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.facts dd{margin:0;font-size:16px;font-weight:500}
+.doc-grid{display:grid;grid-template-columns:220px 1fr;gap:64px;padding-top:56px}
+.toc{position:sticky;top:120px;align-self:start;display:flex;flex-direction:column;gap:4px;font-size:13px;letter-spacing:.04em}
+.toc a{text-decoration:none;color:var(--ink-soft);padding:8px 0;display:flex;gap:12px;transition:color .25s}
+.toc a span{font-variant-numeric:tabular-nums;color:#4f675e}
+.toc a:hover,.toc a.on{color:var(--ink)}
+.toc .foot{margin-top:28px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:12px;line-height:1.5}
+article{min-width:0}
+.sec{padding:0 0 72px;margin-bottom:72px;border-bottom:1px solid var(--line)}
+.sec:last-child{border:0;margin:0;padding:0}
+.sec h3{margin:0 0 26px;font-weight:500;font-size:clamp(24px,2.4vw,34px);letter-spacing:-.02em;display:flex;gap:18px;align-items:baseline}
+.sec h3 span{font-family:var(--font);font-size:13px;letter-spacing:.1em;color:var(--ink-soft);font-weight:500}
+.sec p{margin:0 0 16px;font-size:17px;line-height:1.6;color:var(--ink-mid);max-width:64ch}
+.sec p:last-child{margin-bottom:0}
+.lede{font-size:clamp(20px,1.8vw,26px)!important;line-height:1.35!important;letter-spacing:-.01em;color:var(--ink)!important;max-width:30ch!important}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.steps li{background:var(--card);display:grid;grid-template-columns:72px 1fr;gap:20px;padding:24px 26px 26px 22px;align-items:start}
+.steps .n{font-size:13px;letter-spacing:.08em;color:var(--ink-soft);font-variant-numeric:tabular-nums;padding-top:4px;display:flex;align-items:center;gap:10px}
+.steps .n::before{content:'';width:8px;height:8px;border-radius:999px;background:var(--c,#555)}
+.steps h4{margin:0 0 6px;font-weight:500;font-size:18px;letter-spacing:-.01em}
+.steps p{font-size:15px!important;color:#b9c4bd!important;margin:0!important;max-width:60ch!important}
+.steps .node{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:#10201a;border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+.rules{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.rules li{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.rules b{display:block;font-weight:500;font-size:17px;margin-bottom:8px}
+.rules span{font-size:15px;color:#b9c4bd;line-height:1.5;display:block}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px}
+.checks{width:100%;min-width:520px;border-collapse:collapse;font-size:15px;background:var(--card)}
+.checks th,.checks td{text-align:left;padding:14px 20px;border-bottom:1px solid var(--line);vertical-align:top}
+.checks tr:last-child td{border-bottom:0}
+.checks th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;background:#14251f}
+.checks td:first-child{color:var(--ink-soft);font-variant-numeric:tabular-nums;width:48px}
+.checks td i{font-style:normal;color:var(--ink-soft)}
+.checks code{font-family:var(--mono);font-size:13px;color:var(--gilt)}
+.note{font-size:14px!important;color:var(--ink-soft)!important;margin-top:16px!important}
+.prio{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.prio div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;border-top:4px solid var(--c)}
+.prio b{display:block;font-weight:600;font-size:28px;letter-spacing:-.02em;color:var(--c);margin-bottom:6px}
+.prio span{font-size:15px;color:#b9c4bd;line-height:1.5}
+.report{margin:28px 0 0;background:#f4eee2;color:#1d2a25;border-radius:20px;max-width:660px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.report .hd{padding:20px 24px;border-bottom:1px solid #e0d8c8;display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.report .hd b{font-weight:600;font-size:17px}
+.report .hd span{font-size:13px;color:#5f6b65}
+.report .st{display:inline-block;background:var(--p0);color:#fff;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;letter-spacing:.06em}
+.report ul{list-style:none;margin:0;padding:10px 24px 18px}
+.report li{display:grid;grid-template-columns:44px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #e7e0d2;font-size:14px;align-items:baseline}
+.report li:last-child{border:0}
+.report li i{font-style:normal;font-weight:700;font-size:12px;letter-spacing:.04em}
+.report li small{display:block;color:#5f6b65;font-size:13px;margin-top:2px}
+.report .p0 i{color:var(--p0)}.report .p1 i{color:#b97614}.report .ok i{color:#2f8a57}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:8px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 22px}
+.stats b{display:block;font-weight:500;font-size:clamp(30px,3vw,44px);letter-spacing:-.03em;line-height:1;margin-bottom:10px;color:var(--gilt)}
+.stats span{font-size:14px;color:var(--ink-soft)}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pills i{font-style:normal;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border-radius:999px;background:#1d332c}
+.doc-foot{margin-top:96px;padding-top:40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.doc-foot .nm{font-size:14px;color:var(--ink-soft)}
+.doc-foot .nm a{color:var(--ink);text-decoration:none;font-weight:500}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:980px){
+  .doc-head{grid-template-columns:1fr;gap:32px;padding-top:110px}
+  .doc-grid{grid-template-columns:1fr;gap:0}
+  .toc{display:none}
+}
+@media (max-width:760px){
+  .cap{bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+  .cap h2{font-size:26px}.cap p{font-size:15px}
+  .hero-title{top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:none}
+  .hero-title h1{font-size:15vw}
+  .progress{display:none}
+  .scroll{display:none}
+  .mark span{display:none}
+  .doc-in{width:calc(100% - 40px)}
+  .steps li{grid-template-columns:1fr;gap:10px;padding:20px}
+  .checks th,.checks td{padding:12px 14px}
+  .report li{grid-template-columns:38px 1fr}
+}
+@media (prefers-reduced-motion:reduce){#gl,.hushveil{transition:none}.scroll i,.grain{animation:none}.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+/* Let's talk: the camera visits the commission painting; everything else steps aside */
+#talk3d{position:fixed;inset:0;z-index:3;pointer-events:none;display:none}
+html.talking #talk3d{display:block}
+html.talking #talk3d .tb-live{pointer-events:auto}
+html.talking .cap,html.talking .hero-title,html.talking .end,html.talking .progress,html.talking .scroll,html.talking .scrim,html.talking .hushveil{opacity:0!important;pointer-events:none!important;transition:opacity .5s ease}
+html.talking .doc{visibility:hidden}
+html.talking body.hush #gl{filter:none}
+.tb-look-paint{--tb-display:'Elms Sans',Archivo,Arial,sans-serif;--tb-display-w:700;--tb-display-ls:-.035em;--tb-ink:#efe4cc;--tb-field-ink:#f4ead6;--tb-accent:#d8ad5f;--tb-accent-soft:rgba(216,173,95,.25);--tb-placeholder:rgba(244,234,214,.42);--tb-bad:#ec7a50;--tb-ghost:#efe4cc}
+.tb-look-paint .tb-btn{color:#2f2408;text-shadow:0 1px 0 rgba(255,240,200,.5);background:radial-gradient(120% 140% at 25% 0%,rgba(255,244,210,.6),transparent 55%),repeating-linear-gradient(90deg,rgba(90,60,20,.10) 0 1px,transparent 1px 3px),linear-gradient(180deg,#e8c77e,#c9a24a 55%,#a07a2e);box-shadow:inset 0 1px 0 rgba(255,245,210,.75),inset 0 -2px 0 rgba(80,52,14,.5),0 0 0 1px rgba(70,45,10,.7),0 6px 12px rgba(0,0,0,.45);filter:brightness(.92)}
+.tb-look-paint .tb-btn:hover{filter:brightness(1)}
+.tb-look-paint .tb-knob{color:#2f2408;background:radial-gradient(circle at 38% 32%,#f2d89c,#c9a24a 45%,#6a4c18 100%);box-shadow:0 3px 6px rgba(0,0,0,.55),inset 0 -2px 3px rgba(60,40,10,.55);filter:brightness(.92)}
+</style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div id="talk3d"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="scrim" aria-hidden="true"></div>
+<div class="hushveil" aria-hidden="true"></div>
+
+<div class="ui" id="ui">
+  <a class="mark" href="../index.html#from-seo-pre-live-checks" id="mark" aria-label="Back to the projects forest"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3 5 9l6 6"/></svg><span>Vasant Suraj</span></a>
+  <div class="actions"><a class="pill" href="mailto:vasantsuraj02@gmail.com" data-contact aria-haspopup="dialog">Let's talk <span class="dot" aria-hidden="true"></span></a></div>
+
+  <div class="hero-title" id="heroTitle">
+    <em>Automation · Publishing</em>
+    <h1>SEO Pre&#8209;Live Checks</h1>
+    <p>Eight SEO checks on every new page before it goes live.</p>
+    <div class="row"><a class="pill ghost" href="#doc">Read the runbook</a></div>
+  </div>
+
+  <div class="cap" data-i="1"><em><b>01</b> · Arrive</em><h2>Only new pages come in.</h2><p>Publishing a page to the Webflow staging domain starts a run. Pages already live on production are walked past, so editing a live page never sends an alert.</p><div class="key"><i style="--c:#c9a24a">new from staging</i><i style="--c:#4f675e">already on view · skipped</i></div></div>
+  <div class="cap" data-i="2"><em><b>02</b> · The label</em><h2>Title, description and poster, measured.</h2><p>The meta title must be 10 to 65 characters and the meta description 50 to 160. There has to be an OG image for the share card.</p><div class="key"><i style="--c:#7cc29a">pass</i></div></div>
+  <div class="cap" data-i="3"><em><b>03</b> · The paperwork</em><h2>Proof of the original, and its catalogue entry.</h2><p>The canonical tag says which address is the original. Without it the page can't open. JSON-LD and BreadcrumbList schema must be there, and blog posts need author and dates in their Article schema.</p><div class="key"><i style="--c:#d9483b">P0 · fix before publishing</i><i style="--c:#7cc29a">pass</i></div></div>
+  <div class="cap" data-i="4"><em><b>04</b> · Captions and the door</em><h2>Every image captioned. The right sign on the door.</h2><p>Content images need alt text. Normal pages must say index, follow. Ad pages must say the opposite, noindex, nofollow, and the machine checks which rule applies.</p><div class="key"><i style="--c:#e8a33d">P1 · fix before go-live</i><i style="--c:#7cc29a">pass</i></div></div>
+  <div class="cap" data-i="5"><em><b>05</b> · The checklist</em><h2>What blocks launch, and what can wait.</h2><p>Every failure is ranked P0 or P1 and posted to the SEO channel with its reason, the checks that passed and any manual steps.</p></div>
+
+  <div class="end" id="end">
+    <p class="big">Every new page is checked before it goes live, without anyone remembering to.</p>
+    <p class="sub">P0 blocks launch. P1 waits for go-live. Ad pages can't slip through indexed.</p>
+    <div class="row"><a class="pill" href="#doc">Read the runbook <span class="dot" aria-hidden="true"></span></a><span class="pill ghost">n8n</span><span class="pill ghost">Webflow</span><span class="pill ghost">Slack</span></div>
+    <p class="next">Next automation → <a href="#" id="nextLink">Auto Internal Linking</a></p>
+  </div>
+
+  <div class="progress" id="progress" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="scroll" id="scrollHint" aria-hidden="true">Scroll to walk in <i></i></div>
+</div>
+
+<canvas id="fly" aria-hidden="true"></canvas>
+<div class="runway" id="runway" aria-hidden="true"></div>
+<h1 class="sr">SEO Pre-Live Checks. When a new page is published to the Webflow staging domain, n8n runs eight SEO checks on it, ranks every failure P0 or P1, and posts a report to Slack before the page reaches production.</h1>
+
+<!-- ============================ RUNBOOK ============================ -->
+<section class="doc" id="doc">
+  <div class="doc-in">
+    <header class="doc-head">
+      <div class="rv"><em>Runbook</em><h2>How SEO Pre-Live Checks works</h2><p>The full picture of the gallery above: what starts a run, the eight checks, how failures are ranked, and what lands in Slack.</p></div>
+      <dl class="facts rv">
+        <div><dt>Trigger</dt><dd>Webflow publish to staging</dd></div>
+        <div><dt>Runs</dt><dd>On event</dd></div>
+        <div><dt>Stack</dt><dd>n8n · Webflow · Slack</dd></div>
+        <div><dt>Skips</dt><dd>Pages already live</dd></div>
+      </dl>
+    </header>
+
+    <div class="doc-grid">
+      <nav class="toc" id="toc" aria-label="Runbook sections">
+        <a href="#d-problem"><span>01</span>Problem</a>
+        <a href="#d-flow"><span>02</span>Flow</a>
+        <a href="#d-checks"><span>03</span>The eight checks</a>
+        <a href="#d-prio"><span>04</span>Priorities</a>
+        <a href="#d-report"><span>05</span>The report</a>
+        <a href="#d-guard"><span>06</span>Guardrails</a>
+        <a href="#d-outcome"><span>07</span>Outcome</a>
+        <a href="#d-ops"><span>08</span>Operating it</a>
+        <div class="foot">Domains, channel names and people's names are left out on purpose.</div>
+      </nav>
+
+      <article>
+        <section class="sec rv" id="d-problem">
+          <h3><span>01</span>Problem</h3>
+          <p class="lede">Pages went live with SEO mistakes nobody saw until they were indexed.</p>
+          <p>Missing canonicals, no schema, the wrong robots directive and empty alt text all reached production. The SEO lead usually found them after the pages were already in the index. Checks before launch depended on someone remembering to run them.</p>
+          <p>Ad landing pages made it worse: they follow the opposite indexing rule from every other page, which made the mistake easy to make in either direction.</p>
+        </section>
+
+        <section class="sec rv" id="d-flow">
+          <h3><span>02</span>Flow</h3>
+          <p>One n8n workflow, started by a publish to the Webflow staging domain. Each run audits one page.</p>
+          <ol class="steps">
+            <li><div class="n" style="--c:#c9a24a">01</div><div><h4>Publish event and guard</h4><p>A staging publish starts the run. n8n checks whether the page already exists on the production domain. If it does, the run stops, so edits to live pages never send alerts.</p><span class="node">Webflow publish event · HTTP Request</span></div></li>
+            <li><div class="n" style="--c:#c9a24a">02</div><div><h4>Fetch and parse</h4><p>The staging page is fetched and its HTML is parsed.</p><span class="node">HTTP Request · Code</span></div></li>
+            <li><div class="n" style="--c:#7cc29a">03</div><div><h4>Run the eight checks</h4><p>Title and description length, OG image, canonical, JSON-LD, BreadcrumbList, image alt text and robots. Blog posts get one more check on their Article schema.</p><span class="node">Code</span></div></li>
+            <li><div class="n" style="--c:#d9483b">04</div><div><h4>Rank the failures</h4><p>Each failure is ranked P0, must fix before publishing, or P1, fix before go-live.</p><span class="node">Code</span></div></li>
+            <li><div class="n" style="--c:#efe8da">05</div><div><h4>Report to Slack</h4><p>A report goes to the SEO channel: page name, page URL, staging link, overall status, every failure with its reason, the checks that passed, and any manual steps.</p><span class="node">Slack</span></div></li>
+            <li><div class="n" style="--c:#efe8da">06</div><div><h4>Manual actions</h4><p>Some fixes need a person, for example confirming the slug with the page owner. The report lists them.</p><span class="node">Slack</span></div></li>
+          </ol>
+        </section>
+
+        <section class="sec rv" id="d-checks">
+          <h3><span>03</span>The eight checks</h3>
+          <div class="tbl-wrap">
+          <table class="checks">
+            <thead><tr><th>#</th><th>Check</th><th>Passes when</th><th>In the gallery</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Meta title length</td><td>10–65 characters</td><td><i>the wall label, measured</i></td></tr>
+              <tr><td>2</td><td>Meta description length</td><td>50–160 characters</td><td><i>the wall label, measured</i></td></tr>
+              <tr><td>3</td><td>OG image</td><td>Present</td><td><i>the exhibition poster</i></td></tr>
+              <tr><td>4</td><td>Canonical tag</td><td>Present</td><td><i>the provenance certificate</i></td></tr>
+              <tr><td>5</td><td>JSON-LD schema</td><td>At least one block</td><td><i>the catalogue entry</i></td></tr>
+              <tr><td>6</td><td>BreadcrumbList schema</td><td>Present</td><td><i>the floor map</i></td></tr>
+              <tr><td>7</td><td>Content image alt text</td><td>No content image with empty alt</td><td><i>a caption under every image</i></td></tr>
+              <tr><td>8</td><td>Robots meta</td><td><code>index,follow</code> for normal pages, <code>noindex,nofollow</code> for ad pages under the ads path</td><td><i>the sign on the door</i></td></tr>
+              <tr><td>+</td><td>Article schema (blog only)</td><td>Has author, datePublished and dateModified</td><td><i>the artist's signature and date</i></td></tr>
+            </tbody>
+          </table>
+          </div>
+          <p class="note">In the source notes, only the canonical check is marked P0. The ranking of the example failures in the scene above is illustrative.</p>
+        </section>
+
+        <section class="sec rv" id="d-prio">
+          <h3><span>04</span>Priorities</h3>
+          <div class="prio">
+            <div style="--c:#d9483b"><b>P0</b><span>Must be fixed before the page is published. A missing canonical is P0.</span></div>
+            <div style="--c:#e8a33d"><b>P1</b><span>Can wait, but must be fixed before the page goes live.</span></div>
+          </div>
+          <p style="margin-top:22px">Developers see at a glance what blocks the launch and what can be done afterwards.</p>
+        </section>
+
+        <section class="sec rv" id="d-report">
+          <h3><span>05</span>The report</h3>
+          <p>One message per page, posted to the SEO channel. Example values are illustrative.</p>
+          <div class="report" aria-label="Example report">
+            <div class="hd"><div><b>Ten ways to fix slow landing pages</b><br><span>/blog/fix-slow-landing-pages · staging link ↗</span></div><span class="st">2 TO FIX</span></div>
+            <ul>
+              <li class="p0"><i>P0</i><span>Canonical tag missing<small>Add the canonical URL before publishing.</small></span></li>
+              <li class="p1"><i>P1</i><span>1 content image has empty alt text<small>Write a caption before go-live.</small></span></li>
+              <li class="ok"><i>PASS</i><span>Meta title 41/65 · Meta description 136/160 · OG image · JSON-LD · BreadcrumbList · Robots index, follow · Article author and dates</span></li>
+              <li class="ok"><i>TODO</i><span>Confirm the slug with the page owner.</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="sec rv" id="d-guard">
+          <h3><span>06</span>Guardrails</h3>
+          <ul class="rules">
+            <li><b>Live pages are skipped</b><span>If the page already exists on production, the run stops. Edits to live pages never send alerts.</span></li>
+            <li><b>Two indexing rules</b><span>Ad pages under the ads path must be noindex, nofollow. Everything else must be index, follow. The check picks the right rule for each page.</span></li>
+            <li><b>Token expiry</b><span>If the Webflow API token expires, checks stop firing. Renew it, then republish.</span></li>
+            <li><b>Old publishes</b><span>A staging publish older than 60 minutes doesn't trigger a run. Republish to staging to start a fresh one.</span></li>
+          </ul>
+        </section>
+
+        <section class="sec rv" id="d-outcome">
+          <h3><span>07</span>Outcome</h3>
+          <div class="stats">
+            <div><b>8</b><span>checks on every new page before production</span></div>
+            <div><b>0</b><span>people who have to remember to run them</span></div>
+            <div><b>2</b><span>opposite indexing rules applied automatically</span></div>
+          </div>
+          <p style="margin-top:26px">The P0 and P1 ranking tells developers what blocks the launch and what can wait, and the common ad-page mistake can't ship.</p>
+        </section>
+
+        <section class="sec rv" id="d-ops">
+          <h3><span>08</span>Operating it</h3>
+          <ul class="rules">
+            <li><b>Run the checks again</b><span>Republish the page to staging. A fresh report arrives a few minutes later.</span></li>
+            <li><b>Ad pages</b><span>Keep ad landing pages under the ads path so the noindex rule applies to them.</span></li>
+            <li><b>Blog posts</b><span>Fill in the author and both dates so the Article check passes.</span></li>
+            <li><b>Read the report</b><span>Fix every P0 before publishing. P1s can follow, as long as they're done before go-live.</span></li>
+          </ul>
+          <div class="pills" style="margin-top:28px"><i>n8n</i><i>Webflow</i><i>HTTP Request</i><i>Code</i><i>Slack</i></div>
+        </section>
+      </article>
+    </div>
+
+    <footer class="doc-foot">
+      <a class="pill ghost" href="#top">Back to the gallery</a>
+      <p class="nm">Next automation → <a href="#" id="nextLink2">Auto Internal Linking</a></p>
+    </footer>
+  </div>
+</section>
+
+<script>
+/* UI layer: scroll → station. Runs before the 3D module so the page reads even if WebGL is unavailable. */
+(() => {
+  const caps = [...document.querySelectorAll('.cap')], dots = [...document.querySelectorAll('.progress i')];
+  const runway = document.getElementById('runway'), ui = document.getElementById('ui'), hero = document.getElementById('heroTitle'), hint = document.getElementById('scrollHint'), end = document.getElementById('end');
+  const S = window.__stage = { prog: 0, station: 0, doc: 0 };
+  // stations: 0 hero · 1 arrive · 2 label · 3 paperwork · 4 captions and door · 5 checklist · 6 end
+  const CUT = [0.05, 0.225, 0.405, 0.625, 0.765, 0.905];
+  function onScroll() {
+    const H = innerHeight, max = Math.max(1, runway.offsetHeight - H);
+    const pr = Math.max(0, Math.min(1, scrollY / max));
+    let st = 0; while (st < CUT.length && pr >= CUT[st]) st++;
+    S.prog = pr; S.station = st; S.doc = Math.max(0, Math.min(1, (scrollY - (runway.offsetHeight - H * 0.9)) / (H * 0.5)));
+    caps.forEach(c => c.classList.toggle('on', Number(c.dataset.i) === st));
+    dots.forEach((d, i) => d.classList.toggle('on', i === st));
+    hero.style.opacity = String(1 - Math.min(1, pr / 0.04));
+    hint.style.opacity = String(pr < 0.02 ? 1 : 0);
+    end.classList.toggle('on', st === 6 && S.doc < 0.5);
+    document.body.classList.toggle('hush', st === 6 && S.doc < 0.5);
+    ui.classList.toggle('off', S.doc >= 0.5);
+  }
+  addEventListener('scroll', onScroll, { passive: true }); addEventListener('resize', onScroll); onScroll();
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  const links = [...document.querySelectorAll('.toc a')];
+  const io2 = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-30% 0px -55% 0px' });
+  document.querySelectorAll('.sec').forEach(s => io2.observe(s));
+})();
+
+/* back to the forest: when the visitor came from the home page, the arrow is a real browser "back" (usually instant, no reload,
+   exactly where they left). Otherwise the link opens the home page at this page's card. */
+(() => {
+  const mark = document.getElementById('mark'); if (!mark) return;
+  const slug = (/#from-([\w-]+)$/.exec(mark.getAttribute('href')) || [])[1];
+  mark.addEventListener('click', e => {
+    let ref; try { ref = new URL(document.referrer); } catch (_) { return; }
+    const home = new URL('../', location.href).pathname;
+    const fromHome = ref.origin === location.origin && [home, home + 'index.html', home + 'index'].includes(ref.pathname);
+    if (!fromHome || history.length < 2) return;
+    e.preventDefault();
+    try { if (slug) sessionStorage.setItem('returnTo', slug); } catch (_) {}
+    history.back();
+  });
+  // in-page links (#doc, #top) scroll without adding history entries, so "back" always means the forest
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || e.defaultPrevented) return;
+    const id = a.getAttribute('href'); e.preventDefault(); if (id === '#') return;
+    const el = id === '#top' ? null : document.querySelector(id), how = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (el) el.scrollIntoView({ behavior: how }); else scrollTo({ top: 0, behavior: how });
+    history.replaceState(null, '', id);
+  });
+})();
+</script>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(hover: none)').matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = t => t * t * (3 - 2 * t);
+const sstep = (a, b, v) => smooth(clamp((v - a) / (b - a), 0, 1));
+const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const backOut = t => { const c1 = 1.9, c3 = c1 + 1; return t <= 0 ? 0 : 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+let W = innerWidth, H = innerHeight;
+const stage = window.__stage; const SNAP = /snap/.test(location.search);
+const SANS = "'Elms Sans', Archivo, Arial, sans-serif", SERIF = "'Fraunces', Georgia, 'Times New Roman', serif", MONO = "ui-monospace, Menlo, monospace";
+
+/* =====================================================================
+   RENDERER · a dark gallery lit only by its spotlights
+   ===================================================================== */
+const canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+const DPR = Math.min(coarse ? 1.25 : 1.5, devicePixelRatio || 1);
+renderer.setPixelRatio(DPR);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const BG = new THREE.Color('#0d1814');
+renderer.setClearColor(BG, 1);
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(BG, 0.028);
+const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 140);
+const pmrem = new THREE.PMREMGenerator(renderer);
+const ENV = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;   // reflections for the gilt and brass only
+
+/* ---- helpers ---- */
+const at = (m, x, y, z) => { m.position.set(x, y, z); return m; };
+const shadow = (m, cast = true, recv = true) => { m.traverse(o => { if (o.isMesh) { o.castShadow = cast; o.receiveShadow = recv; } }); return m; };
+function roundRect(x, X0, Y0, w, h, r) { x.beginPath(); x.moveTo(X0 + r, Y0); x.arcTo(X0 + w, Y0, X0 + w, Y0 + h, r); x.arcTo(X0 + w, Y0 + h, X0, Y0 + h, r); x.arcTo(X0, Y0 + h, X0, Y0, r); x.arcTo(X0, Y0, X0 + w, Y0, r); x.closePath(); }
+function wrap(x, text, X0, Y0, maxW, lh, maxLines = 9) {
+  const words = text.split(' '); let line = '', y = Y0, n = 0;
+  for (const w of words) { const t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { x.fillText(line, X0, y); line = w; y += lh; if (++n >= maxLines) return y; } else line = t; }
+  if (line) x.fillText(line, X0, y); return y + lh;
+}
+const redraws = [];
+function ctex(w, h, draw, opts = {}) {   // a canvas texture that redraws itself once the web fonts arrive
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  if (opts.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...opts.repeat); }
+  const redraw = (...a) => { x.clearRect(0, 0, w, h); draw(x, w, h, ...a); t.needsUpdate = true; };
+  redraw(); t.userData.redraw = redraw; if (!opts.static) redraws.push(() => redraw());
+  return t;
+}
+const plane = (tex, w, h, mat = {}) => new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.82, ...mat }));
+
+/* ---- materials ---- */
+const M = {
+  gilt: new THREE.MeshStandardMaterial({ color: 0xc9a24a, metalness: 1, roughness: 0.3, envMap: ENV, envMapIntensity: 0.6 }),
+  brass: new THREE.MeshStandardMaterial({ color: 0xb48b44, metalness: 1, roughness: 0.38, envMap: ENV, envMapIntensity: 0.5 }),
+  black: new THREE.MeshStandardMaterial({ color: 0x121413, metalness: 0.4, roughness: 0.55, envMap: ENV, envMapIntensity: 0.2 }),
+  wood: new THREE.MeshStandardMaterial({ color: 0x5e3b20, roughness: 0.55, envMap: ENV, envMapIntensity: 0.12 }),
+  plinth: new THREE.MeshStandardMaterial({ color: 0xe6dfd1, roughness: 0.85 }),
+  mat: new THREE.MeshStandardMaterial({ color: 0xf2ece0, roughness: 0.9 }),
+  velvet: new THREE.MeshStandardMaterial({ color: 0x7a1f24, roughness: 0.95 }),
+  ceiling: new THREE.MeshStandardMaterial({ color: 0x0a1310, roughness: 1 }),
+  wains: new THREE.MeshStandardMaterial({ color: 0x18302a, roughness: 0.8 }),
+  hole: new THREE.MeshBasicMaterial({ color: 0x050807 }),
+};
+
+/* =====================================================================
+   THE ROOM: museum-green walls, an oak floor, a dark ceiling with lighting track
+   ===================================================================== */
+const ROOM = { x0: -27, x1: 21, back: -3.2, h: 4.7 };
+const DOOR = { x: 14.2, w: 1.7, h: 2.9 };
+{
+  const wallTex = ctex(512, 512, (x, w, h) => {
+    x.fillStyle = '#2c4c42'; x.fillRect(0, 0, w, h);
+    const img = x.getImageData(0, 0, w, h); for (let i = 0; i < img.data.length; i += 4) { const n = (Math.random() - 0.5) * 16; img.data[i] += n; img.data[i + 1] += n; img.data[i + 2] += n; } x.putImageData(img, 0, 0);
+  }, { repeat: [12, 2], static: true });
+  const wallM = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.95 });
+  const { x0, x1, back, h } = ROOM;
+  const seg = (xa, xb, ya, yb, z = back) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(xb - xa, yb - ya), wallM); at(m, (xa + xb) / 2, (ya + yb) / 2, z); m.receiveShadow = true; scene.add(m); return m; };
+  seg(x0, DOOR.x - DOOR.w / 2, 0, h); seg(DOOR.x + DOOR.w / 2, x1, 0, h); seg(DOOR.x - DOOR.w / 2, DOOR.x + DOOR.w / 2, DOOR.h, h);
+  for (const [sx, ry] of [[x0, Math.PI / 2], [x1, -Math.PI / 2]]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(14, h), wallM); m.rotation.y = ry; at(m, sx, h / 2, back + 7); m.receiveShadow = true; scene.add(m); }
+  // wainscot, chair rail and picture rail along the back wall (broken by the doorway)
+  for (const [xa, xb] of [[x0, DOOR.x - DOOR.w / 2 - 0.12], [DOOR.x + DOOR.w / 2 + 0.12, x1]]) {
+    const L = xb - xa, cx = (xa + xb) / 2;
+    scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(L, 0.95, 0.04), M.wains), cx, 0.475, back + 0.02)));
+    scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(L, 0.06, 0.07), M.wood), cx, 0.97, back + 0.035)));
+    scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(L, 0.14, 0.05), M.wood), cx, 0.07, back + 0.03)));
+    scene.add(at(new THREE.Mesh(new THREE.BoxGeometry(L, 0.04, 0.05), M.brass), cx, 3.75, back + 0.025));
+  }
+  // the doorway's gilt architrave
+  for (const sx of [-1, 1]) scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.14, DOOR.h + 0.07, 0.1), M.gilt), DOOR.x + sx * (DOOR.w / 2 + 0.05), (DOOR.h + 0.07) / 2, back + 0.04)));
+  scene.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(DOOR.w + 0.34, 0.14, 0.1), M.gilt), DOOR.x, DOOR.h + 0.07, back + 0.04)));
+  // the side room through the door (ads live here)
+  const sr = { xa: DOOR.x - 3.4, xb: DOOR.x + 3.4, za: back, zb: back - 6 };
+  const sideM = new THREE.MeshStandardMaterial({ color: 0x3a2730, roughness: 0.95 });
+  { const m = new THREE.Mesh(new THREE.PlaneGeometry(sr.xb - sr.xa, h), sideM); at(m, DOOR.x, h / 2, sr.zb); scene.add(m); }
+  for (const [sx, ry] of [[sr.xa, Math.PI / 2], [sr.xb, -Math.PI / 2]]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(6, h), sideM); m.rotation.y = ry; at(m, sx, h / 2, back - 3); m.receiveShadow = true; scene.add(m); }
+  for (const [xa, xb, zz] of [[sr.xa, sr.xb, sr.zb + 0.02]]) { scene.add(at(new THREE.Mesh(new THREE.BoxGeometry(xb - xa, 0.95, 0.04), new THREE.MeshStandardMaterial({ color: 0x2a1c22, roughness: 0.8 })), (xa + xb) / 2, 0.475, zz)); scene.add(at(new THREE.Mesh(new THREE.BoxGeometry(xb - xa, 0.04, 0.05), M.brass), (xa + xb) / 2, 3.75, zz)); }
+  { const m = new THREE.Mesh(new THREE.PlaneGeometry(sr.xb - sr.xa, 6), M.ceiling); m.rotation.x = Math.PI / 2; at(m, DOOR.x, h, back - 3); scene.add(m); }
+  // oak floor: planks with grain
+  const floorTex = ctex(1024, 1024, (x, w, h) => {
+    const N = 8, pw = w / N;
+    for (let i = 0; i < N; i++) for (let j = 0; j < 3; j++) {
+      const y0 = ((j + (i % 2) * 0.5) / 3) * h, base = 70 + Math.random() * 30;
+      x.fillStyle = `hsl(28, ${38 + Math.random() * 10}%, ${base / 3.4}%)`; x.fillRect(i * pw, y0, pw, h / 3); x.fillRect(i * pw, y0 - h, pw, h / 3);
+      x.strokeStyle = 'rgba(30,15,6,.25)'; x.lineWidth = 1;
+      for (let g = 0; g < 18; g++) { const gx = i * pw + Math.random() * pw; x.beginPath(); x.moveTo(gx, y0); x.bezierCurveTo(gx + 6, y0 + h / 9, gx - 6, y0 + h / 5, gx + 3, y0 + h / 3); x.stroke(); }
+      x.fillStyle = 'rgba(10,5,2,.55)'; x.fillRect(i * pw, 0, 2, h); x.fillRect(i * pw, y0, pw, 2);
+    }
+  }, { repeat: [6, 3], static: true });
+  const floorM = new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.42, envMap: ENV, envMapIntensity: 0.18 });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, 22), floorM); floor.rotation.x = -Math.PI / 2; at(floor, (x0 + x1) / 2, 0, back + 11); floor.receiveShadow = true; scene.add(floor);
+  { const f2 = new THREE.Mesh(new THREE.PlaneGeometry(sr.xb - sr.xa, 6), floorM); f2.rotation.x = -Math.PI / 2; at(f2, DOOR.x, 0, back - 3); f2.receiveShadow = true; scene.add(f2); }
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, 14), M.ceiling); ceil.rotation.x = Math.PI / 2; at(ceil, (x0 + x1) / 2, h, back + 7); scene.add(ceil);
+  // the lighting track
+  for (const z of [1.0, -1.5]) scene.add(at(new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 0.06, 0.08), M.black), (x0 + x1) / 2, h - 0.12, z));
+}
+
+/* =====================================================================
+   LIGHT: a dim room, six zone spotlights that come on as you arrive, and per-item beams of light with dust in them
+   ===================================================================== */
+scene.add(new THREE.HemisphereLight(0x5d7f73, 0x1a120c, 0.5));
+const fill = new THREE.PointLight(0xffd9a8, 6, 30, 1.6); at(fill, -6, 3.6, 4); scene.add(fill);
+const zones = {};
+function zone(name, px, py, pz, tx, ty, tz, on, I = 40, angle = 0.62, shadows = false) {
+  const L = new THREE.SpotLight(0xffd6a0, 0, 16, angle, 0.6, 1.4); at(L, px, py, pz); L.target.position.set(tx, ty, tz); scene.add(L, L.target);
+  if (shadows) { L.castShadow = true; L.shadow.mapSize.set(coarse ? 512 : 1024, coarse ? 512 : 1024); L.shadow.bias = -0.0006; L.shadow.normalBias = 0.02; }
+  zones[name] = { L, on, I };
+}
+zone('onview', -17, 4.4, 1.6, -17, 1.6, -3.1, -1, 34, 0.7);
+zone('crate', -12.6, 4.4, 2.8, -12.6, 1.2, 0.2, -1, 30, 0.55);
+zone('piece', -3.4, 4.4, 2.1, -3.2, 1.7, -3.1, 0.235, 46, 0.62, true);
+zone('poster', 1.3, 4.4, 1.1, 0.55, 1.4, -2.0, 0.352, 30, 0.42);
+zone('paper', 3.8, 4.4, 2.2, 4.0, 1.4, -2.4, 0.425, 40, 0.66);
+zone('caps', 10.6, 4.4, 2.1, 11.2, 1.8, -3.1, 0.64, 42, 0.68);
+zone('desk', 14.6, 4.4, -4.4, 15.7, 1.0, -6.2, 0.785, 34, 0.6);
+const sideLamp = new THREE.PointLight(0xffc4b8, 0, 10, 1.5); at(sideLamp, DOOR.x, 3.8, ROOM.back - 3); scene.add(sideLamp);
+
+// a soft radial pool texture for light falling on walls and floor
+const poolTex = ctex(256, 256, (x, w, h) => { const g = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2); g.addColorStop(0, 'rgba(255,220,170,1)'); g.addColorStop(0.45, 'rgba(255,205,150,.45)'); g.addColorStop(1, 'rgba(255,200,140,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); }, { static: true });
+const beamMat = () => new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  uniforms: { uOn: { value: 0 }, uCol: { value: new THREE.Color(0xffd7a3) } },
+  vertexShader: `varying float vA; varying vec3 vN; varying vec3 vV;
+    void main(){ vA = 1.0 - uv.y; vec4 wp = modelMatrix * vec4(position, 1.0); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - wp.xyz); gl_Position = projectionMatrix * viewMatrix * wp; }`,
+  fragmentShader: `uniform float uOn; uniform vec3 uCol; varying float vA; varying vec3 vN; varying vec3 vV;
+    void main(){ float edge = pow(abs(dot(normalize(vN), normalize(vV))), 2.0); float a = uOn * 0.34 * edge * smoothstep(0.0, 0.12, vA) * smoothstep(1.0, 0.7, vA) * (1.15 - vA * 0.5); gl_FragColor = vec4(uCol * a, a); }`,
+});
+const beams = [];
+const DOWN = new THREE.Vector3(0, -1, 0);
+function beam(F, T, on, r = 0.65, poolOn = 'wall', k = 1) {
+  const dir = T.clone().sub(F), L = dir.length(); dir.normalize();
+  const fx = new THREE.Group(); at(fx, F.x, F.y, F.z); fx.lookAt(T); scene.add(fx);
+  const can = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.1, 0.26, 16), M.black); can.rotation.x = Math.PI / 2; can.position.z = 0.05; fx.add(can);
+  const lens = new THREE.Mesh(new THREE.CircleGeometry(0.068, 16), new THREE.MeshBasicMaterial({ color: 0x2a2620, toneMapped: false })); lens.position.z = 0.182; fx.add(lens);
+  const stem = at(new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, ROOM.h - 0.12 - F.y, 6), M.black), F.x, (ROOM.h - 0.12 + F.y) / 2, F.z); scene.add(stem);
+  const g = new THREE.ConeGeometry(r, L * 1.02, 40, 1, true); g.translate(0, -L * 0.51, 0);
+  const cone = new THREE.Mesh(g, beamMat()); cone.position.copy(F); cone.quaternion.setFromUnitVectors(DOWN, dir); cone.renderOrder = 3; cone.frustumCulled = false; scene.add(cone);
+  const pool = new THREE.Mesh(new THREE.PlaneGeometry(r * 3.2, r * 3.2), new THREE.MeshBasicMaterial({ map: poolTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0, toneMapped: false }));
+  if (poolOn === 'floor') { pool.rotation.x = -Math.PI / 2; at(pool, T.x, 0.012, T.z); } else at(pool, T.x, T.y, ROOM.back + 0.012);
+  pool.renderOrder = 2; scene.add(pool);
+  const b = { F, T, dir, L, r, cone, pool, lens, on, k, v: 0 }; beams.push(b); return b;
+}
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const FZ = 1.0, FY = ROOM.h - 0.42;
+
+/* =====================================================================
+   THE ART: canvas paintings and the page itself
+   ===================================================================== */
+const artTex = (seed, pal) => ctex(800, 600, (x, w, h) => {
+  let s = seed; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  x.fillStyle = pal[0]; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 7; i++) { x.fillStyle = pal[1 + (i % (pal.length - 1))]; x.globalAlpha = 0.55 + rnd() * 0.4; const t = rnd();
+    if (t < 0.45) { x.beginPath(); x.arc(rnd() * w, rnd() * h, 40 + rnd() * 180, 0, 7); x.fill(); } else { x.save(); x.translate(rnd() * w, rnd() * h); x.rotate((rnd() - 0.5) * 0.8); x.fillRect(-120, -40, 120 + rnd() * 260, 30 + rnd() * 140); x.restore(); } }
+  x.globalAlpha = 1;
+}, { static: true });
+function goldFrame(w, h, art, border = 0.13, depth = 0.09, matW = 0.12) {
+  const g = new THREE.Group();
+  const s = new THREE.Shape(); s.moveTo(-w / 2, -h / 2); s.lineTo(w / 2, -h / 2); s.lineTo(w / 2, h / 2); s.lineTo(-w / 2, h / 2); s.lineTo(-w / 2, -h / 2);
+  const iw = w / 2 - border, ih = h / 2 - border, hole = new THREE.Path(); hole.moveTo(-iw, -ih); hole.lineTo(-iw, ih); hole.lineTo(iw, ih); hole.lineTo(iw, -ih); hole.lineTo(-iw, -ih); s.holes.push(hole);
+  const fg = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelSize: 0.025, bevelThickness: 0.025, bevelSegments: 3, curveSegments: 4 });
+  g.add(shadow(new THREE.Mesh(fg, M.gilt)));
+  const m = at(new THREE.Mesh(new THREE.PlaneGeometry(iw * 2 + 0.02, ih * 2 + 0.02), M.mat), 0, 0, 0.02); m.receiveShadow = true; g.add(m);
+  if (art) { const a = at(plane(art, iw * 2 - matW * 2, ih * 2 - matW * 2), 0, 0, 0.03); a.receiveShadow = true; g.add(a); }
+  return g;
+}
+
+// the new page: a blog post laid out like a webpage, framed like a painting
+const POST = { title: 'Ten ways to fix slow landing pages | Blog', desc: 'Slow pages lose visitors before they read a word. Here are ten fixes, from image weight to render-blocking scripts, in order of impact.' };
+const pageTex = ctex(1500, 1000, (x, w, h) => {
+  x.fillStyle = '#fbfaf6'; x.fillRect(0, 0, w, h);
+  x.fillStyle = '#1d2a25'; x.fillRect(0, 0, w, 74); x.fillStyle = '#efe8da'; x.font = `600 26px ${SANS}`; x.fillText('BLOG', 60, 46);
+  ['Product', 'Pricing', 'Resources'].forEach((t, i) => { x.fillStyle = 'rgba(239,232,218,.6)'; x.fillText(t, w - 470 + i * 150, 46); });
+  const g = x.createLinearGradient(60, 120, 760, 620); g.addColorStop(0, '#e9a35b'); g.addColorStop(0.55, '#c75b3c'); g.addColorStop(1, '#3b2a4f'); x.fillStyle = g; roundRect(x, 60, 118, 700, 440, 18); x.fill();
+  x.fillStyle = 'rgba(255,255,255,.85)'; x.fillRect(120, 470, 420, 16); x.fillStyle = 'rgba(255,255,255,.45)'; x.fillRect(120, 470, 580, 16);
+  x.fillStyle = '#1d2a25'; x.font = `600 62px ${SERIF}`; wrap(x, 'Ten ways to fix slow landing pages', 820, 190, 620, 72, 4);
+  x.fillStyle = '#6a746f'; x.font = `500 24px ${SANS}`; x.fillText('By Author A · 6 min read', 822, 470);
+  for (let i = 0; i < 4; i++) { x.fillStyle = 'rgba(29,42,37,.22)'; x.fillRect(822, 510 + i * 30, 560 - (i % 2) * 120, 12); }
+  for (let i = 0; i < 3; i++) { const gx = 60 + i * 470, gg = x.createLinearGradient(gx, 640, gx + 440, 900); gg.addColorStop(0, ['#6aa38c', '#d9b25b', '#7f8fbf'][i]); gg.addColorStop(1, ['#1f4a3d', '#7a4b1c', '#2b2f5a'][i]); x.fillStyle = gg; roundRect(x, gx, 610, 440, 250, 14); x.fill(); x.fillStyle = 'rgba(29,42,37,.28)'; x.fillRect(gx, 880, 380, 12); x.fillRect(gx, 906, 300, 12); }
+}, { static: true });
+
+/* =====================================================================
+   STATION 1 · the main hall: pieces already on view (already live: skipped), and the crate from staging
+   ===================================================================== */
+const plaqueTex = (lines, w = 640, h = 200, bg = '#c9a24a', ink = '#2a2116') => ctex(w, h, (x) => {
+  const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, bg); g.addColorStop(0.5, '#e0c27a'); g.addColorStop(1, bg); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  x.strokeStyle = 'rgba(42,33,22,.5)'; x.lineWidth = 4; roundRect(x, 10, 10, w - 20, h - 20, 12); x.stroke();
+  x.fillStyle = ink; x.textAlign = 'center'; x.textBaseline = 'middle';
+  lines.forEach(([t, y, s, f]) => { x.font = `${f || '700'} ${s}px ${SANS}`; x.letterSpacing = '4px'; x.fillText(t, w / 2, y); });
+});
+const brassPlate = (lines, pw, ph, tw, th) => { const m = plane(plaqueTex(lines, tw, th), pw, ph, { metalness: 0.6, roughness: 0.35, envMap: ENV, envMapIntensity: 0.6 }); return m; };
+{
+  const pals = [['#1c2b3a', '#d9b25b', '#c75b3c', '#efe8da'], ['#e8e1d2', '#2b4c7e', '#c9a24a', '#7a1f24']];
+  [-19.6, -15.2].forEach((fx, i) => {
+    const f = goldFrame(2.6, 1.9, artTex(17 + i * 41, pals[i])); at(f, fx, 2.15, ROOM.back + 0.02); scene.add(f);
+    const pl = brassPlate([['ON VIEW', 62, 44], ['ALREADY LIVE · SKIPPED', 136, 30, '600']], 0.8, 0.25, 640, 200); at(pl, fx, 0.98 + 0.25, ROOM.back + 0.05); scene.add(pl);
+    beam(V(fx, FY, FZ), V(fx, 2.15, ROOM.back), -1, 0.95, 'wall', 0.65);
+  });
+  // velvet rope across the main hall pieces
+  for (const px of [-21, -17.4, -13.8]) { scene.add(shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.95, 16), M.brass), px, 0.475, -1.6))); scene.add(shadow(at(new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 12), M.brass), px, 0.98, -1.6))); scene.add(shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.04, 24), M.brass), px, 0.02, -1.6))); }
+  for (const [a, b] of [[-21, -17.4], [-17.4, -13.8]]) { const pts = []; for (let i = 0; i <= 20; i++) { const t = i / 20; pts.push(V(lerp(a, b, t), 0.9 - Math.sin(t * Math.PI) * 0.22, -1.6)); } scene.add(shadow(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 30, 0.025, 8), M.velvet))); }
+}
+const CRATE = V(-12.4, 0, 0.4);
+const crate = {};
+{
+  const g = new THREE.Group(); at(g, CRATE.x, 0, CRATE.z); scene.add(g); crate.g = g;
+  const W0 = 3.9, H0 = 2.75, D0 = 0.62;
+  const woodTex = (stencil) => ctex(780, 550, (x, w, h) => {
+    for (let i = 0; i < 6; i++) { x.fillStyle = `hsl(32, 32%, ${30 + (i % 3) * 3}%)`; x.fillRect(0, i * h / 6, w, h / 6); x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, i * h / 6, w, 3); }
+    x.strokeStyle = 'rgba(20,10,4,.18)'; for (let i = 0; i < 60; i++) { const y = Math.random() * h; x.beginPath(); x.moveTo(0, y); x.bezierCurveTo(w / 3, y + 6, w * 2 / 3, y - 6, w, y + 2); x.stroke(); }
+    x.fillStyle = 'rgba(0,0,0,.28)'; x.fillRect(0, 0, 28, h); x.fillRect(w - 28, 0, 28, h); x.fillRect(0, 0, w, 24); x.fillRect(0, h - 24, w, 24);
+    if (stencil) { x.fillStyle = 'rgba(232,225,210,.86)'; x.textAlign = 'center'; x.font = `800 74px ${SANS}`; x.letterSpacing = '10px'; x.fillText('NEW', w / 2, 220); x.font = `700 44px ${SANS}`; x.letterSpacing = '8px'; x.fillText('FROM STAGING', w / 2, 290); x.font = `700 28px ${SANS}`; x.letterSpacing = '4px'; x.fillText('HANDLE WITH CARE · THIS WAY UP', w / 2, 400); }
+  });
+  const side = new THREE.MeshStandardMaterial({ map: woodTex(false), roughness: 0.8 });
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(W0, H0, 0.06), side), 0, H0 / 2, -D0 / 2)));
+  for (const sx of [-1, 1]) g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.06, H0, D0), side), sx * W0 / 2, H0 / 2, 0)));
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(W0, 0.06, D0), side), 0, H0, 0)));
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(W0, 0.08, D0), side), 0, 0.04, 0)));
+  // the front panel hinges at the bottom and falls open
+  const hinge = new THREE.Group(); at(hinge, 0, 0.08, D0 / 2); g.add(hinge);
+  const front = shadow(at(new THREE.Mesh(new THREE.BoxGeometry(W0, H0 - 0.08, 0.06), [side, side, side, side, new THREE.MeshStandardMaterial({ map: woodTex(true), roughness: 0.8 }), side]), 0, (H0 - 0.08) / 2, 0.03));
+  hinge.add(front); crate.hinge = hinge;
+  beam(V(CRATE.x, FY, 2.9), V(CRATE.x, 1.2, CRATE.z), -1, 1.2, 'floor', 0.7);
+}
+
+/* ---- the new page itself: lives in the crate, then glides to its wall ---- */
+const PIECE = V(-4.2, 2.05, ROOM.back + 0.02);
+const piece = goldFrame(3.4, 2.3, pageTex, 0.15, 0.1, 0.1); scene.add(piece);
+// the artist's signature and date in the corner (the blog-only Article check)
+{ const sig = plane(ctex(600, 160, (x) => { x.fillStyle = 'rgba(0,0,0,0)'; x.font = `italic 500 64px ${SERIF}`; x.fillStyle = '#2a2116'; x.fillText('Author A', 20, 90); x.font = `500 28px ${SANS}`; x.fillStyle = '#5c5246'; x.fillText('published 20 Oct · updated 22 Oct', 22, 140); }), 0.75, 0.2, { transparent: true }); at(sig, 1.05, -0.92, 0.05); piece.add(sig); }
+
+/* =====================================================================
+   STATION 2 · the wall label (title and description, measured) and the exhibition poster (OG image)
+   ===================================================================== */
+const LABEL = V(-1.15, 1.72, ROOM.back + 0.03);
+const labelTex = ctex(900, 640, (x, w, h) => {
+  x.fillStyle = '#f4eee2'; x.fillRect(0, 0, w, h);
+  x.fillStyle = '#8a7a5f'; x.font = `700 22px ${SANS}`; x.letterSpacing = '5px'; x.fillText(`META TITLE · ${POST.title.length} CHARACTERS`, 52, 74); x.letterSpacing = '0px';
+  x.fillStyle = '#1d2a25'; x.font = `500 56px ${SERIF}`; wrap(x, POST.title, 52, 140, 800, 62, 2);
+  x.fillStyle = '#8a7a5f'; x.font = `700 22px ${SANS}`; x.letterSpacing = '5px'; x.fillText(`META DESCRIPTION · ${POST.desc.length} CHARACTERS`, 52, 292); x.letterSpacing = '0px';
+  x.fillStyle = '#33403a'; x.font = `400 38px ${SERIF}`; wrap(x, POST.desc, 52, 346, 800, 50, 6);
+});
+{ const l = plane(labelTex, 1.25, 0.89); at(l, LABEL.x, LABEL.y + 0.08, LABEL.z); l.receiveShadow = true; scene.add(l); }
+// two brass rulers under the label: a sliding pointer finds the length and lands inside the allowed range
+function ruler(y, max, lo, hi, name) {
+  const g = new THREE.Group(); at(g, LABEL.x, y, ROOM.back + 0.04); scene.add(g);
+  const L = 1.5;
+  const tex = ctex(1500, 150, (x, w, h) => {
+    const gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#e2c47c'); gr.addColorStop(1, '#a8823c'); x.fillStyle = gr; x.fillRect(0, 0, w, h);
+    const px = v => 40 + (v / max) * (w - 80);
+    x.fillStyle = 'rgba(124,194,154,.55)'; x.fillRect(px(lo), 0, px(hi) - px(lo), h);
+    x.fillStyle = '#2a2116';
+    for (let v = 0; v <= max; v += max > 100 ? 5 : 1) { const big = v % (max > 100 ? 50 : 10) === 0, mid = v % (max > 100 ? 10 : 5) === 0; x.fillRect(px(v) - 1, 0, 2, big ? 54 : mid ? 36 : 22); if (big) { x.font = `700 28px ${SANS}`; x.textAlign = 'center'; x.fillText(String(v), px(v), 90); } }
+    x.font = `700 24px ${SANS}`; x.textAlign = 'left'; x.letterSpacing = '4px'; x.fillText(name, px(lo) + 8, 132); x.letterSpacing = '0px';
+  });
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(L + 0.04, 0.17, 0.03), M.brass), 0, 0, -0.005)));
+  g.add(at(plane(tex, L, 0.15, { metalness: 0.5, roughness: 0.4, envMap: ENV, envMapIntensity: 0.5 }), 0, 0, 0.012));
+  const ptr = new THREE.Group(); g.add(ptr);
+  const tri = shadow(new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.08, 3), M.black)); tri.rotation.z = Math.PI; tri.position.set(0, 0.125, 0.03); ptr.add(tri);
+  let shown = -1;
+  const readTex = ctex(220, 110, (x, w, h, v = 0) => { x.fillStyle = '#121413'; roundRect(x, 4, 4, w - 8, h - 8, 18); x.fill(); x.fillStyle = '#efe8da'; x.font = `700 60px ${SANS}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(String(v), w / 2, h / 2 + 2); }, { static: true });
+  const read = at(new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.1), new THREE.MeshBasicMaterial({ map: readTex, transparent: true, toneMapped: false })), 0, 0.22, 0.035); ptr.add(read);
+  return { g, ptr, set(v, k) { const val = Math.round(v); if (val !== shown) { shown = val; readTex.userData.redraw(val); } ptr.position.x = -L / 2 + (L * 0.0267) + (v / max) * (L * (1 - 0.0534)); read.material.opacity = k; tri.visible = k > 0.02; read.visible = k > 0.02; } };
+}
+const rTitle = ruler(1.06, 70, 10, 65, 'TITLE 10–65');
+const rDesc = ruler(0.62, 170, 50, 160, 'DESCRIPTION 50–160');
+beam(V(LABEL.x, FY, FZ), V(LABEL.x, 1.25, ROOM.back), 0.255, 0.75, 'wall', 0.9);
+beam(V(PIECE.x, FY, FZ + 0.3), V(PIECE.x, PIECE.y, ROOM.back), 0.235, 1.25, 'wall', 1);
+// the exhibition poster on an easel: the page's share card (OG image)
+const POSTER = V(0.55, 0, -2.0);
+{
+  const g = new THREE.Group(); at(g, POSTER.x, 0, POSTER.z); g.rotation.y = -0.3; scene.add(g);
+  for (const [lx, rz] of [[-0.42, -0.08], [0.42, 0.08]]) { const leg = shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.06, 2.5, 0.06), M.wood), lx, 1.22, 0)); leg.rotation.z = rz; leg.rotation.x = -0.12; g.add(leg); }
+  { const back = shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.05, 2.4, 0.05), M.wood), 0, 1.15, -0.32)); back.rotation.x = 0.25; g.add(back); }
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.05, 0.12), M.wood), 0, 0.78, 0.06)));
+  const pt = ctex(700, 1000, (x, w, h) => {
+    x.fillStyle = '#efe8da'; x.fillRect(0, 0, w, h);
+    const gr = x.createLinearGradient(0, 80, w, 520); gr.addColorStop(0, '#e9a35b'); gr.addColorStop(0.55, '#c75b3c'); gr.addColorStop(1, '#3b2a4f'); x.fillStyle = gr; x.fillRect(50, 80, w - 100, 360);
+    x.fillStyle = 'rgba(255,255,255,.8)'; x.fillRect(90, 380, 260, 12);
+    x.fillStyle = '#a8823c'; x.font = `700 22px ${SANS}`; x.letterSpacing = '6px'; x.fillText('NOW SHOWING', 52, 520); x.letterSpacing = '0px';
+    x.fillStyle = '#1d2a25'; x.font = `500 64px ${SERIF}`; wrap(x, 'Ten ways to fix slow landing pages', 50, 600, w - 100, 70, 4);
+    x.fillStyle = 'rgba(29,42,37,.55)'; x.font = `600 22px ${MONO}`; x.fillText('og:image · 1200 × 630', 52, 930);
+  });
+  const poster = shadow(at(plane(pt, 0.9, 1.29), 0, 1.47, 0.11)); poster.rotation.x = -0.1; g.add(poster);
+  g.updateMatrixWorld(); const wp = new THREE.Vector3(); poster.getWorldPosition(wp); POSTER.copy(wp);
+}
+beam(V(POSTER.x + 0.5, FY, FZ + 0.1), POSTER.clone(), 0.352, 0.7, 'floor', 1.0);
+
+/* =====================================================================
+   STATION 3 · the paperwork: provenance (canonical), the catalogue (JSON-LD + Article), the floor map (BreadcrumbList)
+   ===================================================================== */
+const CERT = V(2.3, 2.0, ROOM.back + 0.02);
+{
+  const ct = ctex(700, 940, (x, w, h) => {
+    x.fillStyle = '#efe4c8'; x.fillRect(0, 0, w, h);
+    x.strokeStyle = '#a8823c'; x.lineWidth = 6; x.strokeRect(34, 34, w - 68, h - 68); x.lineWidth = 2; x.strokeRect(50, 50, w - 100, h - 100);
+    x.fillStyle = '#5c4a2a'; x.textAlign = 'center'; x.font = `700 22px ${SANS}`; x.letterSpacing = '6px'; x.fillText('CERTIFICATE OF', w / 2, 150); x.letterSpacing = '0px';
+    x.font = `500 66px ${SERIF}`; x.fillText('Provenance', w / 2, 225);
+    x.font = `400 28px ${SERIF}`; x.fillStyle = '#6d5c3c'; wrap(x, 'This page is the original. Its one true address is:', w / 2, 320, 520, 38, 3);
+    x.setLineDash([10, 10]); x.strokeStyle = '#8a7a5f'; x.lineWidth = 3; x.beginPath(); x.moveTo(110, 470); x.lineTo(w - 110, 470); x.stroke();
+    x.fillStyle = 'rgba(138,122,95,.6)'; x.font = `italic 400 28px ${SERIF}`; x.fillText('(no canonical tag found)', w / 2, 520);
+    x.beginPath(); x.arc(w / 2, 690, 92, 0, 7); x.stroke(); x.setLineDash([]);
+    x.fillStyle = 'rgba(138,122,95,.55)'; x.font = `700 20px ${SANS}`; x.letterSpacing = '4px'; x.fillText('SEAL', w / 2, 697);
+  });
+  const f = goldFrame(1.0, 1.32, ct, 0.08, 0.06, 0.04); at(f, CERT.x, CERT.y, CERT.z); scene.add(f);
+}
+beam(V(CERT.x, FY, FZ), V(CERT.x, CERT.y, ROOM.back), 0.43, 0.75, 'wall', 0.95);
+// catalogue: an open book on a plinth, with a page that turns
+const CAT = V(4.2, 0, -1.55);
+const book = {};
+{
+  const g = new THREE.Group(); at(g, CAT.x, 0, CAT.z); scene.add(g);
+  g.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(0.85, 1.0, 0.7, 2, 0.02), M.plinth), 0, 0.5, 0)));
+  const top = new THREE.Group(); at(top, 0, 1.16, 0); top.rotation.x = 0.32; g.add(top);
+  // a wooden book rest: the slanted board sits on the plinth at the front, a block props up the back
+  top.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.04, 0.62), M.wood), 0, -0.04, 0)));
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.16, 0.24), M.wood), 0, 1.08, -0.17)));
+  const pageL = ctex(600, 800, (x, w, h) => {
+    x.fillStyle = '#f7f1e3'; x.fillRect(0, 0, w, h);
+    x.fillStyle = '#8a7a5f'; x.font = `700 20px ${SANS}`; x.letterSpacing = '5px'; x.fillText('CATALOGUE ENTRY', 50, 80); x.letterSpacing = '0px';
+    x.fillStyle = '#1d2a25'; x.font = `500 44px ${SERIF}`; x.fillText('JSON-LD', 50, 140);
+    x.font = `500 24px ${MONO}`; ['{', '  "@type": "Article",', '  "headline": "Ten ways…",', '  "author": "Author A",', '  "datePublished":', '    "2026-10-20",', '  "dateModified":', '    "2026-10-22"', '}'].forEach((l, i) => { x.fillStyle = i === 1 ? '#a8823c' : '#33403a'; x.fillText(l, 50, 220 + i * 44); });
+  });
+  const pageR = ctex(600, 800, (x, w, h) => {
+    x.fillStyle = '#f7f1e3'; x.fillRect(0, 0, w, h);
+    x.fillStyle = '#8a7a5f'; x.font = `700 20px ${SANS}`; x.letterSpacing = '5px'; x.fillText('BLOG POSTS ONLY', 50, 80); x.letterSpacing = '0px';
+    x.fillStyle = '#1d2a25'; x.font = `500 44px ${SERIF}`; x.fillText('Article details', 50, 140);
+    [['author', 'Author A'], ['datePublished', '20 Oct'], ['dateModified', '22 Oct']].forEach(([a, b], i) => { const y = 230 + i * 110; x.fillStyle = '#6d5c3c'; x.font = `600 24px ${MONO}`; x.fillText(a, 50, y); x.fillStyle = '#1d2a25'; x.font = `500 36px ${SERIF}`; x.fillText(b, 50, y + 46); x.fillStyle = 'rgba(29,42,37,.15)'; x.fillRect(50, y + 66, w - 100, 2); });
+  });
+  const cover = new THREE.MeshStandardMaterial({ color: 0x5a1f22, roughness: 0.7 });
+  for (const sx of [-1, 1]) { const half = new THREE.Group(); half.rotation.z = sx * -0.06; top.add(half);
+    half.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.035, 0.56), cover), sx * 0.205, 0, 0)));
+    const pg = at(plane(sx < 0 ? pageL : pageR, 0.38, 0.53), sx * 0.2, 0.019, 0); pg.rotation.x = -Math.PI / 2; pg.receiveShadow = true; half.add(pg); }
+  // the turning page
+  const flip = new THREE.Group(); top.add(flip); flip.position.y = 0.022;
+  const fp = new THREE.Mesh(new THREE.PlaneGeometry(0.38, 0.53), new THREE.MeshStandardMaterial({ color: 0xf2ead8, roughness: 0.9 })); fp.rotation.x = -Math.PI / 2; fp.position.set(0.2, 0.001, 0); flip.add(fp);
+  const fb = new THREE.Mesh(new THREE.PlaneGeometry(0.38, 0.53), new THREE.MeshStandardMaterial({ map: pageL, roughness: 0.9 })); fb.rotation.set(Math.PI / 2, 0, Math.PI); fb.position.set(0.2, -0.001, 0); flip.add(fb);
+  book.flip = flip; book.top = top; book.g = g;
+  g.updateMatrixWorld(); book.left = new THREE.Vector3(-0.44, 0.03, -0.2).applyMatrix4(top.matrixWorld); book.right = new THREE.Vector3(0.44, 0.03, -0.2).applyMatrix4(top.matrixWorld);
+}
+beam(V(CAT.x, FY, FZ + 0.6), V(CAT.x, 1.05, CAT.z), 0.488, 0.7, 'floor', 0.9);
+// floor map on a stand: the breadcrumb path lights up room by room
+const MAP = V(6.2, 0, -1.0);
+const mapStand = {};
+{
+  const g = new THREE.Group(); at(g, MAP.x, 0, MAP.z); g.rotation.y = -0.3; scene.add(g);
+  g.add(shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.15, 10), M.brass), 0, 0.58, 0)));
+  g.add(shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.24, 0.04, 24), M.brass), 0, 0.02, 0)));
+  const board = new THREE.Group(); at(board, 0, 1.3, 0); board.rotation.x = -0.45; g.add(board);
+  board.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.7, 0.03), M.brass), 0, 0, -0.02)));
+  const mt = ctex(900, 680, (x, w, h) => {
+    x.fillStyle = '#efe8da'; x.fillRect(0, 0, w, h);
+    x.fillStyle = '#8a7a5f'; x.font = `700 20px ${SANS}`; x.letterSpacing = '5px'; x.fillText('FLOOR MAP · BREADCRUMBS', 40, 56); x.letterSpacing = '0px';
+    x.strokeStyle = '#33403a'; x.lineWidth = 4; [[40, 100, 240, 200], [300, 100, 260, 200], [600, 100, 260, 200], [300, 340, 560, 260]].forEach(r => x.strokeRect(...r));
+    x.fillStyle = '#33403a'; x.font = `600 30px ${SERIF}`; x.fillText('Home', 70, 160); x.fillText('Blog', 330, 160); x.fillText('Ten ways…', 630, 160);
+    x.fillStyle = '#5c6a63'; x.font = `500 24px ${SANS}`; x.fillText('Home  ›  Blog  ›  Ten ways to fix slow landing pages', 40, 640);
+  });
+  const mp = at(plane(mt, 0.88, 0.66), 0, 0, 0); mp.receiveShadow = true; board.add(mp);
+  mapStand.crumbs = [[-0.27, 0.07], [0.02, 0.07], [0.32, 0.07]].map(([cx, cy]) => { const s = at(new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 10), new THREE.MeshBasicMaterial({ color: 0x3a4a43, toneMapped: false })), cx, cy, 0.03); board.add(s); return s; });
+  mapStand.board = board; g.updateMatrixWorld(); mapStand.pos = new THREE.Vector3(); board.getWorldPosition(mapStand.pos);
+}
+beam(V(MAP.x, FY, FZ + 0.7), mapStand.pos.clone(), 0.548, 0.6, 'floor', 0.85);
+
+/* =====================================================================
+   STATION 4 · captions (alt text) under the page's images, and the sign on the door (robots)
+   ===================================================================== */
+const CAPS = [8.2, 9.75, 11.3].map((x, i) => ({ x, on: 0.645 + i * 0.015, blank: i === 2 }));
+const capTexts = ['A loading bar stuck at eighty percent', 'Before and after: image weight', ''];
+CAPS.forEach((c, i) => {
+  const f = goldFrame(1.2, 0.95, artTex(101 + i * 7, [['#6aa38c', '#1f4a3d', '#efe8da', '#d9b25b'], ['#d9b25b', '#7a4b1c', '#efe8da', '#c75b3c'], ['#7f8fbf', '#2b2f5a', '#efe8da', '#e9a35b']][i]), 0.08, 0.06, 0.07); at(f, c.x, 2.15, ROOM.back + 0.02); scene.add(f);
+  const pt = ctex(560, 220, (x, w, h) => {
+    x.fillStyle = '#f4eee2'; x.fillRect(0, 0, w, h);
+    x.fillStyle = '#8a7a5f'; x.font = `700 18px ${SANS}`; x.letterSpacing = '4px'; x.fillText('ALT TEXT', 30, 46); x.letterSpacing = '0px';
+    if (capTexts[i]) { x.fillStyle = '#1d2a25'; x.font = `500 38px ${SERIF}`; wrap(x, capTexts[i], 30, 104, 500, 46, 3); }
+    else { x.setLineDash([8, 8]); x.strokeStyle = 'rgba(138,122,95,.6)'; x.lineWidth = 2; x.strokeRect(30, 70, 500, 110); x.setLineDash([]); x.fillStyle = 'rgba(138,122,95,.6)'; x.font = `italic 400 26px ${SERIF}`; x.fillText('(empty)', 230, 136); }
+  });
+  const p = plane(pt, 0.82, 0.32); at(p, c.x, 1.31, ROOM.back + 0.03); p.receiveShadow = true; scene.add(p);
+  c.beam = beam(V(c.x, FY, FZ), V(c.x, 1.9, ROOM.back), c.on, 0.62, 'wall', 0.85);
+});
+// the door sign: blank until checked, then it spins round to show the rule this page must follow
+const sign = {};
+{
+  const g = new THREE.Group(); at(g, DOOR.x, DOOR.h + 0.45, ROOM.back + 0.25); scene.add(g);
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.04, 0.04), M.brass), 0, 0.42, -0.1)));
+  for (const sx of [-0.55, 0.55]) g.add(at(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.36, 4), M.black), sx, 0.24, -0.05));
+  const spin = new THREE.Group(); g.add(spin);
+  const front = brassPlate([['ROBOTS', 92, 46], ['?', 172, 46]], 1.3, 0.42, 900, 290); front.position.z = 0.012; spin.add(front);
+  const backT = plaqueTex([['OPEN TO THE PUBLIC', 108, 64], ['index, follow', 196, 46, '600']], 900, 290, '#e8e0cc', '#1d2a25');
+  const back = plane(backT, 1.3, 0.42, { metalness: 0.3, roughness: 0.4, envMap: ENV, envMapIntensity: 0.4 }); back.rotation.y = Math.PI; back.position.z = -0.012; spin.add(back);
+  spin.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(1.34, 0.46, 0.02), M.black), 0, 0, 0)));
+  sign.spin = spin; sign.g = g;
+}
+beam(V(DOOR.x, FY, FZ), V(DOOR.x, DOOR.h + 0.4, ROOM.back), 0.705, 0.6, 'wall', 0.9);
+// the side room: an ad page behind a velvet rope, under PRIVATE VIEWING (noindex, nofollow is right for ads)
+{
+  const z = ROOM.back - 5.98, ax = DOOR.x - 1.4;
+  const f = goldFrame(2.0, 1.4, artTex(311, ['#2b1d26', '#e9a35b', '#c75b3c', '#efe8da']), 0.1, 0.07, 0.08); at(f, ax, 2.0, z + 0.02); scene.add(f);
+  const pl = brassPlate([['PRIVATE VIEWING', 74, 50], ['AD PAGES · noindex, nofollow', 150, 32, '600']], 1.3, 0.3, 900, 210); at(pl, ax, 1.07, z + 0.05); scene.add(pl);
+  for (const px of [ax - 1.1, ax + 1.1]) { scene.add(shadow(at(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 0.9, 12), M.brass), px, 0.45, z + 1.2))); scene.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 10), M.brass), px, 0.92, z + 1.2)); }
+  { const pts = []; for (let i = 0; i <= 16; i++) { const t = i / 16; pts.push(V(lerp(ax - 1.1, ax + 1.1, t), 0.86 - Math.sin(t * Math.PI) * 0.18, z + 1.2)); } scene.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.022, 8), M.velvet)); }
+  beam(V(ax, FY, ROOM.back - 4.3), V(ax, 2.0, z), 0.77, 0.85, 'wall', 0.85).pool.position.z = z + 0.012;
+}
+
+/* =====================================================================
+   STATION 5 · the checklist on the curator's lectern
+   ===================================================================== */
+const DESK = V(DOOR.x + 1.5, 0, ROOM.back - 3.0);
+const LIST = [
+  ['P0', '#d9483b', 'Canonical tag missing', 'fix before publishing'],
+  ['P1', '#c9861f', '1 image with empty alt text', 'fix before go-live'],
+  ['✓', '#2f8a57', `Meta title ${POST.title.length}/65`, ''],
+  ['✓', '#2f8a57', `Meta description ${POST.desc.length}/160`, ''],
+  ['✓', '#2f8a57', 'OG image', ''],
+  ['✓', '#2f8a57', 'JSON-LD · BreadcrumbList', ''],
+  ['✓', '#2f8a57', 'Robots: index, follow', ''],
+  ['✓', '#2f8a57', 'Article: author and dates', ''],
+];
+const listTex = ctex(800, 1100, (x, w, h, n = 0, sent = false) => {
+  x.fillStyle = '#f7f1e3'; x.fillRect(0, 0, w, h);
+  x.fillStyle = '#8a7a5f'; x.font = `700 22px ${SANS}`; x.letterSpacing = '5px'; x.fillText('OPENING-NIGHT CHECKLIST', 56, 92); x.letterSpacing = '0px';
+  x.fillStyle = '#1d2a25'; x.font = `500 44px ${SERIF}`; wrap(x, 'Ten ways to fix slow landing pages', 56, 156, 690, 52, 2);
+  x.fillStyle = '#5c6a63'; x.font = `500 24px ${SANS}`; x.fillText('Staging link ↗   ·   Status: 2 to fix', 56, 268);
+  x.fillStyle = 'rgba(29,42,37,.15)'; x.fillRect(56, 296, w - 112, 2);
+  LIST.slice(0, n).forEach(([k, c, a, b], i) => {
+    const y = 360 + i * 74;
+    x.fillStyle = c; x.font = `800 28px ${SANS}`; x.fillText(k, 56, y);
+    x.fillStyle = '#1d2a25'; x.font = `500 30px ${SERIF}`; x.fillText(a, 130, y);
+    if (b) { x.fillStyle = c; x.font = `600 20px ${SANS}`; x.fillText(b.toUpperCase(), 130, y + 28); }
+  });
+  if (sent) { x.save(); x.translate(560, 1000); x.rotate(-0.12); x.strokeStyle = '#2b4c7e'; x.lineWidth = 6; roundRect(x, -190, -50, 380, 100, 14); x.stroke(); x.fillStyle = '#2b4c7e'; x.textAlign = 'center'; x.font = `800 30px ${SANS}`; x.fillText('POSTED TO THE', 0, -6); x.fillText('SEO CHANNEL', 0, 32); x.restore(); }
+}, { static: true });
+const desk = {};
+{
+  const g = new THREE.Group(); at(g, DESK.x, 0, DESK.z); g.rotation.y = -0.5; scene.add(g);
+  g.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.0, 0.5), M.wood), 0, 0.5, 0)));
+  const top = new THREE.Group(); at(top, 0, 1.08, 0.02); top.rotation.x = 0.55; g.add(top);
+  top.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.04, 0.66), M.wood), 0, -0.03, 0)));
+  top.add(shadow(at(new THREE.Mesh(new RoundedBoxGeometry(0.6, 0.015, 0.82, 2, 0.01), new THREE.MeshStandardMaterial({ color: 0x6b4a2a, roughness: 0.6 })), 0, 0.005, 0)));
+  top.add(shadow(at(new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.03, 0.05), M.brass), 0, 0.03, -0.39)));
+  const paper = at(new THREE.Mesh(new THREE.PlaneGeometry(0.54, 0.74), new THREE.MeshStandardMaterial({ map: listTex, roughness: 0.9 })), 0, 0.016, 0.03); paper.rotation.x = -Math.PI / 2; paper.receiveShadow = true; top.add(paper);
+  g.updateMatrixWorld(); desk.pos = new THREE.Vector3(); paper.getWorldPosition(desk.pos);
+  desk.normal = new THREE.Vector3(0, 0, 1).applyQuaternion(paper.getWorldQuaternion(new THREE.Quaternion()));
+  desk.n = -1; desk.sent = null;
+}
+beam(V(DESK.x - 0.4, FY, ROOM.back - 1.7), desk.pos.clone(), 0.79, 0.7, 'floor', 0.85);
+
+/* =====================================================================
+   TAGS AND PINS: a red P0 or amber P1 tag swings from a failed item; passed items get a small enamel pin
+   ===================================================================== */
+const tags = [], pins = [];
+function swingTag(kind, x, y, z, on) {
+  const red = kind === 'P0', col = red ? '#d9483b' : '#e8a33d';
+  const tex = ctex(420, 300, (c, w, h) => {
+    c.fillStyle = col; roundRect(c, 0, 0, w, h, 26); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.arc(56, 56, 18, 0, 7); c.fill();
+    c.fillStyle = '#fff'; c.font = `800 92px ${SANS}`; c.fillText(kind, 100, 112);
+    c.font = `700 30px ${SANS}`; c.fillText(red ? 'Canonical missing' : 'Empty alt text', 36, 190);
+    c.font = `600 22px ${SANS}`; c.globalAlpha = 0.85; c.fillText(red ? 'FIX BEFORE PUBLISHING' : 'FIX BEFORE GO-LIVE', 36, 244); c.globalAlpha = 1;
+  });
+  const pivot = new THREE.Group(); at(pivot, x, y, z); scene.add(pivot);
+  pivot.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.022, 12, 8), M.brass), 0, 0, 0));
+  const hang = new THREE.Group(); pivot.add(hang);
+  const str = at(new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.2, 4), new THREE.MeshBasicMaterial({ color: 0xe8e0cc })), 0, -0.1, 0); hang.add(str);
+  const card = shadow(at(new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.3), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6, side: THREE.DoubleSide })), 0.13, -0.32, 0.01)); card.rotation.z = 0.08; hang.add(card);
+  pivot.visible = false; const t = { pivot, hang, on, tOn: -1 }; tags.push(t); return t;
+}
+const pinTex = ctex(128, 128, (c, w, h) => { c.fillStyle = '#2f8a57'; c.beginPath(); c.arc(64, 64, 60, 0, 7); c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 12; c.lineCap = 'round'; c.beginPath(); c.moveTo(38, 66); c.lineTo(56, 84); c.lineTo(92, 44); c.stroke(); }, { static: true });
+function passPin(x, y, z, on, ry = 0) {
+  const g = new THREE.Group(); at(g, x, y, z); g.rotation.y = ry; scene.add(g);
+  g.add(new THREE.Mesh(new THREE.CircleGeometry(0.07, 28), new THREE.MeshStandardMaterial({ map: pinTex, roughness: 0.3, metalness: 0.1, envMap: ENV, envMapIntensity: 0.3 })));
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.072, 0.009, 8, 32), M.gilt); g.add(ring);
+  g.scale.setScalar(0.001); const p = { g, on }; pins.push(p); return p;
+}
+// the checks, in the order you walk past them
+passPin(LABEL.x + 0.84, 1.06, ROOM.back + 0.07, 0.291);                                        // title length
+passPin(LABEL.x + 0.84, 0.62, ROOM.back + 0.07, 0.325);                                        // description length
+passPin(POSTER.x + 0.36, POSTER.y + 0.66, POSTER.z + 0.2, 0.36, -0.3);                         // OG image
+swingTag('P0', CERT.x + 0.5, CERT.y + 0.6, ROOM.back + 0.09, 0.446);                             // canonical: missing
+passPin(book.left.x, book.left.y + 0.06, book.left.z, 0.517, 0);                          // JSON-LD
+passPin(book.right.x, book.right.y + 0.06, book.right.z, 0.523, 0);                // Article (blog extra)
+passPin(mapStand.pos.x + 0.42, mapStand.pos.y + 0.3, mapStand.pos.z + 0.1, 0.581, -0.3);          // BreadcrumbList
+passPin(CAPS[0].x + 0.48, 1.31, ROOM.back + 0.07, 0.652); passPin(CAPS[1].x + 0.48, 1.31, ROOM.back + 0.07, 0.667);   // alt text ok
+swingTag('P1', CAPS[2].x + 0.4, 1.47, ROOM.back + 0.09, 0.683);                                 // alt text empty
+passPin(DOOR.x + 0.75, DOOR.h + 0.65, ROOM.back + 0.3, 0.736);                                   // robots
+
+/* =====================================================================
+   LET'S TALK: a commission painting on the far end wall, which the walk never faces. Clicking "Let's talk" glides the
+   camera over to it (the scroll stays where it was); the form is painted on the canvas and its fields are live
+   (talk/surface.js). Sending puts a red dot on its museum label, the gallery sign that a piece is spoken for.
+   ===================================================================== */
+const TALK = { x: ROOM.x1 - 0.07, z: ROOM.back + 3.7, y: 1.86 };
+const talkBeam = beam(V(ROOM.x1 - 1.35, FY, TALK.z), V(TALK.x, TALK.y, TALK.z), 2, 0.95, 'wall', 0.75);
+talkBeam.pool.rotation.y = -Math.PI / 2; talkBeam.pool.position.set(ROOM.x1 - 0.012, TALK.y, TALK.z);
+const talkLight = new THREE.SpotLight(0xffd6a0, 0, 9, 0.5, 0.55, 1.2); at(talkLight, ROOM.x1 - 2.2, 4.3, TALK.z); talkLight.target.position.set(TALK.x, TALK.y, TALK.z); scene.add(talkLight, talkLight.target);
+const talk = { mode: 'off', t: 0, dur: 1.7, P: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], L: [new THREE.Vector3(), new THREE.Vector3()], v: 0, surf: null, group: null, css: null, cssR: null, opener: null, mobile: null, dot: null, dotT: -1 };
+const talkPose = { pos: new THREE.Vector3(), look: new THREE.Vector3() };
+// the museum label beside the painting, with room for the red dot
+const talkLabel = (() => {
+  const tex = ctex(640, 400, (c, w, h) => {
+    c.fillStyle = '#f6f2e9'; c.fillRect(0, 0, w, h);
+    c.fillStyle = '#121b18'; c.font = `700 78px ${SANS}`; try { c.letterSpacing = '-2px'; } catch (_) {} c.fillText("Let's talk", 36, 100); try { c.letterSpacing = '0px'; } catch (_) {}
+    c.font = `700 42px ${SANS}`; c.fillText('Vasant Suraj', 40, 178);
+    c.fillStyle = '#26332e'; c.font = `500 38px ${SANS}`; c.fillText('Commission enquiry', 40, 236);
+    c.fillStyle = '#3a4742'; c.font = `700 26px ${SANS}`; try { c.letterSpacing = '3px'; } catch (_) {} c.fillText('OPEN FOR NEW WORK', 40, 350); try { c.letterSpacing = '0px'; } catch (_) {}
+  });
+  const g = new THREE.Group(); g.rotation.y = -Math.PI / 2; scene.add(g);
+  const card = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.3625, 0.012), [M.mat, M.mat, M.mat, M.mat, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 }), M.mat]); card.castShadow = true; g.add(card);
+  const dot = at(new THREE.Mesh(new THREE.CircleGeometry(0.022, 24), new THREE.MeshStandardMaterial({ color: 0xc8261e, roughness: 0.35 })), 0.225, -0.125, 0.0075); dot.scale.setScalar(0.001); g.add(dot);
+  talk.dot = dot; return g;
+})();
+
+function paintTalk() {   // the form, painted: a dark green ground in broad strokes on a canvas weave, cream and ochre lettering
+  const s = talk.surf, cv = talk.cv, x = cv.getContext('2d'), k = cv.width / s.fw, w = cv.width, h = cv.height, L = s.layout();
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const g = x.createLinearGradient(0, 0, w * 0.3, h); g.addColorStop(0, '#27493f'); g.addColorStop(1, '#172a24'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  x.lineCap = 'round';
+  for (let i = 0; i < 1100; i++) { const px = rnd() * w, py = rnd() * h, len = (30 + rnd() * 120) * k, a = (rnd() - 0.5) * 0.9 + (rnd() < 0.5 ? 0 : Math.PI);
+    x.strokeStyle = `hsla(${150 + rnd() * 24}, ${22 + rnd() * 16}%, ${12 + rnd() * 14}%, ${0.06 + rnd() * 0.16})`; x.lineWidth = (4 + rnd() * 16) * k;
+    x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo(px + Math.cos(a) * len * 0.5 + (rnd() - 0.5) * 10 * k, py + Math.sin(a) * len * 0.5 + (rnd() - 0.5) * 10 * k, px + Math.cos(a) * len, py + Math.sin(a) * len); x.stroke(); }
+  const lg = x.createRadialGradient(w * 0.35, h * 0.28, 0, w * 0.35, h * 0.28, Math.max(w, h) * 0.7); lg.addColorStop(0, 'rgba(255,220,160,.10)'); lg.addColorStop(1, 'rgba(0,0,0,.28)'); x.fillStyle = lg; x.fillRect(0, 0, w, h);
+  x.globalAlpha = 0.05; x.fillStyle = '#000'; for (let yy = 0; yy < h; yy += 3 * k) x.fillRect(0, yy, w, k * 0.8); for (let xx = 0; xx < w; xx += 3 * k) x.fillRect(xx, 0, k * 0.8, h); x.globalAlpha = 1;
+  // the fields: darker panels laid in with a soft brushed edge, outlined in a thin ochre line
+  for (const f of L.fields) { const X0 = f.x * k, Y0 = f.y * k, W0 = f.w * k, H0 = f.h * k;
+    x.save(); x.shadowColor = 'rgba(4,10,8,.7)'; x.shadowBlur = 6 * k; x.fillStyle = 'rgba(9,19,15,.78)'; roundRect(x, X0, Y0, W0, H0, 4 * k); x.fill(); x.restore();
+    x.strokeStyle = 'rgba(216,173,95,.5)'; x.lineWidth = 1.2 * k; roundRect(x, X0, Y0, W0, H0, 4 * k); x.stroke(); }
+  // the lettering, with a little relief: a dark underside and, on the title, a lit edge
+  const COL = { title: '#efe4cc', intro: 'rgba(239,228,204,.92)', label: '#d8ad5f', note: 'rgba(239,228,204,.66)', msg: '#ee8158' };
+  for (const t of L.texts) {
+    x.font = t.font(k); x.textBaseline = 'middle'; try { x.letterSpacing = (t.ls * k) + 'px'; } catch (_) {}
+    for (const wd of t.words) { const X0 = wd.x * k, Y0 = (wd.y + wd.h / 2) * k;
+      x.fillStyle = 'rgba(3,9,7,.6)'; x.fillText(wd.w, X0 + 0.9 * k, Y0 + 1.2 * k);
+      x.fillStyle = COL[t.kind] || COL.intro; x.fillText(wd.w, X0, Y0);
+      if (t.kind === 'title') { x.fillStyle = 'rgba(255,250,232,.35)'; x.fillText(wd.w, X0 - 0.6 * k, Y0 - 0.6 * k); } }
+    try { x.letterSpacing = '0px'; } catch (_) {}
+  }
+  for (const sl of L.seals) { const cx = (sl.x + sl.w / 2) * k, cy = (sl.y + sl.h / 2) * k, R = sl.w / 2 * k * 0.86;
+    x.lineCap = x.lineJoin = 'round'; x.strokeStyle = '#d8ad5f'; x.lineWidth = 5 * k; x.beginPath(); x.arc(cx, cy, R, 0, 7); x.stroke();
+    x.beginPath(); x.moveTo(cx - R * 0.42, cy + R * 0.02); x.lineTo(cx - R * 0.1, cy + R * 0.34); x.lineTo(cx + R * 0.46, cy - R * 0.3); x.stroke(); }
+  talk.tex.needsUpdate = true;
+}
+async function buildTalk(config, send) {
+  const mobile = W / H < 0.85;
+  if (talk.group && talk.mobile === mobile) return;
+  if (talk.group) { scene.remove(talk.group); talk.surf.destroy(); talk.tex.dispose(); }
+  const { createSurface } = await import('../talk/surface.js');
+  if (document.fonts) await Promise.all([document.fonts.load(`700 50px ${SANS}`), document.fonts.load(`800 13px ${SANS}`)]).catch(() => {});
+  const MPPt = 0.0021, fw = mobile ? 344 : 600;
+  talk.surf = createSurface({ config, send, width: fw, mobile, look: 'tb-look-paint', onChange: () => paintTalk(), onClose: () => closeTalk(), onSent: () => { talk.dotT = 0; } });
+  const s = talk.surf, artW = s.fw * MPPt, artH = s.fh * MPPt, border = mobile ? 0.075 : 0.13;
+  const kk = Math.min(3, 2048 / Math.max(s.fw, s.fh)); talk.cv = document.createElement('canvas'); talk.cv.width = Math.round(s.fw * kk); talk.cv.height = Math.round(s.fh * kk);
+  talk.tex = new THREE.CanvasTexture(talk.cv); talk.tex.colorSpace = THREE.SRGBColorSpace; talk.tex.anisotropy = 8;
+  const fr = goldFrame(artW + border * 2, artH + border * 2, talk.tex, border, 0.09, 0);
+  fr.rotation.y = -Math.PI / 2; at(fr, TALK.x, TALK.y + (mobile ? 0.12 : 0), TALK.z); scene.add(fr); talk.group = fr; talk.mobile = mobile;
+  talk.css = new CSS3DObject(s.el); talk.css.scale.setScalar(MPPt); talk.css.position.set(0, 0, 0.034); fr.add(talk.css);
+  talkLabel.position.set(ROOM.x1 - 0.02, TALK.y - artH / 2 + 0.2, TALK.z + artW / 2 + border + 0.38);   // to the right, as museums hang them
+  paintTalk();
+  // where the camera stands: square on, far enough back for the whole frame (and a little room for the header)
+  const fov = THREE.MathUtils.degToRad(camera.fov / 2), tn = Math.tan(fov), needH = (artH + border * 2 + (mobile ? 0.05 : 0.3)) * (mobile ? 1.02 : 1.14), needW = (artW + border * 2 + (mobile ? 0 : 1.22)) * (mobile ? 0.99 : 1.03);
+  const d = Math.max(needH / (2 * tn), needW / (2 * tn * camera.aspect));
+  const lz = TALK.z + (mobile ? 0 : 0.36); talkPose.look.set(ROOM.x1, TALK.y + (mobile ? 0.12 : 0) + 0.06, lz); talkPose.pos.set(ROOM.x1 - d, talkPose.look.y, lz);
+}
+async function openTalk({ config, send, opener, fallback }) {
+  if (talk.mode === 'in' || talk.mode === 'on') return;
+  talk.opener = opener;
+  if (!talk.cssR) { talk.cssR = new CSS3DRenderer(); document.getElementById('talk3d').appendChild(talk.cssR.domElement); talk.cssR.setSize(W, H); }
+  document.documentElement.classList.add('talking'); document.documentElement.style.overflow = 'hidden';
+  try { await buildTalk(config, send); } catch (err) {   // the painting could not be made: put the page back and use the plain form
+    console.warn('[contact] painting unavailable:', err && err.message); document.documentElement.classList.remove('talking'); document.documentElement.style.removeProperty('overflow'); talk.group = null; if (fallback) fallback(); return; }
+  talk.surf.reset();
+  // fly from wherever the camera is: out of the side room through the doorway if needed, then an easy arc across the hall
+  const P0 = camPos.clone(), P2 = talkPose.pos.clone(), mid = P0.z < ROOM.back - 0.2 ? V(DOOR.x, 1.9, ROOM.back + 1.8) : V((P0.x + P2.x) / 2, Math.max(P0.y, P2.y) + 0.35, Math.max(P0.z, P2.z) + 1.1);
+  talk.P[0].copy(P0); talk.P[1].copy(mid); talk.P[2].copy(P2); talk.L[0].copy(camLook); talk.L[1].copy(talkPose.look);
+  talk.mode = 'in'; talk.t = reduce ? talk.dur : 0;
+}
+function closeTalk() {
+  if (talk.mode === 'off' || talk.mode === 'out') return;
+  cameraAt(stage.prog);
+  const P0 = camera.position.clone(), P2 = tgtPos.clone(), mid = P2.z < ROOM.back - 0.2 ? V(DOOR.x, 1.9, ROOM.back + 1.8) : V((P0.x + P2.x) / 2, Math.max(P0.y, P2.y) + 0.35, Math.max(P0.z, P2.z) + 1.1);
+  talk.P[0].copy(P0); talk.P[1].copy(mid); talk.P[2].copy(P2); talk.L[0].copy(talkPose.look); talk.L[1].copy(tgtLook);
+  talk.mode = 'out'; talk.t = reduce ? talk.dur : 0;
+  document.documentElement.classList.remove('talking');
+}
+function talkFrame(dt, t) {   // returns true while the talk camera is in charge
+  if (talk.mode === 'off') return false;
+  talk.t = Math.min(talk.dur, talk.t + dt); const e = easeIO(talk.t / talk.dur), u = 1 - e;
+  camera.position.set(u * u * talk.P[0].x + 2 * u * e * talk.P[1].x + e * e * talk.P[2].x, u * u * talk.P[0].y + 2 * u * e * talk.P[1].y + e * e * talk.P[2].y, u * u * talk.P[0].z + 2 * u * e * talk.P[1].z + e * e * talk.P[2].z);
+  _a.copy(talk.L[0]).lerp(talk.L[1], sstep(0.05, 0.75, talk.t / talk.dur)); camera.lookAt(_a);
+  if (talk.mode === 'in' && talk.t >= talk.dur) { talk.mode = 'on'; talk.surf.focusFirst(); }
+  if (talk.mode === 'out' && talk.t >= talk.dur) { talk.mode = 'off'; camPos.copy(camera.position); camLook.copy(_a); document.documentElement.style.removeProperty('overflow'); if (talk.opener && talk.opener.focus) talk.opener.focus({ preventScroll: true }); }
+  return true;
+}
+addEventListener('keydown', e => { if (talk.mode !== 'on' && talk.mode !== 'in') return; if (e.key === 'Escape') { e.preventDefault(); closeTalk(); } else talk.surf && talk.surf.trap(e); });
+window.__talkScene = { open: o => { openTalk(o); } };
+
+/* =====================================================================
+   DUST in the beams: points that drift down each cone, visible only while it is lit
+   ===================================================================== */
+const dust = (() => {
+  const N = beams.length, PER = coarse ? 22 : 40, count = N * PER;
+  const aBeam = new Float32Array(count), aS = new Float32Array(count), aAng = new Float32Array(count), aR = new Float32Array(count), aSeed = new Float32Array(count);
+  for (let i = 0; i < count; i++) { aBeam[i] = Math.floor(i / PER); aS[i] = Math.random(); aAng[i] = Math.random() * 6.283; aR[i] = Math.sqrt(Math.random()); aSeed[i] = Math.random(); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+  [['aBeam', aBeam], ['aS', aS], ['aAng', aAng], ['aR', aR], ['aSeed', aSeed]].forEach(([n, a]) => g.setAttribute(n, new THREE.BufferAttribute(a, 1)));
+  const u = { uApex: { value: beams.map(b => b.F.clone()) }, uDir: { value: beams.map(b => b.dir.clone()) }, uLen: { value: beams.map(b => b.L) }, uRad: { value: beams.map(b => b.r) }, uOn: { value: beams.map(() => 0) }, uTime: { value: 0 }, uScale: { value: H * DPR } };
+  const m = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: u,
+    vertexShader: `uniform vec3 uApex[${N}]; uniform vec3 uDir[${N}]; uniform float uLen[${N}]; uniform float uRad[${N}]; uniform float uOn[${N}]; uniform float uTime; uniform float uScale;
+      attribute float aBeam, aS, aAng, aR, aSeed; varying float vA;
+      void main(){ int i = int(aBeam + 0.5); vec3 d = uDir[i]; vec3 up = abs(d.y) > 0.95 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+        vec3 p1 = normalize(cross(d, up)), p2 = cross(d, p1);
+        float s = fract(aS + uTime * 0.006 * (0.4 + aSeed)); float ang = aAng + uTime * 0.08 * (aSeed - 0.5);
+        vec3 pos = uApex[i] + d * (0.12 + s * 0.85) * uLen[i] + (p1 * cos(ang) + p2 * sin(ang)) * aR * uRad[i] * (0.12 + s * 0.85) * 0.9;
+        pos += vec3(sin(uTime * 0.31 + aSeed * 20.0), sin(uTime * 0.23 + aSeed * 9.0), cos(uTime * 0.27 + aSeed * 13.0)) * 0.025;
+        vec4 mv = modelViewMatrix * vec4(pos, 1.0); gl_PointSize = uScale * (0.006 + 0.007 * aSeed) / -mv.z; gl_Position = projectionMatrix * mv;
+        vA = uOn[i] * smoothstep(0.0, 0.15, s) * smoothstep(1.0, 0.75, s) * (0.35 + 0.65 * (0.5 + 0.5 * sin(uTime * (0.6 + aSeed) + aSeed * 30.0))); }`,
+    fragmentShader: `varying float vA; void main(){ vec2 c = gl_PointCoord - 0.5; float r = length(c); if (r > 0.5) discard; float a = vA * smoothstep(0.5, 0.0, r) * 0.55; gl_FragColor = vec4(vec3(1.0, 0.88, 0.7) * a, a); }` });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; scene.add(pts);
+  return { m, u };
+})();
+
+/* =====================================================================
+   SCROLL → WHAT HAPPENS. Everything big is scroll-driven (and eased toward the scroll, so wheel ticks never snap);
+   idle life (dust, swinging tags, a small flicker as a lamp comes on) runs on time.
+   ===================================================================== */
+const CK = { open: [0.13, 0.155], out: [0.155, 0.172], glide: [0.175, 0.245], title: [0.262, 0.29], desc: [0.296, 0.324], flip: [0.495, 0.515], map: [0.553, 0.578], spin: [0.712, 0.732], side: 0.77, list: [0.815, 0.875], sent: 0.882 };
+let progL = 0;
+const piecePos = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
+function update(t, dt, p) {
+  // the crate opens, the page slides out, lifts and glides to its wall
+  crate.hinge.rotation.x = easeIO(sstep(...CK.open, p)) * 1.48;
+  const o = sstep(...CK.out, p), gl = easeIO(sstep(...CK.glide, p));
+  _a.set(CRATE.x, 1.4, CRATE.z - 0.05).lerp(_b.set(CRATE.x, 1.55, CRATE.z + 0.9), o);
+  piecePos.copy(_a).lerp(PIECE, gl); piecePos.y += Math.sin(gl * Math.PI) * 0.6;
+  piece.position.copy(piecePos); piece.rotation.set(0, Math.sin(gl * Math.PI) * -0.18, Math.sin(gl * Math.PI * 2) * 0.03);
+  // zone lights come on (and stay on) as you reach them
+  for (const k in zones) { const z = zones[k], v = z.on < 0 ? 1 : sstep(z.on, z.on + 0.015, p); z.L.intensity = z.I * v * (v > 0 && v < 1 ? 0.75 + 0.25 * Math.sin(t * 40) : 1); }
+  fill.intensity = 3 + 2 * sstep(0.9, 0.97, p);
+  sideLamp.intensity = 14 * sstep(CK.side, CK.side + 0.015, p);
+  // beams and pools: each item's own spotlight snaps on at its moment, with a flicker
+  beams.forEach((b, i) => { const v = b.on < 0 ? 1 : sstep(b.on, b.on + 0.012, p), fl = v > 0 && v < 1 ? 0.6 + 0.4 * Math.sin(t * 55 + i) : 1; b.v = v * fl * b.k;
+    b.cone.material.uniforms.uOn.value = b.v; b.pool.material.opacity = b.v * 0.38; b.lens.material.color.setRGB(0.16 + 0.9 * b.v, 0.15 + 0.78 * b.v, 0.12 + 0.55 * b.v); dust.u.uOn.value[i] = b.v; });
+  // rulers: a pointer slides along and stops at the measured length
+  { const k1 = sstep(CK.title[0], CK.title[0] + 0.006, p), v1 = easeIO(sstep(...CK.title, p)) * POST.title.length; rTitle.set(v1, k1);
+    const k2 = sstep(CK.desc[0], CK.desc[0] + 0.006, p), v2 = easeIO(sstep(...CK.desc, p)) * POST.desc.length; rDesc.set(v2, k2); }
+  // the catalogue page turns, the breadcrumbs light room by room, the door sign spins round
+  book.flip.rotation.z = -easeIO(sstep(...CK.flip, p)) * Math.PI;
+  mapStand.crumbs.forEach((c, i) => { const v = sstep(CK.map[0] + i * 0.01, CK.map[0] + i * 0.01 + 0.006, p); c.material.color.setRGB(lerp(0.23, 0.79, v), lerp(0.29, 0.64, v), lerp(0.26, 0.29, v)); c.scale.setScalar(1 + v * 0.4); });
+  { const s = sstep(...CK.spin, p); sign.spin.rotation.y = s * Math.PI * 3 + (s >= 1 ? Math.sin(t * 1.4) * 0.03 : 0); sign.g.rotation.z = Math.sin(t * 0.9) * 0.01; }
+  // the checklist fills line by line, then gets stamped
+  { const n = Math.floor(sstep(...CK.list, p) * LIST.length + 0.001), sent = p >= CK.sent; if (n !== desk.n || sent !== desk.sent) { desk.n = n; desk.sent = sent; listTex.userData.redraw(n, sent); } }
+  // tags drop and swing; pins pop
+  tags.forEach(tg => {
+    const on = p >= tg.on; if (!on) { tg.pivot.visible = false; tg.tOn = -1; return; }
+    if (tg.tOn < 0) tg.tOn = SNAP ? t - 3 : t;
+    const a = t - tg.tOn; tg.pivot.visible = true;
+    tg.hang.scale.y = Math.max(0.001, backOut(clamp(a / 0.35, 0, 1)));
+    tg.hang.rotation.z = 0.5 * Math.exp(-1.5 * a) * Math.sin(6 * a) + 0.03 * Math.sin(t * 1.3 + tg.on * 40);
+  });
+  pins.forEach(pn => { const v = sstep(pn.on, pn.on + 0.012, p); pn.g.scale.setScalar(Math.max(0.001, backOut(v))); });
+}
+
+/* ---- camera stations (scroll-scrubbed; each holds while its caption shows) ---- */
+const B = ROOM.back, A = a => a.toArray();
+const mapN = new THREE.Vector3(0, 0, 1).applyQuaternion(mapStand.board.getWorldQuaternion(new THREE.Quaternion()));
+const KEY = {
+  hero:   { pos: [-25.0, 2.5, 7.4],  look: [-16.8, 1.55, -1.2] },
+  arrive: { pos: [CRATE.x, 1.6, CRATE.z + 5.9], look: [CRATE.x, 1.3, CRATE.z], close: 1 },                 // the crate, centred and readable
+  label:  { pos: [LABEL.x - 0.1, 1.5, B + 3.45], look: [LABEL.x + 0.08, 1.32, B], close: 1, pb: 1.4 },               // the label and both rulers
+  poster: { pos: [POSTER.x - 0.7, 1.6, POSTER.z + 2.3], look: [POSTER.x, 1.42, POSTER.z], close: 1 },
+  cert:   { pos: [CERT.x + 0.18, 2.0, B + 2.35], look: [CERT.x + 0.18, 1.95, B], close: 1 },
+  cat:    { pos: [CAT.x, 2.2, CAT.z + 1.3], look: [CAT.x, 1.02, CAT.z - 0.05], close: 1 },
+  map:    { pos: A(mapStand.pos.clone().addScaledVector(mapN, 1.45).add(V(0, 0.08, 0))), look: A(mapStand.pos), close: 1 },
+  paper:  { pos: [3.7, 2.15, 4.6], look: [4.3, 1.4, -2.2] },                                                   // pull back: all three together
+  caps:   { pos: [9.85, 1.72, B + 4.5], look: [9.85, 1.6, B], close: 1 },
+  door:   { pos: [DOOR.x, 2.95, B + 2.6], look: [DOOR.x, 3.15, B], close: 1 },
+  doorway:{ pos: [DOOR.x, 1.72, B + 1.1], look: [DOOR.x + 0.3, 1.45, B - 3], close: 1, pb: 1.3 },               // through the door
+  inside: { pos: [DOOR.x + 0.2, 1.75, B - 0.8], look: [DESK.x, 1.1, DESK.z], close: 1, pb: 1.3 },
+  desk:   { pos: A(desk.pos.clone().addScaledVector(desk.normal, 1.2).add(V(0, 0.12, 0))), look: A(desk.pos), close: 1, pb: 1.55 },
+  end:    { pos: [DOOR.x - 2.9, 2.5, B - 0.7], look: [DOOR.x + 0.2, 1.35, B - 4.6], close: 1, pb: 1.15 },
+};
+const STATIONS = [
+  { p: 0.00, ...KEY.hero }, { p: 0.03, ...KEY.hero },
+  { p: 0.075, ...KEY.arrive }, { p: 0.15, ...KEY.arrive },
+  { p: 0.25, ...KEY.label }, { p: 0.33, ...KEY.label },
+  { p: 0.35, ...KEY.poster }, { p: 0.39, ...KEY.poster },
+  { p: 0.43, ...KEY.cert }, { p: 0.47, ...KEY.cert },
+  { p: 0.49, ...KEY.cat }, { p: 0.53, ...KEY.cat },
+  { p: 0.55, ...KEY.map }, { p: 0.585, ...KEY.map },
+  { p: 0.60, ...KEY.paper }, { p: 0.612, ...KEY.paper },
+  { p: 0.645, ...KEY.caps }, { p: 0.69, ...KEY.caps },
+  { p: 0.71, ...KEY.door }, { p: 0.745, ...KEY.door },
+  { p: 0.762, ...KEY.doorway }, { p: 0.778, ...KEY.inside },
+  { p: 0.80, ...KEY.desk }, { p: 0.89, ...KEY.desk },
+  { p: 0.935, ...KEY.end }, { p: 1.00, ...KEY.end },
+];
+const _d = new THREE.Vector3();
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), tgtPos = new THREE.Vector3(), tgtLook = new THREE.Vector3();
+function cameraAt(p) {
+  let a = STATIONS[0], b = STATIONS[1];
+  for (let i = 0; i < STATIONS.length - 1; i++) if (p >= STATIONS[i].p) { a = STATIONS[i]; b = STATIONS[i + 1]; }
+  const t = smooth(clamp((p - a.p) / Math.max(1e-4, b.p - a.p), 0, 1));
+  tgtPos.set(lerp(a.pos[0], b.pos[0], t), lerp(a.pos[1], b.pos[1], t), lerp(a.pos[2], b.pos[2], t));
+  tgtLook.set(lerp(a.look[0], b.look[0], t), lerp(a.look[1], b.look[1], t), lerp(a.look[2], b.look[2], t));
+  if (W / H < 0.85) {   // portrait: close-ups step straight back along the view; wide shots centre the subject and step back
+    const kc = lerp(a.close ? 1 : 0, b.close ? 1 : 0, t), pb = lerp(a.pb || 1.85, b.pb || 1.85, t), w = 1 - kc, hp = 1 - sstep(0.03, 0.09, p);
+    _d.copy(tgtPos).sub(tgtLook).multiplyScalar((pb - 1) * kc); tgtPos.add(_d); tgtLook.y -= 0.22 * kc;
+    const dx = tgtLook.x - tgtPos.x; tgtPos.x += dx * 0.75 * w; tgtLook.x += 2.4 * hp * w;
+    tgtPos.z += (4.2 + 1.2 * hp) * w; tgtPos.y += 0.7 * w; tgtLook.y -= (0.75 + 0.9 * hp) * w;
+  }
+}
+
+/* ---- pointer: slight parallax ---- */
+const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
+addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty = (e.clientY / H) * 2 - 1; }, { passive: true });
+function resize() { W = innerWidth; H = innerHeight; renderer.setSize(W, H, false); if (talk.cssR) talk.cssR.setSize(W, H); camera.aspect = W / H; camera.fov = W / H < 0.85 ? 56 : 38; camera.updateProjectionMatrix(); dust.u.uScale.value = H * DPR; fly.resize(); }
+addEventListener('resize', resize);
+
+/* ---- butterfly cursor (same as the main site) ---- */
+const fly = (() => {
+  const cv = document.getElementById('fly'); const c2 = cv.getContext('2d');
+  const Pm = { wingspan: 20, flapHz: 3, follow: 0.07, wander: 14 };
+  const st = { x: -100, y: -100, px: -100, py: -100, tx: -100, ty: -100, vx: 0, vy: 0, bank: 0, heading: 0, hover: 0, hoverT: 0, seen: false, mounted: false, dpr: 1, w: 0, h: 0 };
+  const mq = matchMedia('(hover: hover) and (pointer: fine)');
+  const onMove = e => { st.tx = e.clientX; st.ty = e.clientY; if (!st.seen) { st.x = st.px = st.tx; st.y = st.py = st.ty; st.seen = true; } st.hoverT = e.target && e.target.closest && e.target.closest('a, button, input') ? 1 : 0; };
+  const onLeave = () => { st.seen = false; };
+  function mount() { if (st.mounted || reduce || !mq.matches) return; st.mounted = true; cv.hidden = false; addEventListener('pointermove', onMove, { passive: true }); document.addEventListener('mouseleave', onLeave); resize(); }
+  function unmount() { if (!st.mounted) return; st.mounted = false; cv.hidden = true; removeEventListener('pointermove', onMove); document.removeEventListener('mouseleave', onLeave); st.seen = false; }
+  function resize() { st.dpr = Math.min(2, devicePixelRatio || 1); st.w = innerWidth; st.h = innerHeight; cv.width = Math.floor(st.w * st.dpr); cv.height = Math.floor(st.h * st.dpr); c2.setTransform(st.dpr, 0, 0, st.dpr, 0, 0); }
+  mq.addEventListener ? mq.addEventListener('change', () => mq.matches ? mount() : unmount()) : mq.addListener(() => mq.matches ? mount() : unmount());
+  function wing(side, sp, s) { c2.save(); c2.scale(side, 1); c2.beginPath(); c2.moveTo(0, -1 * s); c2.bezierCurveTo(6 * s * sp, -14 * s * sp, 22 * s * sp, -12 * s * sp, 20 * s * sp, -2 * s); c2.bezierCurveTo(19 * s * sp, 2 * s, 12 * s * sp, 3 * s, 7 * s * sp, 2 * s); c2.bezierCurveTo(14 * s * sp, 8 * s * sp, 10 * s * sp, 15 * s * sp, 3 * s * sp, 11 * s * sp); c2.bezierCurveTo(1 * s, 9 * s * sp, 0, 5 * s, 0, 3 * s); c2.closePath(); const g = c2.createLinearGradient(0, -14 * s, 0, 14 * s); g.addColorStop(0, '#FF8FD0'); g.addColorStop(1, '#5B9BF6'); c2.fillStyle = g; c2.globalAlpha = 0.92; c2.fill(); c2.globalAlpha = 0.5; c2.strokeStyle = 'rgba(255,255,255,.55)'; c2.lineWidth = 0.6; c2.stroke(); c2.restore(); }
+  function frame(t) {
+    if (!st.mounted) return; c2.clearRect(0, 0, st.w, st.h); if (!st.seen) return;
+    const wx = Math.sin(t * 0.00071) * Pm.wander * 0.7 + Math.sin(t * 0.00113 + 1.7) * Pm.wander * 0.3, wy = Math.cos(t * 0.00059) * Pm.wander * 0.6 + Math.sin(t * 0.00097 + 0.4) * Pm.wander * 0.4;
+    const gx = st.tx + wx, gy = st.ty + wy - 10; st.px = st.x; st.py = st.y; st.x += (gx - st.x) * Pm.follow; st.y += (gy - st.y) * Pm.follow; st.vx = st.x - st.px; st.vy = st.y - st.py;
+    const speed = Math.hypot(st.vx, st.vy);
+    if (speed > 0.15) { const h = Math.atan2(st.vy, st.vx) + Math.PI / 2; let dh = h - st.heading; dh = Math.atan2(Math.sin(dh), Math.cos(dh)); st.heading += dh * 0.12; st.bank = lerp(st.bank, clamp(dh * 2.2, -0.9, 0.9), 0.15); } else { st.bank = lerp(st.bank, 0, 0.08); st.heading = lerp(st.heading, 0, 0.03); }
+    st.hover = lerp(st.hover, st.hoverT, 0.12);
+    const flapHz = Pm.flapHz * (1 - st.hover * 0.45) + speed * 0.05, flap = 0.5 + 0.5 * Math.sin(t / 1000 * flapHz * Math.PI * 2), spread = 0.22 + 0.78 * flap, s = (Pm.wingspan / 20) * (1 + st.hover * 0.45);
+    c2.save(); c2.translate(st.x, st.y); c2.rotate(st.heading); c2.transform(Math.cos(st.bank * 0.6), 0, 0, 1, 0, 0);
+    c2.globalAlpha = 0.25; c2.fillStyle = '#5B9BF6'; c2.beginPath(); c2.ellipse(0, 2, 10 * s * spread + 2, 6 * s, 0, 0, 7); c2.filter = 'blur(4px)'; c2.fill(); c2.filter = 'none'; c2.globalAlpha = 1;
+    wing(1, spread, s); wing(-1, spread, s);
+    c2.fillStyle = '#f6f6f3'; c2.beginPath(); c2.ellipse(0, 2 * s, 1.3 * s, 7 * s, 0, 0, 7); c2.fill();
+    c2.strokeStyle = 'rgba(246,246,243,.8)'; c2.lineWidth = 0.8; c2.beginPath(); c2.moveTo(0, -5 * s); c2.quadraticCurveTo(-3 * s, -10 * s, -5 * s, -11 * s); c2.moveTo(0, -5 * s); c2.quadraticCurveTo(3 * s, -10 * s, 5 * s, -11 * s); c2.stroke(); c2.restore();
+  }
+  mount(); return { frame, resize, st };
+})();
+
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { redraws.forEach(r => r()); desk.n = -1; });
+
+/* ---- frame loop ---- */
+let last = performance.now(), t0 = last;
+function frame(now) {
+  const dt = Math.min(SNAP ? 0.5 : 0.05, (now - last) / 1000); last = now; const t = (now - t0) / 1000 * (reduce ? 0.5 : 1);
+  const prog = stage.prog;
+  progL = SNAP ? prog : lerp(progL, prog, 1 - Math.exp(-dt * 5));
+  ptr.x = lerp(ptr.x, ptr.tx, 0.05); ptr.y = lerp(ptr.y, ptr.ty, 0.05);
+  if (!talkFrame(dt, t)) {
+    cameraAt(prog);
+    const kc = SNAP ? 1 : 1 - Math.exp(-dt * 3.6); camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc);
+    camera.position.set(camPos.x + ptr.x * 0.25, camPos.y - ptr.y * 0.15, camPos.z); camera.lookAt(camLook);
+  }
+  update(t, dt, progL);
+  // the painting's own light comes up as the camera arrives, and stays a while after it leaves
+  { const want = talk.mode === 'in' || talk.mode === 'on' ? 1 : 0; talk.v = lerp(talk.v, want, 1 - Math.exp(-dt * (want ? 2.2 : 0.8)));
+    talkLight.intensity = 24 * talk.v; talkBeam.v = talk.v * 0.75; talkBeam.cone.material.uniforms.uOn.value = talkBeam.v; talkBeam.pool.material.opacity = talkBeam.v * 0.3;
+    talkBeam.lens.material.color.setRGB(0.16 + 0.9 * talk.v, 0.15 + 0.78 * talk.v, 0.12 + 0.55 * talk.v); dust.u.uOn.value[beams.indexOf(talkBeam)] = talk.v;
+    if (talk.dotT >= 0) { talk.dotT += dt; talk.dot.scale.setScalar(Math.max(0.001, backOut(clamp((talk.dotT - 0.4) / 0.4, 0, 1)))); } }
+  dust.u.uTime.value = t;
+  renderer.render(scene, camera);
+  if (talk.cssR && talk.mode !== 'off') talk.cssR.render(scene, camera);
+  fly.frame(now);
+  requestAnimationFrame(frame);
+}
+resize(); cameraAt(stage.prog); camPos.copy(tgtPos); camLook.copy(tgtLook); progL = stage.prog;
+requestAnimationFrame(frame);
+</script>
+<script src="../site.js" defer></script>
