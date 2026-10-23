@@ -178,6 +178,8 @@ html.no3d #forestCss,html.no3d #forestGL,html.no3d #forestFx,html.no3d .fcount{d
 .prow button:focus-visible,.wheelWrap:focus-within{outline:2px solid var(--ink);outline-offset:3px}
 .loader{position:fixed;inset:0;z-index:6;background:var(--bg);display:flex;align-items:flex-end;justify-content:space-between;padding:0 max(28px,env(safe-area-inset-right,0px)) 28px max(28px,env(safe-area-inset-left,0px));transition:opacity .8s ease,visibility 0s linear .8s}
 .loader.done{opacity:0;visibility:hidden}
+html.returning .loader > *{display:none}
+html.returning .loader{transition:opacity .45s ease,visibility 0s linear .45s}
 .loader .count{font-weight:300;font-size:clamp(72px,14vw,200px);line-height:.8;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .loader .what{font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);max-width:24ch;text-align:right;line-height:1.5}
 #fly{position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;display:block}
@@ -201,6 +203,30 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!
   .mark,.actions,.reveal{transition:none}
   .reveal{opacity:1;transform:none}
 }
+/* Let's talk on the beach: the hint over the bottle, the "received" note, and the letter's live fields */
+.bthint{position:fixed;left:50%;bottom:calc(40px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);z-index:6;display:flex;flex-direction:column;align-items:center;gap:12px;opacity:0;pointer-events:none;transition:opacity .5s,transform .5s;text-align:center;color:#f6efe2;text-shadow:0 1px 10px rgba(0,0,0,.6);max-width:calc(100vw - 32px)}
+.bthint.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.bthint p{margin:0;font-size:16px;line-height:1.4}
+.bthint-btn{all:unset;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:12px 20px;border-radius:999px;background:rgba(20,16,12,.55);box-shadow:inset 0 0 0 1px rgba(246,239,226,.35)}
+.bthint-btn:focus-visible{outline:2px solid #f6efe2;outline-offset:3px}
+.bttoast{position:fixed;left:50%;top:calc(96px + env(safe-area-inset-top,0px));transform:translate(-50%,-10px);z-index:6;padding:14px 22px;border-radius:999px;background:#f6efe2;color:#2b2118;font-weight:600;font-size:15px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .4s,transform .4s;max-width:calc(100vw - 32px);text-align:center}
+.bttoast.on{opacity:1;transform:translate(-50%,0)}
+html.talking-beach #forestCss .card,html.talking-beach #forestCss .ftitle{visibility:hidden}
+.tb-look-letter{--tb-display:'Elms Sans',Archivo,Arial,sans-serif;--tb-display-w:700;--tb-display-ls:-.035em;--tb-field-ink:#2b2118;--tb-accent:#8a5a2b;--tb-accent-soft:rgba(138,90,43,.2);--tb-placeholder:rgba(43,33,24,.42);--tb-bad:#a33a1f;--tb-ghost:#2b2118}
+.tb-look-letter .tb-btn{color:#f6efe2;background:radial-gradient(circle at 35% 30%,#b0402d,#8f2a1e 60%,#6e1f15);border-radius:999px;box-shadow:0 3px 8px rgba(60,20,10,.4),inset 0 -2px 3px rgba(0,0,0,.25)}
+.tb-look-letter .tb-knob{color:#efe3c8;background:#5a4330}
+/* Let's talk at the hero: the particles draw the outlines; these are the words and fields that fade in over them */
+.tpfx{position:fixed;z-index:5;opacity:0;pointer-events:none;transition:opacity .6s ease}
+.tpfx.on{opacity:1;pointer-events:auto}
+html.talking-hero .palette,html.talking-hero .scroll{opacity:0!important;pointer-events:none!important;transition:opacity .4s}
+.tb-look-particles{--tb-display:'Elms Sans',Archivo,Arial,sans-serif;--tb-display-w:600;--tb-display-ls:-.035em;--tb-field-ink:#f1f1ee;--tb-accent:var(--tb-hood,#a6dfd3);--tb-accent-soft:rgba(166,223,211,.22);--tb-placeholder:rgba(241,241,238,.38);--tb-bad:#ff8a7a;--tb-ghost:#f1f1ee}
+.tb-live .tb-look-particles [data-paint=intro]{color:#c9cacd!important}
+.tb-live .tb-look-particles [data-paint=label]{color:var(--tb-hood,#a6dfd3)!important}
+.tb-live .tb-look-particles [data-paint=note]{color:#8a8b90!important}
+.tb-live .tb-look-particles [data-paint=msg]{color:#ff8a7a!important}
+.tb-look-particles .tb-btn{background:transparent;color:var(--tb-hood-ink,#0d0d0d);border-radius:999px}
+.tb-look-particles .tb-knob{background:transparent;color:#f1f1ee}
+.tb-look-particles .tb-f input,.tb-look-particles .tb-f textarea{background:rgba(13,13,13,.35);border-radius:9px}
 </style>
 
 <canvas id="forestGL" aria-hidden="true"></canvas>
@@ -247,7 +273,7 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!
         <path d="M2 8v0" style="transform-origin:2px 8px"/><path d="M6 4v8" style="transform-origin:6px 8px"/><path d="M10 1v14" style="transform-origin:10px 8px"/><path d="M14 5v6" style="transform-origin:14px 8px"/>
       </svg>
     </button>
-    <a class="pill" href="#contact">Let's talk <span class="dot" aria-hidden="true"></span></a>
+    <a class="pill" href="#contact" data-contact aria-haspopup="dialog">Let's talk <span class="dot" aria-hidden="true"></span></a>
   </div>
   <div class="scroll" id="scrollHint" aria-hidden="true">Scroll to explore <i></i></div>
   <div class="fcount" id="fcount" aria-hidden="true"><em id="fcCat">Webflow work</em><div class="num"><b id="fcNum">01</b><i id="fcTot">/05</i></div></div>
@@ -276,6 +302,13 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* one smoothed scroll value for the whole page: the forest, the cards and the counter all read it in the same frame.
    If the library can't load, the page simply uses the browser's own scrolling. */
+/* coming back from an automation page: skip the counter and start in the forest at that page's card.
+   The automation page's back arrow either links here with #from-<page>, or does a real browser "back" and leaves a note in
+   sessionStorage in case the browser has to reload this page instead of restoring it. */
+let RETURN_SLUG = (/^#from-([\w-]+)$/.exec(location.hash) || [])[1] || null;
+try { const r = sessionStorage.getItem('returnTo'); if (r) { sessionStorage.removeItem('returnTo'); if (!RETURN_SLUG && /^[\w-]+$/.test(r)) RETURN_SLUG = r; } } catch (e) {}
+addEventListener('pageshow', e => { if (e.persisted) { try { sessionStorage.removeItem('returnTo'); } catch (_) {} } });
+if (RETURN_SLUG) document.documentElement.classList.add('returning');
 const lenis = (!reduce && window.Lenis) ? new window.Lenis({ lerp: 0.085, wheelMultiplier: 0.95, smoothWheel: true, syncTouch: false }) : null;
 window.__lenis = lenis;
 const goTo = (y, opt = {}) => lenis ? lenis.scrollTo(y, opt) : scrollTo({ top: typeof y === 'number' ? y : y.getBoundingClientRect().top + scrollY, behavior: opt.immediate || reduce ? 'auto' : 'smooth' });
@@ -299,7 +332,7 @@ function onScroll() {
 }
 addEventListener('scroll', onScroll, { passive: true });
 document.addEventListener('click', e => {
-  const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || !lenis) return;
+  const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || !lenis || a.hasAttribute('data-contact')) return;
   const id = a.getAttribute('href'), el = id === '#top' ? 0 : document.querySelector(id); if (el === null) return;
   e.preventDefault(); lenis.scrollTo(el, { duration: 2.4 });
 });
@@ -323,7 +356,7 @@ const WORK = [
 ];
 const AUTOMATIONS = [
   { name: 'Notion to Webflow Publisher', cat: 'Publishing', url: 'automations/notion-to-webflow.html', line: 'Approve in Notion, get a complete Webflow draft.', tags: ['n8n','Notion','Webflow','Slack'], one: 'When an editor marks a finished blog as approved in Notion, the content is converted to HTML, every SEO field is filled, and a Webflow CMS draft is created and confirmed in Slack.', trigger: 'Notion status change', outcome: 'A publish-ready Webflow draft appears minutes after the editor flips the status, with every SEO field filled.' },
-  { name: 'SEO Pre-Live Checks', cat: 'Publishing', line: 'Eight SEO checks on every new page before it goes live.', tags: ['n8n','Webflow','Slack'], one: 'When a page is published to the Webflow staging domain, eight SEO checks run against it and a pass/fail report lands in Slack.', trigger: 'Webflow publish to staging', outcome: 'Every new page is checked for eight SEO essentials before production, with no one remembering to do it.' },
+  { name: 'SEO Pre-Live Checks', cat: 'Publishing', url: 'automations/seo-pre-live-checks.html', line: 'Eight SEO checks on every new page before it goes live.', tags: ['n8n','Webflow','Slack'], one: 'When a page is published to the Webflow staging domain, eight SEO checks run against it and a pass/fail report lands in Slack.', trigger: 'Webflow publish to staging', outcome: 'Every new page is checked for eight SEO essentials before production, with no one remembering to do it.' },
   { name: 'Auto Internal Linking', cat: 'Publishing', line: 'New posts linked in and out across the blog at publish time.', tags: ['n8n','Webflow','Google Sheets','Search Console','Claude'], one: 'Two engines wire every new post into the site: one adds links from the new post outward, the other adds links from older posts into it, with a log of every change.', trigger: 'Webflow publish of a new post', outcome: 'Every new post is linked in both directions within minutes of publishing, with no editor involved.' },
   { name: 'AI Blog Drafts', cat: 'Content', line: 'Flag a sheet row, get a 3,000-word draft in Google Docs.', tags: ['n8n','Gemini','Google Sheets','Google Docs','Slack'], one: 'A flagged row in a Google Sheet (title, keywords, brief) becomes a complete 3,000–4,000-word draft in Google Docs, with a Slack notification.', trigger: 'Google Sheets row change', outcome: 'A full draft lands in Google Docs minutes after a row is flagged, instead of hours of writing per post.' },
   { name: 'Webinar to Webflow', cat: 'Content', line: 'YouTube link in, labelled transcript and CMS recap page out.', tags: ['n8n','Gemini','Supadata','Google Docs','Webflow'], one: 'A YouTube webinar link produces a speaker-labelled, cleaned transcript in Google Docs, then a reviewed recap page pushed to the Webflow CMS.', trigger: 'Webhooks from an internal app', outcome: 'A named, cleaned transcript in two to four minutes per video, with a draft recap page ready for review.' },
@@ -485,11 +518,11 @@ const forest = (() => {
   });
   setTimeout(() => { if (!root.classList.contains('forest3d')) root.classList.add('no3d'); }, 12000);
   // back from an automation page (its back arrow links here with #from-<page>): start in the forest at that card, not at the portrait
-  { const m = /^#from-([\w-]+)$/.exec(location.hash), c = m && cards.find(c => c.card.getAttribute('href') === `automations/${m[1]}.html`);
+  { const c = RETURN_SLUG && cards.find(c => c.card.getAttribute('href') === `automations/${RETURN_SLUG}.html`);
     if (c) {
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       const go = () => { layout(); if (lenis) lenis.resize(); goTo(top() + c.s * Hs, { immediate: true }); };
-      go(); addEventListener('load', () => { go(); history.replaceState(null, '', location.pathname + location.search); });
+      go(); addEventListener('load', () => { go(); if (location.hash) history.replaceState(null, '', location.pathname + location.search); });
     } }
   window.__forest = { CATS, keys, cards, titles, totalS, fallS, landS, skyS, tms, beachTitle, cliffZ, lastZ, sAt, top, mix, Hs: () => Hs, setActive };
   return { shiftScroll, mix };
@@ -513,13 +546,13 @@ const canvas = document.getElementById('gl');
 const gl = canvas.getContext('webgl2', { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance' });
 const VS = `#version 300 es
 precision highp float;
-in vec3 aPos; in vec3 aCol; in vec3 aRand; in vec3 aTarget; in vec3 aHood;   // x hoodie, y cast on skin, z drawstring   // aTarget: u along the line (0..1 of the formed stretch), tube angle, tube radius (model)
+in vec3 aPos; in vec3 aCol; in vec3 aRand; in vec3 aTarget; in vec3 aHood; in vec4 aFormA; in vec4 aFormB;   // aForm*: where this particle sits in the Let's talk form (model space) + a colour index   // x hoodie, y cast on skin, z drawstring   // aTarget: u along the line (0..1 of the formed stretch), tube angle, tube radius (model)
 uniform sampler2D uPath;   // line samples in model space (scroll 0): x in r, y in g
 uniform float uPathN;
 uniform mat4 uProj, uView, uModel;
 uniform float uTime, uIntro, uConverge, uFade, uShift, uPointScale, uRadius, uStrength, uHalfW, uHalfH, uBaseY;
 uniform vec2 uMouse, uMouseVel;
-uniform vec3 uLineA, uLineB, uHood; uniform float uHoodOn, uForest;
+uniform vec3 uLineA, uLineB, uHood; uniform float uHoodOn, uForest, uForm, uAB, uFormSize;
 out vec3 vCol; out float vAlpha; out float vDepth;
 vec3 swirl(vec3 q, float t) {
   vec3 a = vec3(sin(q.z*3.1 + t) + cos(q.y*3.7 - t*0.7), sin(q.x*3.3 - t*0.8) + cos(q.z*2.9 + t*0.6), sin(q.y*3.5 + t*0.9) + cos(q.x*3.0 - t));
@@ -561,10 +594,16 @@ void main(){
   q.z = mix(q.z, (aRand.z - 0.5) * 0.4, toField);
   float amp = 0.006 + min(drop, 1.0) * 0.006 + toField * 0.02;
   q += swirl(q * 1.3 + aRand * 2.0, t * 0.8) * amp;
+  // Let's talk: each particle leaves the portrait on its own cue, swirls, and settles into the form
+  float fk = clamp(uForm * 1.55 - aRand.x * 0.55, 0.0, 1.0); fk = fk * fk * (3.0 - 2.0 * fk);
+  float abk = clamp(uAB * 1.5 - aRand.y * 0.5, 0.0, 1.0); abk = abk * abk * (3.0 - 2.0 * abk);
+  vec4 tgt = mix(aFormA, aFormB, abk);
+  vec3 fp = tgt.xyz + vec3(0.0, 0.0, (aRand.z - 0.5) * 0.45 * sin(abk * 3.14159)) + swirl(tgt.xyz * 2.0 + aRand * 3.0, t * 0.6) * 0.0018;
+  q = mix(q, fp, fk) + swirl(q * 0.8 + aRand * 4.0, t * 0.5) * 0.16 * sin(fk * 3.14159);
   // butterfly / pointer
   vec2 dm = q.xy - uMouse; float dist = length(dm);
   float rr = uRadius * (0.75 + aRand.z*0.5);
-  float f = 1.0 - smoothstep(0.0, rr, dist); f = f*f*(3.0-2.0*f);
+  float f = 1.0 - smoothstep(0.0, rr, dist); f = f*f*(3.0-2.0*f); f *= 1.0 - fk * 0.85;
   vec2 dir = dm / max(dist, 1e-4);
   float jitter = 0.6 + 0.8*aRand.y;
   q.xy += dir * f * 0.02 * uStrength * jitter * (1.0 - m*0.6);
@@ -590,11 +629,15 @@ void main(){
   col = mix(col, skin, aHood.y * (1.0 - aHood.x) * uHoodOn);   // never on hoodie particles
   // inside the forest the settled field turns into fireflies
   col = mix(col, vec3(0.62, 1.0, 0.6) * (0.7 + 0.6 * aRand.y), toField * uForest);
-  vCol = col; vDepth = aPos.z;
+  vec3 hoodC = mix(vec3(0.65, 0.875, 0.83), uHood, uHoodOn);   // the form's accent follows the hoodie colour
+  vec3 fcol = tgt.w < 0.5 ? vec3(0.945, 0.945, 0.93) : tgt.w < 1.5 ? hoodC : tgt.w < 2.5 ? vec3(0.36, 0.61, 0.96) : vec3(0.5, 0.51, 0.54);
+  col = mix(col, fcol, fk);
+  vCol = col; vDepth = mix(aPos.z, 0.25, fk);
   float a = mix(1.0 - gone, 0.45, toField);
   a *= mix(1.0, keep * 1.8, fz) * (1.0 - uForest * rainer);
   gl_PointSize *= 1.0 + fz * keep * 1.4;
-  vAlpha = d * (0.92 + f*0.08) * (1.0 - uFade) * a;
+  vAlpha = mix(d * (0.92 + f*0.08) * (1.0 - uFade) * a, d * 0.95 * (1.0 - step(8.5, tgt.w)), fk);
+  gl_PointSize = mix(gl_PointSize, uFormSize * (0.8 + aRand.z * 0.5), fk);
 }`;
 const FS = `#version 300 es
 precision highp float;
@@ -606,12 +649,12 @@ void main(){
   vec3 col = vCol * (0.86 + 0.14 * clamp(vDepth*2.0+0.5, 0.0, 1.0));
   o = vec4(col * a, a);
 }`;
-let prog, U = {}, count = 0, vao, posCPU = null, targetBuf = null, pathTex = null, pathN = 0;
+let prog, U = {}, count = 0, vao, posCPU = null, targetBuf = null, pathTex = null, pathN = 0, formBufA = null, formBufB = null;
 function compile(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; }
 if (gl) {
   prog = gl.createProgram(); gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(prog));
-  for (const n of ['uProj','uView','uModel','uTime','uIntro','uConverge','uFade','uShift','uPointScale','uRadius','uStrength','uHalfW','uHalfH','uBaseY','uMouse','uMouseVel','uLineA','uLineB','uPath','uPathN','uHood','uHoodOn','uForest']) U[n] = gl.getUniformLocation(prog, n);
+  for (const n of ['uProj','uView','uModel','uTime','uIntro','uConverge','uFade','uShift','uPointScale','uRadius','uStrength','uHalfW','uHalfH','uBaseY','uMouse','uMouseVel','uLineA','uLineB','uPath','uPathN','uHood','uHoodOn','uForest','uForm','uAB','uFormSize']) U[n] = gl.getUniformLocation(prog, n);
 }
 function perspective(fov, aspect, near, far) { const f = 1 / Math.tan(fov / 2), nf = 1 / (near - far); return new Float32Array([f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0]); }
 function translate(x, y, z) { return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]); }
@@ -660,6 +703,7 @@ function build(colorImg, depthImg, maskImg) {
   const attr = (name, arr, size) => { const bf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW); const loc = gl.getAttribLocation(prog, name); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0); return bf; };
   attr('aPos', pos, 3); attr('aCol', col, 3); attr('aRand', rnd, 3); attr('aHood', hood, 3);
   targetBuf = attr('aTarget', new Float32Array(count * 3), 3);
+  formBufA = attr('aFormA', new Float32Array(count * 4), 4); formBufB = attr('aFormB', new Float32Array(count * 4), 4);
   gl.bindVertexArray(null);
   document.querySelector('.loader .what').textContent = `Assembling ${count.toLocaleString()} particles of one person.`;
 }
@@ -770,6 +814,8 @@ let hoodCol = [0, 0, 0], hoodOn = 0, hoodTarget = 0, hoodCur = [0.56, 0.83, 0.77
   function apply(save = true) {
     const L = Number(light.value); const c = hsl(hue, sat, L / 100);
     hoodCol = c; hoodTarget = 1; sw.classList.add('set'); sw.style.setProperty('--hood', toHex(c));
+    const de = document.documentElement.style, lum = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2];
+    de.setProperty('--tb-hood', toHex(c)); de.setProperty('--tb-hood-ink', lum > 0.55 ? '#0d0d0d' : '#f6f6f3');
     dot.style.left = (R + Math.cos(hue * Math.PI / 180) * sat * R) + 'px'; dot.style.top = (R + Math.sin(hue * Math.PI / 180) * sat * R) + 'px';
     if (save) try { localStorage.setItem('hoodie', JSON.stringify({ hue, sat, L })); } catch (e) {}
   }
@@ -781,11 +827,81 @@ let hoodCol = [0, 0, 0], hoodOn = 0, hoodTarget = 0, hoodCur = [0.56, 0.83, 0.77
   hueIn.addEventListener('input', () => { hue = Number(hueIn.value); sat = Math.max(sat, 0.5); apply(); });
   light.addEventListener('input', () => { drawWheel(Number(light.value)); apply(); });
   btn.addEventListener('click', () => { const open = picker.hidden; picker.hidden = !open; btn.setAttribute('aria-expanded', String(open)); });
-  document.getElementById('hoodReset').addEventListener('click', () => { hoodTarget = 0; sw.classList.remove('set'); try { localStorage.removeItem('hoodie'); } catch (e) {} });
+  document.getElementById('hoodReset').addEventListener('click', () => { hoodTarget = 0; sw.classList.remove('set'); document.documentElement.style.removeProperty('--tb-hood'); document.documentElement.style.removeProperty('--tb-hood-ink'); try { localStorage.removeItem('hoodie'); } catch (e) {} });
   document.addEventListener('pointerdown', e => { if (!picker.hidden && !e.target.closest('.palette')) { picker.hidden = true; btn.setAttribute('aria-expanded', 'false'); } });
   drawWheel(58);
   try { const saved = JSON.parse(localStorage.getItem('hoodie') || 'null'); if (saved) { hue = saved.hue; sat = saved.sat; light.value = saved.L; drawWheel(saved.L); apply(false); } } catch (e) {}
 })();
+
+/* =====================================================================
+   LET'S TALK at the hero: the portrait's particles leave the face and become the form. They draw the title, the field
+   outlines, the button and the close ring; the small words and the typing fade in as real text once they land
+   (talk/surface.js). Closing sends the particles back into the portrait. Elsewhere on the page this hands over:
+   the forest gets the hanging board (talk/board.js), the beach its own scene.
+   ===================================================================== */
+const talkP = { k: 0, kT: 0, ab: 0, abT: 0, cur: 0, surf: null, mobile: null, box: null, wrap: null, opener: null, showAt: -1, endAt: -1, t: 0 };
+function heroTalkTick(dts) {
+  talkP.t += dts;
+  if (talkP.k !== talkP.kT) talkP.k = talkP.kT > talkP.k ? Math.min(talkP.kT, talkP.k + dts / (reduce ? 0.01 : 1.7)) : Math.max(talkP.kT, talkP.k - dts / (reduce ? 0.01 : 1.4));
+  if (talkP.ab !== talkP.abT) talkP.ab = talkP.abT > talkP.ab ? Math.min(talkP.abT, talkP.ab + dts / (reduce ? 0.01 : 1.2)) : Math.max(talkP.abT, talkP.ab - dts / (reduce ? 0.01 : 1.2));
+  if (talkP.showAt >= 0 && talkP.t >= talkP.showAt) { talkP.showAt = -1; talkP.wrap.classList.add('on'); talkP.surf.focusFirst(); }
+  if (talkP.endAt >= 0 && talkP.t >= talkP.endAt) { talkP.endAt = -1; document.documentElement.classList.remove('talking-hero'); document.documentElement.style.removeProperty('overflow'); if (lenis) lenis.start(); if (talkP.opener && talkP.opener.focus) talkP.opener.focus({ preventScroll: true }); }
+}
+function heroFormTargets(into) {   // draw the shapes the particles make, read back every lit pixel, give each particle one
+  const s = talkP.surf, L = s.layout(), fw = s.fw, fh = s.fh, c = document.createElement('canvas'); c.width = fw; c.height = fh;
+  const x = c.getContext('2d', { willReadFrequently: true });
+  x.lineJoin = x.lineCap = 'round';
+  const rr = (X0, Y0, w, h, r) => { x.beginPath(); x.moveTo(X0 + r, Y0); x.arcTo(X0 + w, Y0, X0 + w, Y0 + h, r); x.arcTo(X0 + w, Y0 + h, X0, Y0 + h, r); x.arcTo(X0, Y0 + h, X0, Y0, r); x.arcTo(X0, Y0, X0 + w, Y0, r); x.closePath(); };
+  for (const t of L.texts) if (t.kind === 'title') { x.fillStyle = '#ff0000'; x.font = t.font(1); x.textBaseline = 'middle'; try { x.letterSpacing = t.ls + 'px'; } catch (_) {} for (const wd of t.words) x.fillText(wd.w, wd.x, wd.y + wd.h / 2); try { x.letterSpacing = '0px'; } catch (_) {} }
+  x.strokeStyle = '#00ff00'; x.lineWidth = 1.7; for (const f of L.fields) { rr(f.x + 1, f.y + 1, f.w - 2, f.h - 2, 9); x.stroke(); }
+  for (const b of L.buttons) { if (Math.abs(b.w - b.h) < 2 && b.w < 46) { x.strokeStyle = '#ffff00'; x.lineWidth = 1.6; x.beginPath(); x.arc(b.x + b.w / 2, b.y + b.h / 2, b.w / 2 - 1, 0, 7); x.stroke(); } else { x.fillStyle = '#00ff00'; rr(b.x, b.y, b.w, b.h, b.h / 2); x.fill(); } }
+  for (const sl of L.seals) { const cx = sl.x + sl.w / 2, cy = sl.y + sl.h / 2, R = sl.w / 2 * 0.86; x.strokeStyle = '#00ff00'; x.lineWidth = 4; x.beginPath(); x.arc(cx, cy, R, 0, 7); x.stroke(); x.beginPath(); x.moveTo(cx - R * 0.42, cy + R * 0.02); x.lineTo(cx - R * 0.1, cy + R * 0.34); x.lineTo(cx + R * 0.46, cy - R * 0.3); x.stroke(); }
+  const d = x.getImageData(0, 0, fw, fh).data, pts = [];
+  for (let y = 0; y < fh; y++) for (let xx = 0; xx < fw; xx++) { const i = (y * fw + xx) * 4; if (d[i + 3] < 110) continue; const r = d[i], g = d[i + 1]; pts.push(xx, y, r > 128 && g > 128 ? 3 : r > 128 ? 0 : 1); }
+  const n = pts.length / 3, box = talkP.box, tanH = Math.tan(fov / 2), mpp = 2 * tanH * camDist / H, out = new Float32Array(count * 4);
+  // about four or five particles per lit pixel; the spares drift off around the form and fade out
+  const use = Math.min(count, Math.round(n * 4.5));
+  for (let i = 0; i < count; i++) {
+    let sx, sy, ci;
+    if (i % Math.max(1, Math.round(count / use)) === 0 || count <= use) { const j = (Math.random() * n | 0) * 3; sx = box.x + pts[j] + (Math.random() - 0.5) * 0.6; sy = box.y + pts[j + 1] + (Math.random() - 0.5) * 0.6; ci = pts[j + 2]; }
+    else { sx = box.x + (Math.random() * 1.6 - 0.3) * fw; sy = box.y + (Math.random() * 1.4 - 0.2) * fh; ci = 9; }
+    out[i * 4] = (sx / W * 2 - 1) * tanH * aspect * camDist; out[i * 4 + 1] = (1 - sy / H * 2) * tanH * camDist - baseY; out[i * 4 + 2] = (Math.random() - 0.5) * 0.012; out[i * 4 + 3] = ci; }
+  gl.bindBuffer(gl.ARRAY_BUFFER, into ? formBufB : formBufA); gl.bufferSubData(gl.ARRAY_BUFFER, 0, out);
+  void mpp;
+}
+async function heroOpen({ config, send, opener }) {
+  talkP.opener = opener; talkP.endAt = -1;
+  if (lenis) lenis.stop(); document.documentElement.style.overflow = 'hidden'; document.documentElement.classList.add('talking-hero');
+  const mobile = innerWidth < 640;
+  if (!talkP.surf || talkP.mobile !== mobile) {
+    if (talkP.surf) talkP.surf.destroy();
+    const { createSurface } = await import('./talk/surface.js');
+    if (document.fonts) await Promise.all([document.fonts.load("600 50px 'Elms Sans'"), document.fonts.load("800 13px 'Elms Sans'")]).catch(() => {});
+    talkP.surf = createSurface({ config, send, width: mobile ? Math.min(344, innerWidth - 32) : 560, mobile, look: 'tb-look-particles', pad: mobile ? ['30px', '18px', '26px'] : ['36px', '40px', '34px'],
+      onChange: why => { if (why === 'state' && talkP.k > 0) { talkP.cur = 1 - talkP.cur; heroFormTargets(talkP.cur); talkP.abT = talkP.cur; } },
+      onClose: () => heroClose() });
+    talkP.mobile = mobile;
+    if (!talkP.wrap) { talkP.wrap = document.createElement('div'); talkP.wrap.className = 'tpfx'; document.body.appendChild(talkP.wrap); }
+    talkP.wrap.replaceChildren(talkP.surf.el);
+  }
+  talkP.surf.reset();
+  const s = talkP.surf; talkP.box = { x: Math.round((innerWidth - s.fw) / 2), y: Math.round(Math.max(mobile ? 70 : 84, (innerHeight - s.fh) / 2 + 12)) };
+  Object.assign(talkP.wrap.style, { left: talkP.box.x + 'px', top: talkP.box.y + 'px', width: s.fw + 'px', height: s.fh + 'px' });
+  heroFormTargets(talkP.cur); talkP.kT = 1; talkP.showAt = talkP.t + (reduce ? 0 : 1.45);
+}
+function heroClose() {
+  if (talkP.kT === 0) return;
+  talkP.wrap.classList.remove('on'); talkP.showAt = -1; talkP.kT = 0; talkP.endAt = talkP.t + (reduce ? 0 : 1.5);
+}
+addEventListener('keydown', e => { if (talkP.kT !== 1 || !talkP.surf) return; if (e.key === 'Escape') { e.preventDefault(); heroClose(); } else talkP.surf.trap(e); });
+addEventListener('resize', () => { if (talkP.kT === 1 && talkP.surf) { const s = talkP.surf; talkP.box = { x: Math.round((innerWidth - s.fw) / 2), y: Math.round(Math.max(84, (innerHeight - s.fh) / 2 + 12)) }; Object.assign(talkP.wrap.style, { left: talkP.box.x + 'px', top: talkP.box.y + 'px' }); heroFormTargets(talkP.cur); } });
+// which Let's talk: the particles at the hero, the bottle on the beach, otherwise the hanging board (site.js)
+window.__talkScene = { open: o => {
+  const F = window.__forest, sNow = F ? (scrollY - F.top()) / F.Hs() : -9;
+  if (gl && count && revealed && forest.mix() < 0.02 && converge < 0.5) { heroOpen(o); return true; }
+  if (F && sNow >= F.landS - 0.15 && window.__beachTalk) { window.__beachTalk.open(o); return true; }
+  return false;
+} };
 
 let glClear = false, fpsEl = null, fpsN = 0, fpsT = 0, fpsMs = 0;
 if (showFps) { fpsEl = document.createElement('div'); fpsEl.className = 'fps'; fpsEl.textContent = '-- fps'; document.body.appendChild(fpsEl); }
@@ -797,6 +913,7 @@ function frame(now) {
   if (!loaded) target = Math.min(target + dt * 0.06, 92); else target = 100;
   shown = lerp(shown, target, 0.12); countEl.textContent = String(Math.round(shown)).padStart(3, '0');
   if (loaded && shown > 99.2 && !revealed) reveal();
+  if (RETURN_SLUG && !revealed && document.documentElement.classList.contains('forest3d')) { shown = target = 100; reveal(); }   // back from an automation page: no counter, just the forest
   if (startT) intro = reduce ? 1 : Math.min(1, (now - startT) / 2600);
 
   fly.frame(now, dt);
@@ -804,8 +921,10 @@ function frame(now) {
   const nx = lerp(ptr.x, ptr.tx, 0.18), ny = lerp(ptr.y, ptr.ty, 0.18);
   ptr.vx = (nx - ptr.x) * 0.5 + ptr.vx * 0.5; ptr.vy = (ny - ptr.y) * 0.5 + ptr.vy * 0.5; ptr.x = nx; ptr.y = ny;
   const tanH = Math.tan(fov / 2);
-  rot.y = lerp(rot.y, ptr.has ? clamp(ptr.x / (tanH * aspect * camDist), -1, 1) * 0.22 : 0, 0.04);
-  rot.x = lerp(rot.x, ptr.has ? -clamp(ptr.y / (tanH * camDist), -1, 1) * 0.06 : 0, 0.04);
+  heroTalkTick(dt / 1000);
+  const still = 1 - Math.min(1, talkP.k * 1.5);
+  rot.y = lerp(rot.y, ptr.has ? clamp(ptr.x / (tanH * aspect * camDist), -1, 1) * 0.22 * still : 0, talkP.k > 0 ? 0.12 : 0.04);
+  rot.x = lerp(rot.x, ptr.has ? -clamp(ptr.y / (tanH * camDist), -1, 1) * 0.06 * still : 0, talkP.k > 0 ? 0.12 : 0.04);
 
   const inForest = forest.mix() > 0.999;                         // the portrait field is fully faded here: don't draw it at all
   if (gl && count && fade < 1 && !inForest) { glClear = false;
@@ -824,6 +943,7 @@ function frame(now) {
     gl.uniform3f(U.uLineA, LINE_A[0], LINE_A[1], LINE_A[2]); gl.uniform3f(U.uLineB, LINE_B[0], LINE_B[1], LINE_B[2]);
     hoodOn = lerp(hoodOn, hoodTarget, 0.08); if (hoodTarget) for (let i = 0; i < 3; i++) hoodCur[i] = lerp(hoodCur[i], hoodCol[i], 0.08);
     gl.uniform3f(U.uHood, hoodCur[0], hoodCur[1], hoodCur[2]); gl.uniform1f(U.uHoodOn, hoodOn);
+    gl.uniform1f(U.uForm, talkP.k); gl.uniform1f(U.uAB, talkP.ab); gl.uniform1f(U.uFormSize, 1.3 * DPR);
       gl.drawArrays(gl.POINTS, 0, count);
   } else if (gl && !glClear) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); glClear = true; }
   if (fpsEl) { fpsN++; fpsMs += performance.now() - t0; if (now - fpsT > 500) { fpsEl.textContent = `${Math.round(fpsN * 1000 / (now - fpsT))} fps · ${(fpsMs / fpsN).toFixed(1)} ms js · dpr ${(window.__forestStats ? window.__forestStats().dpr : 1)}`; fpsN = 0; fpsMs = 0; fpsT = now; } }
@@ -2902,6 +3022,179 @@ let moodKey = '', shadowKey = '', fogcT = -1, camFree = false;
 const cur = { x: 0, y: 1.6, z: 0, yaw: 0, pitch: -0.02 };
 window.addEventListener('forestmode', e => { night = e.detail ? 1 : 0; });
 const tgt = { z: 0, off: 0 };
+
+/* =====================================================================
+   LET'S TALK on the beach: the camera turns right, to a sea-glass bottle with a letter in it lying in the sand.
+   Scrolling pulls the cork and draws the letter out; it rises in front of you and unrolls, with the form on it
+   (talk/surface.js). Sending rolls it back up, it slides into the bottle, the cork goes in, and the bottle is thrown
+   into the sea. A short note says it was received, then the camera turns back. The page doesn't scroll meanwhile.
+   ===================================================================== */
+const bt = { on: false, stage: 'off', t: 0, k: 0, pull: 0, pullT: 0, roll: 1, base: null, cam: { x: 0, y: 0, z: 0, yaw: 0, pitch: 0 }, surf: null, mobile: null, opener: null, toastT: -1, seq: -1 };
+const BT_MPP = 0.0011;
+const btGlass = new THREE.MeshPhysicalMaterial({ color: 0x7fb3a0, roughness: 0.08, metalness: 0, transparent: true, opacity: 0.42, clearcoat: 1, clearcoatRoughness: 0.05, depthWrite: false, side: THREE.DoubleSide, envMapIntensity: 1.2 });
+const btCorkM = new THREE.MeshStandardMaterial({ color: 0xa87a4f, roughness: 0.9 });
+const btPaperIn = new THREE.MeshStandardMaterial({ color: 0xe9dcc0, roughness: 0.9 });
+const btBottle = (() => {
+  const g = new THREE.Group();
+  const prof = [[0, 0], [0.045, 0], [0.05, 0.012], [0.05, 0.2], [0.045, 0.24], [0.021, 0.28], [0.016, 0.3], [0.016, 0.34], [0.0195, 0.345], [0.0195, 0.352], [0.013, 0.352]].map(([x, y]) => new THREE.Vector2(x, y));
+  const glass = new THREE.Mesh(new THREE.LatheGeometry(prof, 36), btGlass); glass.renderOrder = 4; g.add(glass);
+  const letter = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.2, 18), btPaperIn); letter.position.y = 0.13; g.add(letter);
+  const ribbon = new THREE.Mesh(new THREE.TorusGeometry(0.0255, 0.004, 6, 20), new THREE.MeshStandardMaterial({ color: 0x8f2a1e, roughness: 0.6 })); ribbon.rotation.x = Math.PI / 2; ribbon.position.y = 0.13; g.add(ribbon);
+  const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.0175, 0.015, 0.045, 16), btCorkM); cork.position.y = 0.355; g.add(cork);
+  g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  g.visible = false; beach.add(g); return { g, letter, ribbon, cork, glass };
+})();
+// the letter: a sheet that can roll up from the bottom (vertices bent around a moving cylinder)
+const btPaper = (() => {
+  const geo = new THREE.PlaneGeometry(1, 1, 1, 72), base = geo.attributes.position.array.slice();
+  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, side: THREE.DoubleSide, fog: false, emissive: 0xffffff, emissiveIntensity: 0.42 });
+  const mesh = new THREE.Mesh(geo, mat); mesh.visible = false; scene.add(mesh);
+  function setRoll(k, w, h) {   // k 0 = flat, 1 = rolled up tight at the top edge
+    const p = geo.attributes.position.array, r0 = 0.022, d = k * h;
+    for (let i = 0; i < p.length; i += 3) {
+      const u = base[i], v = base[i + 1], x = u * w, sFromTop = (0.5 - v) * h;   // roll from the bottom edge upward
+      const sb = h - sFromTop;                                                  // distance from the bottom edge
+      if (sb >= d) { p[i] = x; p[i + 1] = (0.5 - sFromTop / h) * h - h / 2 + h / 2 * 0; p[i + 1] = h / 2 - sFromTop; p[i + 2] = 0; continue; }
+      const yc = -h / 2 + d, a = (d - sb), r = Math.max(0.006, r0 * (1 - 0.35 * a / Math.max(d, 1e-4))), phi = a / r;
+      p[i] = x; p[i + 1] = yc - r * Math.sin(phi); p[i + 2] = -(r - r * Math.cos(phi));
+    }
+    geo.attributes.position.needsUpdate = true; geo.computeVertexNormals();
+  }
+  return { mesh, geo, mat, setRoll };
+})();
+const btSplash = (() => {
+  const N = 90, pos = new Float32Array(N * 3), vel = new Float32Array(N * 3), g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const m = new THREE.PointsMaterial({ color: 0xf4fbff, size: 0.12, transparent: true, opacity: 0, depthWrite: false, fog: false });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; pts.visible = false; beach.add(pts);
+  let t = -1; const o = new THREE.Vector3();
+  return { fire(at) { o.copy(at); t = 0; for (let i = 0; i < N; i++) { const a = Math.random() * 6.283, s = 0.6 + Math.random() * 1.6; pos.set([at.x, at.y, at.z], i * 3); vel.set([Math.cos(a) * s * 0.5, 2.2 + Math.random() * 2.4, Math.sin(a) * s * 0.5], i * 3); } pts.visible = true; },
+    step(dt) { if (t < 0) return; t += dt; for (let i = 0; i < N; i++) { vel[i * 3 + 1] -= 9.8 * dt; for (let k = 0; k < 3; k++) pos[i * 3 + k] += vel[i * 3 + k] * dt; } g.attributes.position.needsUpdate = true; m.opacity = Math.max(0, 0.9 * (1 - t / 1.1)); if (t > 1.2) { t = -1; pts.visible = false; } } };
+})();
+let btCss = null;
+const btHint = document.createElement('div'); btHint.className = 'bthint'; btHint.innerHTML = `<p>There's a letter in the bottle. <b>${matchMedia('(hover: none)').matches ? 'Swipe up' : 'Scroll'} to pull it out.</b></p><button type="button" class="bthint-btn">Pull the letter out</button>`; document.body.appendChild(btHint);
+const btToast = document.createElement('div'); btToast.className = 'bttoast'; btToast.setAttribute('role', 'status'); btToast.textContent = "Message received. I'll reply on WhatsApp or by email."; document.body.appendChild(btToast);
+const _bv = new THREE.Vector3(), _bq = new THREE.Quaternion(), _bs = new THREE.Vector3(), _be = new THREE.Euler(0, 0, 0, 'YXZ'), BOT = new THREE.Vector3(), SEAPT = new THREE.Vector3(), LET = new THREE.Vector3();
+function btFwd(yaw, pitch, out) { return out.set(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)); }
+function btLetterDraw() {   // the form as a letter: cream laid paper, brown ink, ruled boxes
+  const s = bt.surf, cv = bt.cv, x = cv.getContext('2d'), k = cv.width / s.fw, w = cv.width, h = cv.height, L = s.layout();
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  x.fillStyle = '#efe3c8'; x.fillRect(0, 0, w, h);
+  for (let yy = 0; yy < h; yy += 6 * k) { x.fillStyle = 'rgba(120,90,50,.035)'; x.fillRect(0, yy, w, k); }
+  for (let i = 0; i < w * h / 700; i++) { x.fillStyle = rnd() < 0.6 ? 'rgba(110,80,40,.07)' : 'rgba(255,250,235,.4)'; x.fillRect(rnd() * w, rnd() * h, k * (0.6 + rnd()), k * (0.6 + rnd())); }
+  const vg = x.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.max(w, h) * 0.75); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(110,70,30,.28)'); x.fillStyle = vg; x.fillRect(0, 0, w, h);
+  for (const f of L.fields) { x.strokeStyle = 'rgba(70,45,20,.55)'; x.lineWidth = 1.1 * k; const X0 = f.x * k, Y0 = f.y * k, W0 = f.w * k, H0 = f.h * k; x.beginPath(); x.moveTo(X0 + 4 * k, Y0); x.lineTo(X0 + W0 - 4 * k, Y0); x.quadraticCurveTo(X0 + W0, Y0, X0 + W0, Y0 + 4 * k); x.lineTo(X0 + W0, Y0 + H0 - 4 * k); x.quadraticCurveTo(X0 + W0, Y0 + H0, X0 + W0 - 4 * k, Y0 + H0); x.lineTo(X0 + 4 * k, Y0 + H0); x.quadraticCurveTo(X0, Y0 + H0, X0, Y0 + H0 - 4 * k); x.lineTo(X0, Y0 + 4 * k); x.quadraticCurveTo(X0, Y0, X0 + 4 * k, Y0); x.stroke(); }
+  const COL = { title: '#2b2118', intro: '#4a3a2a', label: '#7a5a3a', note: '#7a6a58', msg: '#a33a1f' };
+  for (const t of L.texts) { x.font = t.font(k); x.textBaseline = 'middle'; try { x.letterSpacing = (t.ls * k) + 'px'; } catch (_) {} for (const wd of t.words) { x.fillStyle = COL[t.kind] || COL.intro; x.fillText(wd.w, wd.x * k, (wd.y + wd.h / 2) * k); } try { x.letterSpacing = '0px'; } catch (_) {} }
+  for (const sl of L.seals) { const cx = (sl.x + sl.w / 2) * k, cy = (sl.y + sl.h / 2) * k, R = sl.w / 2 * k * 0.86; x.lineCap = x.lineJoin = 'round'; x.strokeStyle = '#2b2118'; x.lineWidth = 4 * k; x.beginPath(); x.arc(cx, cy, R, 0, 7); x.stroke(); x.beginPath(); x.moveTo(cx - R * 0.42, cy + R * 0.02); x.lineTo(cx - R * 0.1, cy + R * 0.34); x.lineTo(cx + R * 0.46, cy - R * 0.3); x.stroke(); }
+  bt.tex.needsUpdate = true;
+}
+async function btOpen({ config, send, opener }) {
+  if (bt.on) return;
+  if (bt.busy) return; bt.busy = true;
+  bt.opener = opener; bt.t = 0; bt.pull = bt.pullT = 0; bt.roll = 1; bt.seq = -1; bt.toastT = -1;
+  if (window.__lenis) window.__lenis.stop(); document.documentElement.style.overflow = 'hidden'; root.classList.add('talking-beach');
+  bt.base = { ...cur };
+  const mobile = innerWidth < 640;
+  if (!bt.surf || bt.mobile !== mobile) {
+    if (bt.surf) { bt.surf.destroy(); bt.tex.dispose(); }
+    const { createSurface } = await import('./talk/surface.js');
+    if (document.fonts) await Promise.all([document.fonts.load("700 50px 'Elms Sans'"), document.fonts.load("800 13px 'Elms Sans'")]).catch(() => {});
+    bt.surf = createSurface({ config, send, width: mobile ? 344 : 560, mobile, look: 'tb-look-letter', onChange: () => btLetterDraw(), onClose: () => btClose(), onSent: () => { bt.stage = 'away'; bt.seq = 0; } });
+    bt.mobile = mobile;
+    bt.cv = document.createElement('canvas'); const kk = Math.min(3, 2048 / Math.max(bt.surf.fw, bt.surf.fh)); bt.cv.width = Math.round(bt.surf.fw * kk); bt.cv.height = Math.round(bt.surf.fh * kk);
+    bt.tex = new THREE.CanvasTexture(bt.cv); bt.tex.colorSpace = THREE.SRGBColorSpace; bt.tex.anisotropy = 8; btPaper.mat.map = bt.tex; btPaper.mat.emissiveMap = bt.tex; btPaper.mat.needsUpdate = true;
+    if (btCss) cssScene.remove(btCss); btCss = new CSS3DObject(bt.surf.el); btCss.scale.setScalar(BT_MPP); cssScene.add(btCss); bt.surf.el.style.pointerEvents = 'auto';
+  }
+  bt.surf.reset(); btLetterDraw();
+  bt.pw = bt.surf.fw * BT_MPP; bt.ph = bt.surf.fh * BT_MPP;
+  // the bottle: in the sand a couple of metres ahead once the camera has turned right
+  const yawB = bt.base.yaw - (mobile ? 0.85 : 1.05); btFwd(yawB, 0, _bv);
+  const BD = 1.45; BOT.set(bt.base.x + _bv.x * BD, 0, bt.base.z + _bv.z * BD); BOT.y = sandH(BOT.x, BOT.z) + 0.07;
+  btBottle.g.position.copy(BOT); btBottle.g.rotation.set(0, yawB + 0.9, Math.PI / 2 - 0.12); btBottle.g.visible = true; btBottle.g.scale.setScalar(1.5);
+  btBottle.cork.position.set(0, 0.355, 0); btBottle.cork.visible = true; btBottle.letter.visible = btBottle.ribbon.visible = true;
+  bt.camB = { x: bt.base.x, y: bt.base.y, z: bt.base.z, yaw: yawB, pitch: -Math.atan2(bt.base.y - BOT.y, BD) * 0.9 };
+  // where the letter hangs to be read: straight ahead at eye height, far enough to fit
+  const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), dL = Math.max((bt.ph * 1.26) / (2 * tanV), (bt.pw * (mobile ? 1.06 : 1.25)) / (2 * tanV * camera.aspect));
+  bt.camL = { x: bt.base.x, y: bt.base.y, z: bt.base.z, yaw: yawB, pitch: -0.02 };
+  btFwd(yawB, 0, _bv); LET.set(bt.base.x + _bv.x * dL, bt.base.y - 0.03 - dL * 0.03, bt.base.z + _bv.z * dL);
+  btHint.classList.remove('on'); btToast.classList.remove('on');
+  bt.surf.el.style.visibility = 'hidden'; bt.stage = 'turn'; bt.t = 0; bt.on = true; bt.busy = false;   // everything is placed: start the turn
+}
+function btClose() {
+  if (!bt.on || bt.stage === 'back') return;
+  bt.stage = 'back'; bt.t = 0; btHint.classList.remove('on'); bt.surf && (bt.surf.el.style.visibility = 'hidden');
+}
+function btEnd() {
+  bt.on = false; bt.stage = 'off'; btBottle.g.visible = false; btPaper.mesh.visible = false; if (btCss) btCss.visible = false; btHint.classList.remove('on');
+  root.classList.remove('talking-beach'); document.documentElement.style.removeProperty('overflow'); if (window.__lenis) window.__lenis.start();
+  if (bt.opener && bt.opener.focus) bt.opener.focus({ preventScroll: true });
+}
+const btLerpPose = (a, b, e) => ({ x: lerp(a.x, b.x, e), y: lerp(a.y, b.y, e), z: lerp(a.z, b.z, e), yaw: lerp(a.yaw, b.yaw, e), pitch: lerp(a.pitch, b.pitch, e) });
+function btSetPaper(pos, look, k) {   // place the letter, facing the camera spot, rolled by k
+  const m = btPaper.mesh; m.visible = true; m.position.copy(pos); m.lookAt(look); btPaper.setRoll(k, bt.pw, bt.ph);
+}
+function beachTalkFrame(dt) {
+  bt.t += dt; const ez = v => v < 0.5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2, Rm = reduce ? 1e-3 : 1;
+  let pose = bt.base;
+  if (bt.stage === 'turn') { const e = ez(clamp(bt.t / (1.5 * Rm), 0, 1)); pose = btLerpPose(bt.base, bt.camB, e); if (e >= 1) { bt.stage = 'bottle'; btHint.classList.add('on'); } }
+  else if (bt.stage === 'bottle' || bt.stage === 'pull') {
+    bt.pull += (bt.pullT - bt.pull) * (1 - Math.exp(-dt * 6)); if (reduce) bt.pull = bt.pullT;
+    const p = bt.pull, cork = clamp(p / 0.15, 0, 1), out = clamp((p - 0.12) / 0.38, 0, 1), rise = ez(clamp((p - 0.45) / 0.45, 0, 1)), unroll = clamp((p - 0.62) / 0.36, 0, 1);
+    btBottle.cork.position.set(0, 0.355 + cork * 0.12, cork * 0.05); btBottle.cork.visible = cork < 1;
+    pose = btLerpPose(bt.camB, bt.camL, rise);
+    // the letter slides out of the neck, then rises in front of the camera and unrolls
+    btBottle.letter.visible = btBottle.ribbon.visible = out <= 0;
+    if (out > 0) {
+      _be.set(btBottle.g.rotation.x, btBottle.g.rotation.y, btBottle.g.rotation.z); btFwd(0, 0, _bv); const neck = new THREE.Vector3(0, 0.13 + out * 0.3, 0).applyEuler(btBottle.g.rotation).add(BOT);
+      const camPosNow = _bs.set(pose.x, pose.y, pose.z), at = new THREE.Vector3().lerpVectors(neck, LET, rise);
+      const sc = lerp(0.18, 1, rise); btPaper.mesh.scale.setScalar(sc); btSetPaper(at, camPosNow, 1 - unroll);
+    } else btPaper.mesh.visible = false;
+    if (p > 0.02 && bt.stage === 'bottle') { bt.stage = 'pull'; btHint.classList.remove('on'); }
+    if (p >= 0.995) { bt.stage = 'letter'; bt.surf.el.style.visibility = 'visible'; bt.surf.focusFirst(); }
+  }
+  else if (bt.stage === 'letter') { pose = bt.camL; btPaper.mesh.scale.setScalar(1); btSetPaper(LET, _bs.set(pose.x, pose.y, pose.z), 0); }
+  else if (bt.stage === 'away') {
+    // roll up, back into the bottle, cork in, then the throw and the splash
+    bt.seq += dt * (reduce ? 4 : 1); const q = bt.seq; const camP = _bs.set(bt.camL.x, bt.camL.y, bt.camL.z);
+    const roll = clamp(q / 0.9, 0, 1), into = ez(clamp((q - 0.9) / 0.9, 0, 1)), corkIn = clamp((q - 1.85) / 0.3, 0, 1), lift = ez(clamp((q - 2.2) / 0.5, 0, 1)), fly = clamp((q - 2.7) / 1.7, 0, 1);
+    if (bt.surf.el.style.visibility !== 'hidden') bt.surf.el.style.visibility = 'hidden';
+    if (into < 1) { const neck = new THREE.Vector3(0, 0.15, 0).applyEuler(btBottle.g.rotation).add(BOT); btPaper.mesh.scale.setScalar(lerp(1, 0.18, into)); btSetPaper(new THREE.Vector3().lerpVectors(LET, neck, into), camP, roll); }
+    else { btPaper.mesh.visible = false; btBottle.letter.visible = btBottle.ribbon.visible = true; }
+    btBottle.cork.visible = q > 1.85; btBottle.cork.position.set(0, 0.355 + (1 - corkIn) * 0.1, 0);
+    pose = q < 2.4 ? btLerpPose(bt.camL, bt.camB, ez(clamp((q - 0.8) / 1.2, 0, 1))) : btLerpPose(bt.camB, { ...bt.camB, yaw: bt.base.yaw, pitch: 0.02 }, ez(clamp((q - 2.5) / 1.4, 0, 1)));
+    if (fly <= 0) { btBottle.g.position.copy(BOT); btBottle.g.position.y += lift * 0.9; btBottle.g.rotation.z = Math.PI / 2 - 0.12 + lift * 0.6; }
+    else {
+      if (!bt.seaSet) { bt.seaSet = true; btFwd(bt.base.yaw, 0, _bv); SEAPT.set(bt.base.x + _bv.x * 17 + 1.5, SEA + 0.05, bt.base.z + _bv.z * 17); }
+      const e = fly, start = _bv.copy(BOT); start.y += 0.9;
+      btBottle.g.position.lerpVectors(start, SEAPT, e); btBottle.g.position.y += Math.sin(e * Math.PI) * 4.5; btBottle.g.rotation.x += dt * 9; btBottle.g.rotation.z += dt * 4;
+      if (fly >= 1 && !bt.splashed) { bt.splashed = true; btSplash.fire(SEAPT); bt.toastT = 0; btToast.classList.add('on'); }
+    }
+    if (bt.splashed) { btBottle.g.position.set(SEAPT.x - (q - 4.4) * 0.6, SEA + 0.04 + Math.sin(q * 2.2) * 0.05, SEAPT.z - (q - 4.4) * 0.9); btBottle.g.rotation.set(0.2 + Math.sin(q * 1.7) * 0.15, 0.4, Math.PI / 2 + Math.sin(q * 1.3) * 0.2); }
+    if (q > 8.2) { btToast.classList.remove('on'); bt.stage = 'back'; bt.t = 0; bt.seaSet = bt.splashed = false; bt.from = pose; }
+  }
+  else if (bt.stage === 'back') { const from = bt.from || (bt.from = { ...camPose() }); const e = ez(clamp(bt.t / (1.3 * Rm), 0, 1)); pose = btLerpPose(from, bt.base, e); btPaper.mesh.visible = false; if (btCss) btCss.visible = false; if (e >= 1) { bt.from = null; btEnd(); } }
+  if (bt.stage !== 'back') bt.from = null;
+  bt.cam = pose;
+  camera.position.set(pose.x, pose.y, pose.z); camera.rotation.set(pose.pitch, pose.yaw, 0);
+  btSplash.step(dt);
+  // the live fields follow the letter exactly
+  if (btCss) { const show = bt.stage === 'letter'; btCss.visible = show; if (show) { btPaper.mesh.updateMatrixWorld(); btPaper.mesh.matrixWorld.decompose(_bv, _bq, _bs); btCss.position.copy(_bv).add(new THREE.Vector3(0, 0, 0.002).applyQuaternion(_bq)); btCss.quaternion.copy(_bq); btCss.scale.setScalar(BT_MPP); } }
+}
+function camPose() { return { x: camera.position.x, y: camera.position.y, z: camera.position.z, yaw: camera.rotation.y, pitch: camera.rotation.x }; }
+const btPull = d => { if (bt.on && (bt.stage === 'bottle' || bt.stage === 'pull')) { bt.pullT = clamp(bt.pullT + d, 0, 1); } };
+addEventListener('wheel', e => { if (bt.on) btPull(Math.abs(e.deltaY) / 900); }, { passive: true });
+let btTouchY = null;
+addEventListener('touchstart', e => { if (bt.on && e.touches[0]) btTouchY = e.touches[0].clientY; }, { passive: true });
+addEventListener('touchmove', e => { if (bt.on && e.touches[0] && btTouchY != null) { btPull(Math.abs(btTouchY - e.touches[0].clientY) / 500); btTouchY = e.touches[0].clientY; } }, { passive: true });
+btHint.querySelector('button').addEventListener('click', () => { bt.pullT = 1; });
+addEventListener('keydown', e => {
+  if (!bt.on) return;
+  if (e.key === 'Escape') { e.preventDefault(); btClose(); return; }
+  if ((bt.stage === 'bottle' || bt.stage === 'pull') && (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ')) { e.preventDefault(); btPull(0.25); }
+  if (bt.stage === 'letter' && bt.surf) bt.surf.trap(e);
+});
+window.__beachTalk = { open: o => { btOpen(o); } };
+
 function tick(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now; uTime.value = now / 1000;
   const s = F.sAt(), mix = F.mix(s);
@@ -2925,6 +3218,7 @@ function tick(now) {
   const kp = 1 - Math.exp(-dt * 3); ptr.x += (ptr.tx - ptr.x) * kp; ptr.y += (ptr.ty - ptr.y) * kp;
   camera.position.set(cur.x + ptr.x * 0.12, cur.y - ptr.y * 0.05, cur.z);
   camera.rotation.set(cur.pitch - ptr.y * 0.02, cur.yaw - ptr.x * 0.03, 0);
+  if (bt.on) beachTalkFrame(dt);
   sky.position.copy(camera.position);
   const tz = camZ - 30, tx = P(tz);
   nightT += (night - nightT) * (reduce || snap ? 1 : 1 - Math.exp(-dt * 3)); if (Math.abs(night - nightT) < 0.001) nightT = night;
@@ -2998,3 +3292,4 @@ function warmUp() {
 warmUp();
 (window.__ticks = window.__ticks || []).push(tick);              // driven by the page's single frame loop, right after the scroll updates
 </script>
+<script src="site.js" defer></script>
