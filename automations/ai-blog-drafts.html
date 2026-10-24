@@ -1,0 +1,1117 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Blog Drafts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Archivo:wdth,wght@62..125,300..700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* The Greenhouse at dawn. One automation, shown as a greenhouse: every blog is a seed. A flagged sheet row is planted,
+   the writer's voice is the seed it grows from, and the draft grows on the bench until it is boxed up as a Google Doc. */
+:root{
+  --bg:#110e0b; --ink:#f4eee6; --ink-soft:#a39888; --ink-mid:#d9cfc1; --pill:#f4eee6; --pill-ink:#110e0b; --line:#2a231b; --card:#18130f;
+  --amber:#f2b45a; --leaf:#8fc56b; --red:#e8644f; --green:#7fd17a;
+  --font:'Elms Sans','Archivo','Helvetica Neue',Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a,button{color:inherit;font:inherit}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;transition:filter .9s ease}
+body.hush #gl{filter:blur(9px) saturate(.85) brightness(.85)}
+.hushveil{position:fixed;inset:0;z-index:2;pointer-events:none;background:rgba(17,14,11,.45);opacity:0;transition:opacity .9s ease}
+body.hush .hushveil{opacity:1}
+.scrim{position:fixed;left:0;right:0;bottom:0;height:48%;z-index:2;pointer-events:none;background:linear-gradient(to top,rgba(17,14,11,.9),rgba(17,14,11,.45) 45%,rgba(17,14,11,0))}
+.vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%)}
+.grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.08;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 1.6s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+
+.ui{position:fixed;inset:0;z-index:4;pointer-events:none}
+.ui > *{pointer-events:auto}
+.ui.off > :not(.mark):not(.actions){opacity:0!important;pointer-events:none!important}
+.mark{position:absolute;top:calc(28px + env(safe-area-inset-top,0px));left:max(28px,env(safe-area-inset-left,0px));font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:14px}
+.mark svg{display:block}
+.actions{position:absolute;top:calc(22px + env(safe-area-inset-top,0px));right:max(24px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center}
+.pill{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 26px;border-radius:999px;background:var(--pill);color:var(--pill-ink);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transition:transform .25s cubic-bezier(.2,.7,.2,1),background .25s;text-decoration:none;white-space:nowrap}
+.pill:hover{transform:translateY(-2px);background:#fff8ea}
+.pill:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.pill .dot{width:5px;height:5px;border-radius:999px;background:var(--pill-ink)}
+.pill.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #34404f}
+.pill.ghost:hover{background:rgba(239,232,218,.06)}
+
+.cap{position:absolute;left:max(28px,env(safe-area-inset-left,0px));bottom:calc(36px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100vw - 56px));opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;pointer-events:none}
+.cap.on{opacity:1;transform:none;pointer-events:auto}
+.cap em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.cap em b{font-weight:600;color:var(--amber)}
+.cap h2{margin:0 0 10px;font-weight:500;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1.05}
+.cap p{margin:0;font-size:16px;line-height:1.5;color:var(--ink-mid);max-width:44ch}
+.cap .key{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.cap .key i{font-style:normal;display:inline-flex;align-items:center;gap:7px}
+.cap .key i::before{content:'';width:9px;height:9px;border-radius:999px;background:var(--c,#fff)}
+
+.hero-title{position:absolute;left:max(28px,env(safe-area-inset-left,0px));right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);pointer-events:none;transition:opacity .5s ease}
+.hero-title em{display:block;font-style:normal;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
+.hero-title h1{margin:0;font-weight:500;font-size:clamp(44px,7.4vw,124px);letter-spacing:-.035em;line-height:.92;max-width:9ch}
+.hero-title p{margin:22px 0 0;font-size:clamp(16px,1.4vw,20px);color:var(--ink-mid);max-width:32ch}
+.hero-title .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.hero-title .row > *{pointer-events:auto}
+
+.progress{position:absolute;right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px}
+.progress i{width:6px;height:6px;border-radius:999px;background:#2a3442;transition:background .3s,transform .3s}
+.progress i.on{background:var(--amber);transform:scale(1.4)}
+
+.end{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:calc(112px + env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(28px,env(safe-area-inset-left,0px));opacity:0;transition:opacity .6s ease;pointer-events:none}
+.end.on{opacity:1;pointer-events:auto}
+.end .big{margin:0;font-weight:500;font-size:clamp(34px,min(6.2vw,9vh),100px);letter-spacing:-.035em;line-height:.95;max-width:14ch}
+.end .sub{margin:22px 0 0;font-size:clamp(17px,1.5vw,22px);color:var(--ink-mid);max-width:42ch}
+.end .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;align-items:center}
+.end .next{margin-top:48px;font-size:14px;color:var(--ink-soft)}
+.end .next a{color:var(--ink);text-decoration:none;font-weight:500}
+
+.scroll{position:absolute;right:max(28px,env(safe-area-inset-right,0px));bottom:calc(32px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);transition:opacity .6s ease}
+.scroll i{display:block;width:44px;height:2px;background:var(--ink-soft);animation:line 2.2s cubic-bezier(.7,0,.3,1) infinite}
+@keyframes line{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+
+#fly{position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;display:block}
+.runway{position:relative;z-index:0;height:1300svh;pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------------- the runbook ---------------- */
+.doc{position:relative;z-index:3;background:var(--bg);padding:0 0 120px}
+.doc::before{content:'';position:absolute;left:0;right:0;top:-220px;height:220px;background:linear-gradient(to bottom,rgba(17,14,11,0),var(--bg));pointer-events:none}
+.doc-in{width:min(1240px,calc(100% - 56px));margin:0 auto}
+.doc-head{padding:140px 0 56px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:end}
+.doc-head em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:18px}
+.doc-head h2{margin:0;font-weight:500;font-size:clamp(34px,4.6vw,68px);letter-spacing:-.03em;line-height:1}
+.doc-head p{margin:20px 0 0;font-size:18px;line-height:1.5;color:var(--ink-mid);max-width:52ch}
+.facts{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.facts div{background:var(--card);padding:18px 20px}
+.facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.facts dd{margin:0;font-size:16px;font-weight:500}
+.doc-grid{display:grid;grid-template-columns:220px 1fr;gap:64px;padding-top:56px}
+.toc{position:sticky;top:120px;align-self:start;display:flex;flex-direction:column;gap:4px;font-size:13px;letter-spacing:.04em}
+.toc a{text-decoration:none;color:var(--ink-soft);padding:8px 0;display:flex;gap:12px;transition:color .25s}
+.toc a span{font-variant-numeric:tabular-nums;color:#556273}
+.toc a:hover,.toc a.on{color:var(--ink)}
+.toc .foot{margin-top:28px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:12px;line-height:1.5}
+article{min-width:0}
+.sec{padding:0 0 72px;margin-bottom:72px;border-bottom:1px solid var(--line)}
+.sec:last-child{border:0;margin:0;padding:0}
+.sec h3{margin:0 0 26px;font-weight:500;font-size:clamp(24px,2.4vw,34px);letter-spacing:-.02em;display:flex;gap:18px;align-items:baseline}
+.sec h3 span{font-family:var(--font);font-size:13px;letter-spacing:.1em;color:var(--ink-soft);font-weight:500}
+.sec p{margin:0 0 16px;font-size:17px;line-height:1.6;color:var(--ink-mid);max-width:64ch}
+.sec p:last-child{margin-bottom:0}
+.lede{font-size:clamp(20px,1.8vw,26px)!important;line-height:1.35!important;letter-spacing:-.01em;color:var(--ink)!important;max-width:30ch!important}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.steps li{background:var(--card);display:grid;grid-template-columns:72px 1fr;gap:20px;padding:24px 26px 26px 22px;align-items:start}
+.steps .n{font-size:13px;letter-spacing:.08em;color:var(--ink-soft);font-variant-numeric:tabular-nums;padding-top:4px;display:flex;align-items:center;gap:10px}
+.steps .n::before{content:'';width:8px;height:8px;border-radius:999px;background:var(--c,#555)}
+.steps h4{margin:0 0 6px;font-weight:500;font-size:18px;letter-spacing:-.01em}
+.steps p{font-size:15px!important;color:#b4bfcb!important;margin:0!important;max-width:60ch!important}
+.steps .node{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:#0d131b;border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+.rules{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.rules li{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.rules b{display:block;font-weight:500;font-size:17px;margin-bottom:8px}
+.rules span{font-size:15px;color:#b4bfcb;line-height:1.5;display:block}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px}
+.checks{width:100%;min-width:520px;border-collapse:collapse;font-size:15px;background:var(--card)}
+.checks th,.checks td{text-align:left;padding:14px 20px;border-bottom:1px solid var(--line);vertical-align:top}
+.checks tr:last-child td{border-bottom:0}
+.checks th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;background:#101720}
+.checks td:first-child{color:var(--ink-soft);font-variant-numeric:tabular-nums;width:48px}
+.checks td i{font-style:normal;color:var(--ink-soft)}
+.checks code{font-family:var(--mono);font-size:13px;color:var(--amber)}
+.note{font-size:14px!important;color:var(--ink-soft)!important;margin-top:16px!important}
+.prio{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.prio div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;border-top:4px solid var(--c)}
+.prio b{display:block;font-weight:600;font-size:28px;letter-spacing:-.02em;color:var(--c);margin-bottom:6px}
+.prio span{font-size:15px;color:#b4bfcb;line-height:1.5}
+.report{margin:28px 0 0;background:#f4eee2;color:#1d2a25;border-radius:20px;max-width:660px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.report .hd{padding:20px 24px;border-bottom:1px solid #e0d8c8;display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.report .hd b{font-weight:600;font-size:17px}
+.report .hd span{font-size:13px;color:#5f6b65}
+.report .st{display:inline-block;background:var(--p0);color:#fff;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;letter-spacing:.06em}
+.report ul{list-style:none;margin:0;padding:10px 24px 18px}
+.report li{display:grid;grid-template-columns:44px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #e7e0d2;font-size:14px;align-items:baseline}
+.report li:last-child{border:0}
+.report li i{font-style:normal;font-weight:700;font-size:12px;letter-spacing:.04em}
+.report li small{display:block;color:#5f6b65;font-size:13px;margin-top:2px}
+.report .p0 i{color:var(--p0)}.report .p1 i{color:#b97614}.report .ok i{color:#2f8a57}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:8px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 22px}
+.stats b{display:block;font-weight:500;font-size:clamp(30px,3vw,44px);letter-spacing:-.03em;line-height:1;margin-bottom:10px;color:var(--amber)}
+.stats span{font-size:14px;color:var(--ink-soft)}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pills i{font-style:normal;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border-radius:999px;background:#18212c}
+.doc-foot{margin-top:96px;padding-top:40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.doc-foot .nm{font-size:14px;color:var(--ink-soft)}
+.doc-foot .nm a{color:var(--ink);text-decoration:none;font-weight:500}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:980px){
+  .doc-head{grid-template-columns:1fr;gap:32px;padding-top:110px}
+  .doc-grid{grid-template-columns:1fr;gap:0}
+  .toc{display:none}
+}
+@media (max-width:760px){
+  .cap{bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+  .cap h2{font-size:26px}.cap p{font-size:15px}
+  .hero-title{top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:none}
+  .hero-title h1{font-size:15vw}
+  .progress{display:none}
+  .scroll{display:none}
+  .mark span{display:none}
+  .doc-in{width:calc(100% - 40px)}
+  .steps li{grid-template-columns:1fr;gap:10px;padding:20px}
+  .checks th,.checks td{padding:12px 14px}
+  .report li{grid-template-columns:38px 1fr}
+}
+@media (prefers-reduced-motion:reduce){#gl,.hushveil{transition:none}.scroll i,.grain{animation:none}.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+.pill:hover{background:#ffffff}
+.runway{height:1500svh}
+/* Let's talk: the camera visits the order pad on the far end of the greenhouse; everything else steps aside */
+#talk3d{position:fixed;inset:0;z-index:3;pointer-events:none;display:none}
+html.talking #talk3d{display:block}
+html.talking #talk3d .tb-live{pointer-events:auto}
+html.talking .cap,html.talking .hero-title,html.talking .end,html.talking .progress,html.talking .scroll,html.talking .scrim,html.talking .hushveil{opacity:0!important;pointer-events:none!important;transition:opacity .5s ease}
+html.talking .doc{visibility:hidden}
+html.talking body.hush #gl{filter:none}
+.tb-look-order{--tb-display:'Elms Sans',Archivo,Arial,sans-serif;--tb-display-w:600;--tb-display-ls:-.035em;--tb-ink:#140f08;--tb-field-ink:#140f08;--tb-accent:#2f6a33;--tb-accent-soft:rgba(47,106,51,.22);--tb-placeholder:rgba(36,27,16,.6);--tb-bad:#b8432f;--tb-ghost:#2a2116}
+.tb-look-order .tb-btn{color:#fbf6ea;background:#2b5e30;border-radius:6px;box-shadow:0 2px 0 #23452a,0 6px 14px rgba(30,40,20,.25)}
+.tb-look-order .tb-btn:hover{filter:brightness(1.07)}
+.tb-look-order .tb-knob{color:#140f08;background:rgba(36,27,16,.1);box-shadow:inset 0 0 0 1.5px rgba(36,27,16,.5)}
+</style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div id="talk3d"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="scrim" aria-hidden="true"></div>
+<div class="hushveil" aria-hidden="true"></div>
+
+<div class="ui" id="ui">
+  <a class="mark" href="../index.html#from-ai-blog-drafts" id="mark" aria-label="Back to the projects forest"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3 5 9l6 6"/></svg><span>Vasant Suraj</span></a>
+  <div class="actions"><a class="pill" href="mailto:vasantsuraj02@gmail.com" data-contact aria-haspopup="dialog">Let's talk <span class="dot" aria-hidden="true"></span></a></div>
+
+  <div class="hero-title" id="heroTitle">
+    <em>Automation · Content</em>
+    <h1>AI Blog Drafts</h1>
+    <p>Flag a sheet row, get a 3,000-word draft in Google Docs.</p>
+    <div class="row"><a class="pill ghost" href="#doc">Read the runbook</a></div>
+  </div>
+
+  <div class="cap" data-i="1"><em><b>01</b> · The sheet</em><h2>Every blog starts as a row.</h2><p>A Google Sheet holds one row per blog: the title, a primary keyword, secondary keywords and a link to the SEO brief. The last column, the article link, stays empty for now.</p></div>
+  <div class="cap" data-i="2"><em><b>02</b> · Flag the batch</em><h2>Flag the whole batch in one go.</h2><p>Setting Run Action to YES starts a blog. Type the YESes in a spare column, then paste them in together. Typed one by one, they start some drafts before the other rows are ready.</p><div class="key"><i style="--c:#7fd17a">YES starts the run</i></div></div>
+  <div class="cap" data-i="3"><em><b>03</b> · The voice</em><h2>It writes in the writer's own voice.</h2><p>Each writer has a style file: how they open, how they argue, the words they reach for. Claude reads it alongside the brief, so the same automation can write for anyone with a style file.</p></div>
+  <div class="cap" data-i="4"><em><b>04</b> · One at a time</em><h2>Each draft grows from the brief.</h2><p>The workflow takes the flagged rows in turn. Claude outlines from the brief, writes each section, and fills it out to a full 3,000 to 4,000 words. Leave queued rows alone until it finishes.</p></div>
+  <div class="cap" data-i="5"><em><b>05</b> · Delivered</em><h2>Saved, linked, announced.</h2><p>The draft is saved as a Google Doc, the row's article link fills itself in, and a message lands in the team's Slack channel. Open the Doc, review it, hand it to the editor.</p></div>
+  <div class="cap" data-i="6"><em><b>06</b> · When one fails</em><h2>A failed run says where.</h2><p>The usual cause is a brief that hasn't been shared. The run log in n8n shows which step stopped and why. Share the brief, then run that row again.</p><div class="key"><i style="--c:#e8644f">brief not shared</i></div></div>
+
+  <div class="end" id="end">
+    <p class="big">A full draft in the writer's own voice, minutes after the row is flagged.</p>
+    <p class="sub">Any writer with a style file. Every draft linked back in the sheet.</p>
+    <div class="row"><a class="pill" href="#doc">Read the runbook <span class="dot" aria-hidden="true"></span></a><span class="pill ghost">n8n</span><span class="pill ghost">Claude</span><span class="pill ghost">Google Sheets</span><span class="pill ghost">Google Docs</span><span class="pill ghost">Slack</span></div>
+    <p class="next">Next automation → <a href="#" id="nextLink">Webinar to Webflow</a></p>
+  </div>
+
+  <div class="progress" id="progress" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="scroll" id="scrollHint" aria-hidden="true">Scroll to step inside <i></i></div>
+</div>
+
+<canvas id="fly" aria-hidden="true"></canvas>
+<div class="runway" id="runway" aria-hidden="true"></div>
+<h1 class="sr">AI Blog Drafts. Flag rows in a Google Sheet with a title, keywords and a brief; an n8n workflow has Claude write each blog in a chosen writer's voice, saves it as a Google Doc, links it back in the sheet and posts to Slack.</h1>
+
+<!-- ============================ RUNBOOK ============================ -->
+<section class="doc" id="doc">
+  <div class="doc-in">
+    <header class="doc-head">
+      <div class="rv"><em>Runbook</em><h2>How AI Blog Drafts works</h2><p>The full picture of the greenhouse above: what goes in the sheet, how to start a batch safely, how the writer's voice is set, and what to check when a draft doesn't arrive.</p></div>
+      <dl class="facts rv">
+        <div><dt>Trigger</dt><dd>Run Action set to YES in the sheet</dd></div>
+        <div><dt>Runs</dt><dd>One row at a time, in order</dd></div>
+        <div><dt>Stack</dt><dd>n8n · Claude · Google Sheets · Google Docs · Slack</dd></div>
+        <div><dt>Output</dt><dd>A 3,000 to 4,000-word Google Doc per row</dd></div>
+      </dl>
+    </header>
+
+    <div class="doc-grid">
+      <nav class="toc" id="toc" aria-label="Runbook sections">
+        <a href="#d-problem"><span>01</span>Problem</a>
+        <a href="#d-sheet"><span>02</span>The sheet</a>
+        <a href="#d-flow"><span>03</span>Flow</a>
+        <a href="#d-voice"><span>04</span>Writers' voices</a>
+        <a href="#d-guard"><span>05</span>Guardrails</a>
+        <a href="#d-outcome"><span>06</span>Outcome</a>
+        <a href="#d-ops"><span>07</span>Operating it</a>
+        <div class="foot">Writers' names, sheet names and channel names are left out on purpose. Titles and keywords in the scene are illustrative.</div>
+      </nav>
+
+      <article>
+        <section class="sec rv" id="d-problem">
+          <h3><span>01</span>Problem</h3>
+          <p class="lede">A first draft took hours of writing per post.</p>
+          <p>Every post already had a title, keywords and an SEO brief before anyone wrote a word. Turning that into a full first draft, in a voice that sounds like the writer, was the slow part.</p>
+        </section>
+
+        <section class="sec rv" id="d-sheet">
+          <h3><span>02</span>The sheet</h3>
+          <p>One row per blog. Fill everything except the last column.</p>
+          <div class="tbl-wrap">
+          <table class="checks">
+            <thead><tr><th>#</th><th>Column</th><th>What goes in it</th><th>In the greenhouse</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Title</td><td>The full blog title, used as the H1</td><td><i>the seed packet's name</i></td></tr>
+              <tr><td>2</td><td>Primary Keywords</td><td>The main SEO keyword or keywords</td><td><i>on the packet</i></td></tr>
+              <tr><td>3</td><td>Secondary Keywords</td><td>Supporting keywords, comma-separated</td><td><i>on the packet</i></td></tr>
+              <tr><td>4</td><td>Brief Document</td><td>A link to the SEO brief in Google Docs, shared with the workflow</td><td><i>the note tied to the packet</i></td></tr>
+              <tr><td>5</td><td>Run Action</td><td><code>YES</code> starts the run for that row</td><td><i>the plant marker</i></td></tr>
+              <tr><td>6</td><td>Blog Article Link</td><td>Filled in by the workflow with the Google Doc link</td><td><i>the label tied on at the end</i></td></tr>
+            </tbody>
+          </table>
+          </div>
+        </section>
+
+        <section class="sec rv" id="d-flow">
+          <h3><span>03</span>Flow</h3>
+          <ol class="steps">
+            <li><div class="n" style="--c:#7fd17a">01</div><div><h4>Sheet trigger</h4><p>A change to Run Action starts the workflow. It collects every row set to YES.</p><span class="node">Google Sheets trigger</span></div></li>
+            <li><div class="n" style="--c:#f4eee6">02</div><div><h4>One row at a time</h4><p>A loop takes the rows in order, so each draft gets the full run to itself.</p><span class="node">n8n loop</span></div></li>
+            <li><div class="n" style="--c:#f2b45a">03</div><div><h4>Read the brief and the voice</h4><p>The brief is read from Google Docs, and the writer's style file sets the voice.</p><span class="node">Google Docs · style file</span></div></li>
+            <li><div class="n" style="--c:#8fc56b">04</div><div><h4>Write the draft</h4><p>Claude writes the full article from the title, keywords and brief: 3,000 to 4,000 words, in the writer's voice.</p><span class="node">Claude</span></div></li>
+            <li><div class="n" style="--c:#f4eee6">05</div><div><h4>Save, link, notify</h4><p>The draft is saved as a Google Doc, its link is written into Blog Article Link, and the team gets a Slack message.</p><span class="node">Google Docs · Google Sheets · Slack</span></div></li>
+          </ol>
+        </section>
+
+        <section class="sec rv" id="d-voice">
+          <h3><span>04</span>Writers' voices</h3>
+          <ul class="rules">
+            <li><b>A style file per writer</b><span>How they open a post, how they argue, the words and rhythm they use. The workflow is the same for everyone; only the style file changes.</span></li>
+            <li><b>Adding a writer</b><span>Give the workflow a new writer's style file and a sheet of their own. Their drafts come out sounding like them.</span></li>
+          </ul>
+        </section>
+
+        <section class="sec rv" id="d-guard">
+          <h3><span>05</span>Guardrails</h3>
+          <ul class="rules">
+            <li><b>Fill rows first</b><span>Complete Title, keywords and Brief Document for every row in the batch before touching Run Action.</span></li>
+            <li><b>Paste the YESes in one go</b><span>Type them in a spare column lined up with the rows, then cut and paste them into Run Action together. Typing them one by one fires the run before the other rows are ready.</span></li>
+            <li><b>Hands off queued rows</b><span>Don't edit rows while the batch is running. Mid-run edits can confuse the loop and fail or overwrite a draft.</span></li>
+            <li><b>Share every brief</b><span>A brief the workflow can't open is the most common failure. Check every link before the run.</span></li>
+          </ul>
+        </section>
+
+        <section class="sec rv" id="d-outcome">
+          <h3><span>06</span>Outcome</h3>
+          <div class="stats">
+            <div><b>1</b><span>Google Doc per flagged row, linked back in the sheet</span></div>
+            <div><b>3–4k</b><span>words per draft, in the writer's voice</span></div>
+            <div><b>6</b><span>columns in the sheet, and the workflow fills the last one</span></div>
+          </div>
+          <p style="margin-top:26px">A full draft lands in Google Docs minutes after a row is flagged. The writer's time goes into reviewing and sharpening, not into the first pass.</p>
+        </section>
+
+        <section class="sec rv" id="d-ops">
+          <h3><span>07</span>Operating it</h3>
+          <ul class="rules">
+            <li><b>It didn't start</b><span>If the sheet trigger doesn't fire, open the workflow in n8n and run it manually. When the workflow is active, you never need to.</span></li>
+            <li><b>A draft didn't arrive</b><span>Open the Executions tab in n8n: it shows which step stopped and why. Fix the cause, usually the brief's sharing, and set that row to YES again.</span></li>
+            <li><b>Knowing it's done</b><span>The article link appears in the row and a Slack message arrives. Either one means the Doc is ready to review.</span></li>
+          </ul>
+          <div class="pills" style="margin-top:28px"><i>n8n</i><i>Claude</i><i>Google Sheets</i><i>Google Docs</i><i>Slack</i></div>
+        </section>
+      </article>
+    </div>
+
+    <footer class="doc-foot">
+      <a class="pill ghost" href="#top">Back to the greenhouse</a>
+      <p class="nm">Next automation → <a href="#" id="nextLink2">Webinar to Webflow</a></p>
+    </footer>
+  </div>
+</section>
+
+<script>
+/* UI layer: scroll → station. Runs before the 3D module so the page reads even if WebGL is unavailable. */
+(() => {
+  const caps = [...document.querySelectorAll('.cap')], dots = [...document.querySelectorAll('.progress i')];
+  const runway = document.getElementById('runway'), ui = document.getElementById('ui'), hero = document.getElementById('heroTitle'), hint = document.getElementById('scrollHint'), end = document.getElementById('end');
+  const S = window.__stage = { prog: 0, station: 0, doc: 0 };
+  // stations: 0 hero · 1 the sheet · 2 flag the batch · 3 the voice · 4 grown one by one · 5 delivered · 6 when one fails · 7 end
+  const CUT = [0.05, 0.19, 0.33, 0.46, 0.66, 0.79, 0.91];
+  function onScroll() {
+    const H = innerHeight, max = Math.max(1, runway.offsetHeight - H);
+    const pr = Math.max(0, Math.min(1, scrollY / max));
+    let st = 0; while (st < CUT.length && pr >= CUT[st]) st++;
+    S.prog = pr; S.station = st; S.doc = Math.max(0, Math.min(1, (scrollY - (runway.offsetHeight - H * 0.9)) / (H * 0.5)));
+    caps.forEach(c => c.classList.toggle('on', Number(c.dataset.i) === st));
+    dots.forEach((d, i) => d.classList.toggle('on', i === st));
+    hero.style.opacity = String(1 - Math.min(1, pr / 0.04));
+    hint.style.opacity = String(pr < 0.02 ? 1 : 0);
+    end.classList.toggle('on', st === 7 && S.doc < 0.5);
+    document.body.classList.toggle('hush', st === 7 && S.doc < 0.5);
+    ui.classList.toggle('off', S.doc >= 0.5);
+  }
+  addEventListener('scroll', onScroll, { passive: true }); addEventListener('resize', onScroll); onScroll();
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  const links = [...document.querySelectorAll('.toc a')];
+  const io2 = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-30% 0px -55% 0px' });
+  document.querySelectorAll('.sec').forEach(s => io2.observe(s));
+})();
+
+/* back to the forest: when the visitor came from the home page, the arrow is a real browser "back" (usually instant, no reload,
+   exactly where they left). Otherwise the link opens the home page at this page's card. */
+(() => {
+  const mark = document.getElementById('mark'); if (!mark) return;
+  const slug = (/#from-([\w-]+)$/.exec(mark.getAttribute('href')) || [])[1];
+  mark.addEventListener('click', e => {
+    let ref; try { ref = new URL(document.referrer); } catch (_) { return; }
+    const home = new URL('../', location.href).pathname;
+    const fromHome = ref.origin === location.origin && [home, home + 'index.html', home + 'index'].includes(ref.pathname);
+    if (!fromHome || history.length < 2) return;
+    e.preventDefault();
+    try { if (slug) sessionStorage.setItem('returnTo', slug); } catch (_) {}
+    history.back();
+  });
+  // in-page links (#doc, #top) scroll without adding history entries, so "back" always means the forest
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || e.defaultPrevented) return;
+    const id = a.getAttribute('href'); e.preventDefault(); if (id === '#') return;
+    const el = id === '#top' ? null : document.querySelector(id), how = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (el) el.scrollIntoView({ behavior: how }); else scrollTo({ top: 0, behavior: how });
+    history.replaceState(null, '', id);
+  });
+})();
+</script>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(hover: none)').matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = t => t * t * (3 - 2 * t);
+const sstep = (a, b, v) => smooth(clamp((v - a) / (b - a), 0, 1));
+const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const backOut = t => { const c1 = 1.9, c3 = c1 + 1; return t <= 0 ? 0 : 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+let W = innerWidth, H = innerHeight;
+const stage = window.__stage; const SNAP = /snap/.test(location.search);
+const SANS = "'Elms Sans', Archivo, Arial, sans-serif", HAND = "Caveat, 'Segoe Print', 'Bradley Hand', cursive", MONO = "ui-monospace, Menlo, Consolas, monospace";
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+/* =====================================================================
+   RENDERER · first light: a low sun behind the glass, mist on the river, everything lit by the dawn sky itself
+   ===================================================================== */
+const canvas = document.getElementById('gl');
+canvas.style.opacity = '0'; canvas.style.transition = 'opacity 1.2s ease';
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+const DPR = Math.min(coarse ? 1.25 : 1.5, devicePixelRatio || 1);
+renderer.setPixelRatio(DPR);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.72;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+const HAZE = new THREE.Color().setRGB(0.62, 0.6, 0.58);
+scene.fog = new THREE.FogExp2(HAZE, 0.006);
+const camera = new THREE.PerspectiveCamera(40, W / H, 0.05, 400);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.32, 0.6, 1.4);
+composer.addPass(bloom); composer.addPass(new OutputPass());
+
+// the sun, where it sits in the HDRI (measured when it was converted)
+const SUN = new THREE.Vector3(0.735, 0.104, 0.670).normalize();
+const SUNCOL = new THREE.Color(1.0, 0.72, 0.46);
+const SKYK = 1 / 0.2795;   // the backdrop jpg was scaled by this before it was saved
+
+/* ---- loading ---- */
+const manager = new THREE.LoadingManager();
+manager.onLoad = () => { canvas.style.opacity = '1'; };
+manager.onError = u => console.warn('[greenhouse] missing', u);
+setTimeout(() => { canvas.style.opacity = '1'; }, 7000);
+const TL = new THREE.TextureLoader(manager);
+const ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+function tex(name, srgb, rep = 1) { const t = TL.load('greenhouse/' + name); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; if (srgb) t.colorSpace = THREE.SRGBColorSpace; if (rep !== 1) t.repeat.set(rep, rep); return t; }
+function pbr(base, rep = 1, metal = false) {
+  const m = { map: tex(base + '_diff_1k.jpg', true, rep), normalMap: tex(base + '_nor_1k.jpg', false, rep), roughnessMap: tex(base + '_rough_1k.jpg', false, rep) };
+  if (metal) m.metalnessMap = tex(base + '_metal_1k.jpg', false, rep); return m;
+}
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer;
+async function loadPacked(file) {
+  const r = await fetch('greenhouse/' + file); if (!r.ok) throw new Error(file + ' ' + r.status); const d = await r.json(); const out = {};
+  for (const mat in d) out[mat] = d[mat].parts.map(p => {
+    const q = new Uint16Array(b64(p.p)), nr = new Int8Array(b64(p.nr)), uvq = new Int16Array(b64(p.uv)), ix = p.i32 ? new Uint32Array(b64(p.i)) : new Uint16Array(b64(p.i));
+    const P = new Float32Array(p.n * 3), N = new Float32Array(p.n * 3), U = new Float32Array(p.n * 2);
+    for (let i = 0; i < p.n; i++) { for (let c = 0; c < 3; c++) { P[i * 3 + c] = p.lo[c] + q[i * 3 + c] / 65535 * p.sc[c]; N[i * 3 + c] = nr[i * 3 + c] / 127; } U[i * 2] = uvq[i * 2] / 8000; U[i * 2 + 1] = uvq[i * 2 + 1] / 8000; }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.BufferAttribute(N, 3)); g.setAttribute('uv', new THREE.BufferAttribute(U, 2)); g.setIndex(new THREE.BufferAttribute(ix, 1));
+    g.name = p.name; return g;
+  });
+  return out;
+}
+function canvasTex(w, h, draw, opts = {}) {   // a canvas texture that redraws when the web fonts arrive
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  const t = new THREE.CanvasTexture(c); t.colorSpace = opts.linear ? THREE.LinearSRGBColorSpace : THREE.SRGBColorSpace; t.anisotropy = ANISO;
+  if (opts.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; }
+  const redraw = (...a) => { x.save(); x.textAlign = 'left'; x.textBaseline = 'alphabetic'; draw(x, w, h, ...a); x.restore(); t.needsUpdate = true; };
+  redraw(); t.userData.redraw = redraw; if (!opts.static && document.fonts) document.fonts.ready.then(() => redraw());
+  return t;
+}
+function wrapText(x, text, X, Y, maxW, lh, maxLines = 4) {
+  const words = text.split(' '); let line = '', y = Y, n = 0;
+  for (const w of words) { const t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { x.fillText(line, X, y); line = w; y += lh; if (++n >= maxLines - 1) { } } else line = t; }
+  if (line) x.fillText(line, X, y); return y + lh;
+}
+
+/* ---- the sky: the HDRI for light (decoded from RGBE), and a ground-projected backdrop so the greenhouse stands in the field ---- */
+const pmrem = new THREE.PMREMGenerator(renderer);
+fetch('greenhouse/sky_env.json').then(r => r.json()).then(d => {
+  const src = new Uint8Array(b64(d.d)), w = d.w, h = d.h, out = new Uint16Array(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4, o = ((h - 1 - y) * w + x) * 4, e = src[i + 3];
+    const f = e ? Math.pow(2, e - 136) : 0;
+    out[o] = THREE.DataUtils.toHalfFloat(src[i] * f); out[o + 1] = THREE.DataUtils.toHalfFloat(src[i + 1] * f); out[o + 2] = THREE.DataUtils.toHalfFloat(src[i + 2] * f); out[o + 3] = THREE.DataUtils.toHalfFloat(1);
+  }
+  const t = new THREE.DataTexture(out, w, h, THREE.RGBAFormat, THREE.HalfFloatType);
+  t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.LinearSRGBColorSpace; t.magFilter = t.minFilter = THREE.LinearFilter; t.needsUpdate = true;
+  scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose();
+}).catch(err => console.warn('[greenhouse] sky light unavailable:', err && err.message));
+const skyTex = tex('sky_2k.jpg', true); skyTex.wrapT = THREE.ClampToEdgeWrapping; skyTex.anisotropy = 1;
+const skyM = new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
+  uniforms: { map: { value: skyTex }, height: { value: 1.7 }, radius: { value: 90 }, uK: { value: SKYK * 0.8 }, uSun: { value: SUN }, uSunCol: { value: SUNCOL }, uHaze: { value: HAZE } },
+  vertexShader: 'varying vec3 vWorldPosition; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vWorldPosition = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
+  fragmentShader: `varying vec3 vWorldPosition; uniform sampler2D map; uniform float radius, height, uK; uniform vec3 uSun, uSunCol, uHaze;
+    float diskI(vec3 ro, vec3 rd, vec3 c, vec3 n, float r){ float d = dot(rd, n); if (d > 0.0) return 1e6; vec3 o = ro - c; float t = -dot(n, o) / d; vec3 q = o + rd * t; return dot(q, q) < r * r ? t : 1e6; }
+    float sphI(vec3 ro, vec3 rd, vec3 ce, float ra){ vec3 oc = ro - ce; float b = dot(oc, rd); float c = dot(oc, oc) - ra * ra; float h = b * b - c; if (h < 0.0) return -1.0; return -b + sqrt(h); }
+    #include <common>
+    void main(){
+      vec3 rd = normalize(vWorldPosition - cameraPosition); vec3 p = rd; vec3 cp = cameraPosition; cp.y -= height;
+      float i1 = sphI(cp, rd, vec3(0.0), radius); float dist = 1e4;
+      if (i1 > 0.0) { float i2 = diskI(cp, rd, vec3(0.0, -height, 0.0), vec3(0.0, 1.0, 0.0), radius); dist = min(i1, i2); p = (cp + dist * rd) / radius; }
+      vec3 dir = normalize(p);
+      vec3 col = texture2D(map, equirectUv(dir)).rgb * uK;
+      float s = max(dot(rd, uSun), 0.0);
+      col += uSunCol * (pow(s, 900.0) * 30.0 + pow(s, 60.0) * 0.5 + pow(s, 8.0) * 0.06);   // the sun itself, clipped in the jpg, put back
+      float mist = (1.0 - exp(-dist * 0.012)) * smoothstep(0.2, -0.05, rd.y) * 0.3;
+      col = mix(col, uHaze * 0.9 + uSunCol * pow(s, 4.0) * 0.4, mist);
+      gl_FragColor = vec4(col, 1.0); }` });
+{ const s = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 16), skyM); s.scale.setScalar(150); s.renderOrder = -1; s.frustumCulled = false; scene.add(s); }
+
+/* ---- the sun as a light: long, low shadows through the frame ---- */
+const sunL = new THREE.DirectionalLight(SUNCOL, 3.2); sunL.position.copy(SUN).multiplyScalar(30); sunL.target.position.set(0, 0, 0);
+sunL.castShadow = true; sunL.shadow.mapSize.set(coarse ? 1024 : 2048, coarse ? 1024 : 2048);
+Object.assign(sunL.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8, near: 5, far: 60 }); sunL.shadow.bias = -0.0004; sunL.shadow.normalBias = 0.02;
+scene.add(sunL, sunL.target);
+scene.add(new THREE.HemisphereLight(0xbcd0e8, 0x6a5a44, 0.25));
+// the field outside takes the greenhouse's shadow
+{ const g = new THREE.PlaneGeometry(60, 60); g.rotateX(-Math.PI / 2); const m = new THREE.Mesh(g, new THREE.ShadowMaterial({ opacity: 0.32, color: 0x1a1208 })); m.receiveShadow = true; m.position.y = 0.002; scene.add(m); }
+
+/* =====================================================================
+   THE GREENHOUSE: a timber dwarf wall, a painted steel frame, fogged glass
+   ===================================================================== */
+const GH = { x0: -4.5, x1: 4.5, z0: -2.5, z1: 2.5, wall: 0.7, eave: 2.4, ridge: 3.6, door: 0.55, doorH: 2.1 };
+const roofY = z => GH.eave + (GH.ridge - GH.eave) * (1 - Math.abs(z) / GH.z1);
+const frameM = new THREE.MeshStandardMaterial({ color: 0x27302b, metalness: 0.45, roughness: 0.48, envMapIntensity: 0.9 });
+const plankT = pbr('planks', 1);
+const plankM = new THREE.MeshStandardMaterial({ ...plankT, roughness: 1, envMapIntensity: 0.7 });
+function worldUV(g, tile, axis) {   // box/plane UVs from world metres, so the planks keep their scale everywhere
+  g.computeBoundingBox(); const p = g.attributes.position, n = g.attributes.normal, uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) { const nx = Math.abs(n.getX(i)), ny = Math.abs(n.getY(i)), x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    if (ny > 0.5) uv.setXY(i, x / tile, z / tile); else if (nx > 0.5) uv.setXY(i, z / tile, y / tile); else uv.setXY(i, x / tile, y / tile); }
+  return g;
+}
+const frameParts = [];
+function beam(a, b, s = 0.055, d = s) {   // a box from a to b
+  const L = a.distanceTo(b), g = new THREE.BoxGeometry(s, L, d), m = new THREE.Matrix4();
+  const dir = b.clone().sub(a).normalize(), q = new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), dir);
+  m.compose(a.clone().add(b).multiplyScalar(0.5), q, V(1, 1, 1)); g.applyMatrix4(m); frameParts.push(g);
+}
+{
+  const { x0, x1, z0, z1, wall, eave, ridge, door, doorH } = GH;
+  // dwarf wall of planks, with a gap for the door on the west end
+  const walls = [];
+  const wbox = (cx, cz, w, d) => { const g = new THREE.BoxGeometry(w, wall, d); g.translate(cx, wall / 2, cz); walls.push(worldUV(g, 2)); };
+  wbox(0, z0, x1 - x0, 0.08); wbox(0, z1, x1 - x0, 0.08); wbox(x1, 0, 0.08, z1 - z0);
+  wbox(x0, (z0 - door) / 2, 0.08, -door - z0); wbox(x0, (z1 + door) / 2, 0.08, z1 - door);
+  const wm = new THREE.Mesh(mergeGeometries(walls), plankM); wm.castShadow = wm.receiveShadow = true; scene.add(wm);
+  // the frame
+  for (let x = x0; x <= x1 + 1e-6; x += 1) for (const z of [z0, z1]) { beam(V(x, wall, z), V(x, eave, z)); beam(V(x, eave, z), V(x, ridge, 0), 0.05, 0.07); }
+  for (const z of [z0, z1]) { beam(V(x0, eave, z), V(x1, eave, z), 0.07); beam(V(x0, wall, z), V(x1, wall, z), 0.12, 0.14); beam(V(x0, 1.55, z), V(x1, 1.55, z), 0.035); beam(V(x0, (eave + ridge) / 2, z / 2), V(x1, (eave + ridge) / 2, z / 2), 0.035); }
+  beam(V(x0, ridge, 0), V(x1, ridge, 0), 0.08);
+  for (const x of [x0, x1]) {
+    for (const z of [-2.5, -1.5, 1.5, 2.5]) beam(V(x, wall, z), V(x, roofY(z), z));
+    if (x === x1) { beam(V(x, wall, -0.5), V(x, roofY(0.5), -0.5)); beam(V(x, wall, 0.5), V(x, roofY(0.5), 0.5)); beam(V(x, 1.55, z0), V(x, 1.55, z1), 0.035); }
+    else { beam(V(x, 0, -door), V(x, doorH, -door), 0.07); beam(V(x, 0, door), V(x, doorH, door), 0.07); beam(V(x, doorH, -door), V(x, doorH, door), 0.07); beam(V(x, 1.55, z0), V(x, 1.55, -door), 0.035); beam(V(x, 1.55, door), V(x, 1.55, z1), 0.035); beam(V(x, doorH, 0), V(x, roofY(0), 0)); }
+    beam(V(x, wall, z0), V(x, wall, z1), 0.12, 0.14);
+  }
+  // the door: a glazed leaf standing open
+  const leaf = new THREE.Group(); leaf.position.set(x0, 0, door); leaf.rotation.y = -1.25;
+  const lf = [[0, 0.02, 0, doorH - 0.04], [-2 * door + 0.04, 0.02, -2 * door + 0.04, doorH - 0.04]];
+  { const g = []; const bx = (x, y, w, h) => { const b = new THREE.BoxGeometry(0.05, h, w); b.translate(0, y + h / 2, x); g.push(b); };
+    bx(-door, 0.02, 2 * door, 0.08); bx(-door, doorH - 0.08, 2 * door, 0.06); bx(-door, 0.95, 2 * door, 0.05); bx(-0.03, 0.02, 0.06, doorH - 0.02); bx(-2 * door + 0.03, 0.02, 0.06, doorH - 0.02);
+    const m = new THREE.Mesh(mergeGeometries(g), frameM); m.castShadow = true; leaf.add(m); }
+  scene.add(leaf); GH.leaf = leaf;
+  const fm = new THREE.Mesh(mergeGeometries(frameParts), frameM); fm.castShadow = true; fm.receiveShadow = true; scene.add(fm);
+  // floor: old boards inside
+  const fl = new THREE.PlaneGeometry(x1 - x0, z1 - z0); fl.rotateX(-Math.PI / 2); worldUV(fl, 2.2); fl.translate(0, 0.03, 0);
+  const floor = new THREE.Mesh(fl, new THREE.MeshStandardMaterial({ ...pbr('planks', 1), color: 0x9a8a78, roughness: 1, envMapIntensity: 0.5 })); floor.receiveShadow = true; scene.add(floor);
+}
+
+/* ---- glass: misted from the warm air inside, clearer near the top, with runs where drops have slid down ---- */
+const condTex = canvasTex(512, 512, (x, w, h) => {
+  let s = 3; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const g = x.createLinearGradient(0, h, 0, 0); g.addColorStop(0, 'rgb(150,150,150)'); g.addColorStop(0.55, 'rgb(95,95,95)'); g.addColorStop(1, 'rgb(40,40,40)'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 260; i++) { const cx = r() * w, cy = r() * h, rr = 10 + r() * 50, v = Math.floor(70 + r() * 90); const gg = x.createRadialGradient(cx, cy, 0, cx, cy, rr); gg.addColorStop(0, `rgba(${v},${v},${v},.35)`); gg.addColorStop(1, `rgba(${v},${v},${v},0)`); x.fillStyle = gg; x.fillRect(cx - rr, cy - rr, rr * 2, rr * 2); }
+  x.lineCap = 'round';
+  for (let i = 0; i < 18; i++) { let px = r() * w, py = h * (0.3 + r() * 0.45); const len = 40 + r() * 160; x.strokeStyle = 'rgba(40,40,40,.5)'; x.lineWidth = 1.5 + r() * 2.5; x.beginPath(); x.moveTo(px, py);
+    for (let k = 0; k < len; k += 12) { px += (r() - 0.5) * 3; py += 12; x.lineTo(px, py); } x.stroke(); x.fillStyle = 'rgba(14,14,14,.9)'; x.beginPath(); x.arc(px, py, 3 + r() * 3, 0, 7); x.fill(); }
+  for (let i = 0; i < 1600; i++) { const cx = r() * w, cy = r() * h, rr = 0.6 + r() * r() * 3.5; x.fillStyle = `rgba(20,20,20,${0.4 + r() * 0.5})`; x.beginPath(); x.arc(cx, cy, rr, 0, 7); x.fill(); }
+}, { linear: true, repeat: true, static: true });
+function glassM(k) {
+  const m = new THREE.MeshStandardMaterial({ color: 0xf2f4f6, transparent: true, depthWrite: false, side: THREE.DoubleSide, roughness: 0.12, metalness: 0, envMapIntensity: 1.1, alphaMap: condTex, opacity: k });
+  m.onBeforeCompile = sh => {
+    sh.uniforms.uSun = { value: SUN }; sh.uniforms.uSunCol = { value: SUNCOL };
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWp;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWp; uniform vec3 uSun, uSunCol;')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        { vec3 vd = normalize(vWp - cameraPosition); float f = max(dot(vd, uSun), 0.0);
+          totalEmissiveRadiance += uSunCol * (pow(f, 6.0) * 0.9 + pow(f, 40.0) * 2.0) * (0.2 + diffuseColor.a * 1.6); }`);   // mist lit from behind by the low sun
+  };
+  return m;
+}
+{
+  const { x0, x1, z0, z1, wall, eave, ridge, door, doorH } = GH;
+  const side = glassM(0.7), roof = glassM(0.4);
+  const add = (g, m) => { const mesh = new THREE.Mesh(g, m); mesh.renderOrder = 5; scene.add(mesh); return mesh; };
+  const panel = (w, h, uvW, uvH) => { const g = new THREE.PlaneGeometry(w, h); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * uvW, uv.getY(i) * uvH); return g; };
+  for (const z of [z0, z1]) { const g = panel(x1 - x0, eave - wall, x1 - x0, 1); g.translate(0, (eave + wall) / 2, z); add(g, side); }
+  const sl = Math.hypot(z1, ridge - eave);
+  for (const sd of [-1, 1]) {
+    const g = panel(x1 - x0, sl, x1 - x0, 1.3), up = V(0, ridge - eave, -sd * z1).normalize(), xa = V(1, 0, 0), n = xa.clone().cross(up);
+    g.applyMatrix4(new THREE.Matrix4().makeBasis(xa, up, n).setPosition(0, (eave + ridge) / 2, sd * z1 / 2)); add(g, roof);
+  }
+  // gable ends: the east one whole, the west one round the door
+  for (const x of [x0, x1]) {
+    const sh = new THREE.Shape(); sh.moveTo(z0, wall); sh.lineTo(z1, wall); sh.lineTo(z1, eave); sh.lineTo(0, ridge); sh.lineTo(z0, eave); sh.closePath();
+    if (x === x0) {
+      const sh2 = new THREE.Shape(); sh2.moveTo(z0, wall); sh2.lineTo(-door, wall); sh2.lineTo(-door, doorH); sh2.lineTo(door, doorH); sh2.lineTo(door, wall); sh2.lineTo(z1, wall); sh2.lineTo(z1, eave); sh2.lineTo(0, ridge); sh2.lineTo(z0, eave); sh2.closePath();
+      const g = new THREE.ShapeGeometry(sh2); const uv = g.attributes.uv, p = g.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, p.getX(i), (p.getY(i) - wall) / 1.7); g.rotateY(Math.PI / 2); g.translate(x, 0, 0); add(g, side); continue; }
+    const g = new THREE.ShapeGeometry(sh); const uv = g.attributes.uv, p = g.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, p.getX(i), (p.getY(i) - wall) / 1.7); g.rotateY(Math.PI / 2); g.translate(x, 0, 0); add(g, side);
+  }
+  // the door's own glass
+  { const g = panel(2 * door - 0.08, doorH - 0.12, 1, 1.2); g.rotateY(Math.PI / 2); g.translate(0, doorH / 2, -door); GH.leaf.add(add(g, side)); }
+}
+
+/* =====================================================================
+   THE BENCH, AND WHAT IS ON IT
+   ===================================================================== */
+const FLOOR = 0.03, TABLE = { x: 0.3, z: 0 }, TT = FLOOR + 0.746;   // TT: the table-top height
+const POTS = [0, 1, 2, 3, 4].map(i => ({ i, x: TABLE.x + 0.62 - i * 0.45, z: -0.08 }));   // seen from the aisle, the ledger is on the left and the pots run left to right
+const SOIL = TT + 0.205;
+const ROWS = [   // illustrative rows of the sheet
+  { title: 'How to build a content calendar', p: 'content calendar', s: 'editorial calendar, content plan', words: 3412 },
+  { title: 'Writing SEO briefs that rank', p: 'seo brief', s: 'content brief template, brief examples', words: 3186 },
+  { title: "A beginner's guide to topic clusters", p: 'topic clusters', s: 'pillar pages, internal links', words: 3790 },
+  { title: 'Email subject lines that get opened', p: 'email subject lines', s: 'open rates, preview text', words: 3055 },
+  { title: 'Measuring content ROI', p: 'content roi', s: 'content metrics, attribution', words: 0, fail: true },
+];
+const potMats = {};
+const pots = POTS.map(P => { const g = new THREE.Group(); g.position.set(P.x, TT, P.z); scene.add(g); return { ...P, g, home: V(P.x, TT, P.z) }; });
+async function placeModels() {
+  try {
+    const [table, plant, can] = await Promise.all([loadPacked('wooden_picnic_table_p.json'), loadPacked('potted_plant_04_p.json'), loadPacked('watering_can_metal_01_p.json')]);
+    // the bench (a sturdy old picnic table), turned to run along the greenhouse
+    const tm = { wooden_picnic_table_table: new THREE.MeshStandardMaterial({ ...pbr('tabletop', 1, true), roughness: 1, metalness: 1, envMapIntensity: 0.8 }), wooden_picnic_table_bottom: new THREE.MeshStandardMaterial({ ...pbr('tablebot', 1, true), roughness: 1, metalness: 1, envMapIntensity: 0.8 }) };
+    const tg = new THREE.Group(); for (const k in table) table[k].forEach(g => { const m = new THREE.Mesh(g, tm[k] || tm.wooden_picnic_table_table); m.castShadow = m.receiveShadow = true; tg.add(m); });
+    tg.position.set(TABLE.x, FLOOR, TABLE.z); tg.rotation.y = Math.PI / 2; scene.add(tg);
+    // pots: the white pot from the model, washed terracotta for the bench, the whole plant for the shelves
+    const pm = new THREE.MeshStandardMaterial({ ...pbr('plant', 1), roughness: 1, envMapIntensity: 0.8 });
+    const potOnly = new THREE.Group(), whole = new THREE.Group();
+    for (const k in plant) plant[k].forEach(g => { const m = new THREE.Mesh(g, pm); m.castShadow = m.receiveShadow = true; whole.add(m.clone()); if (!/plant$|ground$/.test(g.name)) potOnly.add(m); });
+    pots.forEach(p => { const m = potOnly.clone(); m.scale.setScalar(1.45); p.g.add(m); });
+    for (const [x, z, s, ry] of [[-3.2, -2.36, 1.5, 0.3], [-2.4, -2.36, 1.3, 1.2], [1.9, -2.36, 1.4, 2.1], [3.1, -2.36, 1.6, 0.7], [2.4, 2.36, 1.5, 0.2], [3.4, 2.36, 1.3, 2.8], [-3.5, 2.36, 1.4, 1.7], [3.9, 0.9, 3.2, 0.4], [3.9, -1.6, 2.8, 1.9]]) {
+      const m = whole.clone(); m.scale.setScalar(s); m.rotation.y = ry; m.position.set(x, s > 2 ? FLOOR : GH.wall + 0.07, z); scene.add(m); }
+    const cm = new THREE.MeshStandardMaterial({ ...pbr('can', 1, true), roughness: 1, metalness: 1, envMapIntensity: 1 });
+    for (const k in can) can[k].forEach(g => { const m = new THREE.Mesh(g, cm); m.castShadow = true; m.position.set(2.5, FLOOR, -1.45); m.rotation.y = 2.4; m.scale.setScalar(1.3); scene.add(m); });
+  } catch (err) { console.warn('[greenhouse] models unavailable:', err && err.message); }
+}
+placeModels();
+
+/* ---- the ledger: the sheet, as an open book at the end of the bench ---- */
+const BOOK = { x: TABLE.x + 1.13, z: 0.02, w: 0.6, h: 0.42 };
+const ledgerState = { yes: false, links: 0, fail: false };
+const ledgerTex = canvasTex(1600, 1120, (x, w, h) => {
+  const page = (X0) => { const g = x.createLinearGradient(X0, 0, X0 + w / 2, 0); const sp = X0 === 0 ? [1, 0] : [0, 1];
+    g.addColorStop(0, sp[0] ? 'rgb(236,227,207)' : 'rgb(214,203,180)'); g.addColorStop(0.12, 'rgb(240,232,214)'); g.addColorStop(0.88, 'rgb(240,232,214)'); g.addColorStop(1, sp[1] ? 'rgb(236,227,207)' : 'rgb(214,203,180)'); x.fillStyle = g; x.fillRect(X0, 0, w / 2, h); };
+  page(0); page(w / 2);
+  x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(w / 2 - 3, 0, 6, h);
+  // rules and column lines, printed
+  x.strokeStyle = 'rgba(70,110,150,.35)'; x.lineWidth = 2; for (let y = 230; y < h - 40; y += 170) { x.beginPath(); x.moveTo(40, y); x.lineTo(w - 40, y); x.stroke(); }
+  x.strokeStyle = 'rgba(180,70,60,.4)'; const cols = [40, 330, 530, w / 2 + 40, w / 2 + 230, w / 2 + 420];
+  cols.forEach(c => { x.beginPath(); x.moveTo(c, 120); x.lineTo(c, h - 60); x.stroke(); });
+  x.fillStyle = 'rgba(40,36,30,.8)'; x.font = `700 21px ${SANS}`; try { x.letterSpacing = '1.5px'; } catch (_) {}
+  ['TITLE', 'PRIMARY', 'SECONDARY', 'BRIEF', 'RUN ACTION', 'BLOG ARTICLE LINK'].forEach((t, i) => x.fillText(t, cols[i] + 14, 104));
+  try { x.letterSpacing = '0px'; } catch (_) {}
+  ROWS.forEach((r, i) => {
+    const y = 230 + i * 170 - 26;
+    x.fillStyle = '#2b2620'; x.font = `600 46px ${HAND}`; wrapText(x, r.title, 54, y - 62, 270, 40, 3);
+    x.font = `600 38px ${HAND}`; wrapText(x, r.p, cols[1] + 14, y - 62, 185, 36, 3); x.fillStyle = '#4a4238'; wrapText(x, r.s, cols[2] + 14, y - 62, 225, 34, 3);
+    x.fillStyle = '#2f5d8a'; x.font = `600 38px ${HAND}`; x.fillText('brief ↗', cols[3] + 14, y - 30);
+    if (ledgerState.yes) { x.fillStyle = '#2f7a3a'; x.font = `700 52px ${HAND}`; x.fillText('YES', cols[4] + 30, y - 26); }
+    if (i < ledgerState.links) { x.fillStyle = '#1d2a3a'; x.font = `500 25px ${MONO}`; x.fillText('docs.google.com/', cols[5] + 14, y - 62); x.fillText(`document/d/${['1xQ4', '1bR7', '1kT2', '1pW9'][i]}…`, cols[5] + 14, y - 30); }
+  });
+  // paper grain
+  let s = 9; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 3000; i++) { x.fillStyle = `rgba(90,70,40,${r() * 0.05})`; x.fillRect(r() * w, r() * h, 2, 2); }
+});
+const ledger = (() => {
+  const g = new THREE.Group(); g.position.set(BOOK.x, TT, BOOK.z); g.rotation.y = Math.PI + 0.06; scene.add(g);
+  const cover = new THREE.Mesh(new THREE.BoxGeometry(BOOK.w + 0.03, 0.022, BOOK.h + 0.02), new THREE.MeshStandardMaterial({ color: 0x2c3a2e, roughness: 0.75 })); cover.position.y = 0.011; cover.castShadow = cover.receiveShadow = true; g.add(cover);
+  const pg = new THREE.PlaneGeometry(BOOK.w, BOOK.h, 40, 1); pg.rotateX(-Math.PI / 2);
+  const p = pg.attributes.position; for (let i = 0; i < p.count; i++) { const u = Math.abs(p.getX(i)) / (BOOK.w / 2); p.setY(i, 0.034 + 0.014 * Math.sin(Math.PI * Math.min(1, u * 1.05)) * (1 - u * 0.3) - 0.01 * Math.exp(-u * 30)); }
+  pg.computeVertexNormals();
+  const m = new THREE.Mesh(pg, new THREE.MeshStandardMaterial({ map: ledgerTex, roughness: 0.85, emissive: 0xffffff, emissiveMap: ledgerTex, emissiveIntensity: 0.18 })); m.receiveShadow = true; g.add(m);
+  return g;
+})();
+function redrawLedger() { ledgerTex.userData.redraw(); }
+
+/* ---- seed packets (one per row), each with its brief tied on; plant markers that turn to YES ---- */
+function packetTex(r, i) {
+  return canvasTex(300, 440, (x, w, h) => {
+    x.fillStyle = '#d8c39a'; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(120,90,50,.18)'; for (let k = 0; k < 900; k++) x.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+    x.fillStyle = '#5e7a45'; x.fillRect(0, 0, w, 16); x.fillRect(0, h - 10, w, 10);
+    // a little botanical line drawing
+    x.strokeStyle = '#3f5a2f'; x.lineWidth = 3; x.beginPath(); x.moveTo(150, 205); x.quadraticCurveTo(145, 120, 160, 58); x.stroke();
+    for (const [sx, sy, a] of [[152, 170, -0.9], [150, 140, 0.8], [155, 110, -0.7], [158, 85, 0.6]]) { x.save(); x.translate(sx, sy); x.rotate(a); x.beginPath(); x.ellipse(0, -18, 9, 20, 0, 0, 7); x.stroke(); x.restore(); }
+    x.fillStyle = '#231d14'; x.font = `700 27px ${SANS}`; wrapText(x, r.title, 18, 248, 264, 30, 3);
+    x.font = `700 15px ${SANS}`; x.fillStyle = '#5e4a2c'; try { x.letterSpacing = '2px'; } catch (_) {} x.fillText('PRIMARY', 18, 350); x.fillText('SECONDARY', 18, 398); try { x.letterSpacing = '0px'; } catch (_) {}
+    x.fillStyle = '#231d14'; x.font = `500 19px ${SANS}`; x.fillText(r.p, 18, 372); x.font = `500 16px ${SANS}`; wrapText(x, r.s, 18, 420, 270, 18, 1);
+    x.fillStyle = 'rgba(35,29,20,.55)'; x.font = `700 14px ${SANS}`; x.fillText('ROW ' + (i + 2), 236, 36);
+  });
+}
+function tagTex(sealed) {
+  return canvasTex(160, 110, (x, w, h) => {
+    x.fillStyle = '#efe6d2'; x.beginPath(); x.moveTo(26, 0); x.lineTo(w, 0); x.lineTo(w, h); x.lineTo(26, h); x.lineTo(0, h / 2); x.closePath(); x.fill();
+    x.fillStyle = '#8a7a60'; x.beginPath(); x.arc(22, h / 2, 6, 0, 7); x.fill();
+    x.fillStyle = '#2b2620'; x.font = `700 34px ${HAND}`; x.fillText('Brief', 44, 48); x.fillStyle = '#2f5d8a'; x.font = `600 24px ${HAND}`; x.fillText('google doc ↗', 44, 82);
+    if (sealed) { x.fillStyle = '#a3241c'; x.beginPath(); x.arc(118, 70, 24, 0, 7); x.fill(); x.fillStyle = '#c94a3d'; x.beginPath(); x.arc(114, 66, 15, 0, 7); x.fill(); }
+  });
+}
+const markerBlank = canvasTex(64, 256, (x, w, h) => { x.fillStyle = '#c9ab7c'; x.fillRect(0, 0, w, h); x.strokeStyle = 'rgba(80,60,30,.3)'; for (let k = 0; k < 8; k++) { x.beginPath(); x.moveTo(0, k * 32 + 10); x.lineTo(w, k * 32 + 14); x.stroke(); } });
+const markerYes = canvasTex(64, 256, (x, w, h) => { x.fillStyle = '#c9ab7c'; x.fillRect(0, 0, w, h); x.save(); x.translate(w / 2 + 12, 92); x.rotate(-Math.PI / 2); x.fillStyle = '#2f7a3a'; x.font = `700 46px ${HAND}`; x.textAlign = 'center'; x.fillText('YES', 0, 0); x.restore(); });
+const woodM = new THREE.MeshStandardMaterial({ color: 0xc9ab7c, roughness: 0.8 });
+pots.forEach((p, i) => {
+  const r = ROWS[i];
+  // the packet leans on the pot's front, the brief tied to its corner
+  const pk = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.147), new THREE.MeshStandardMaterial({ map: packetTex(r, i), roughness: 0.9, side: THREE.DoubleSide }));
+  pk.position.set(p.x, TT + 0.07, p.z - 0.19); pk.rotation.set(-0.28, Math.PI, 0); pk.castShadow = true; scene.add(pk); p.packet = pk;
+  const tg = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.041), new THREE.MeshStandardMaterial({ map: tagTex(!!r.fail), roughness: 0.9, side: THREE.DoubleSide }));
+  tg.position.set(p.x + 0.055, TT + 0.025, p.z - 0.235); tg.rotation.set(-Math.PI / 2 + 0.25, 0, Math.PI + 0.35); scene.add(tg);
+  // the marker, planted at the back of the pot
+  const mk = new THREE.Mesh(new THREE.BoxGeometry(0.026, 0.11, 0.004), [woodM, woodM, woodM, woodM, new THREE.MeshStandardMaterial({ map: markerYes, roughness: 0.8 }), new THREE.MeshStandardMaterial({ map: markerBlank, roughness: 0.8 })]);
+  const piv = new THREE.Group(); piv.position.set(0.055, 0.25, 0.045); piv.rotation.z = -0.12; p.g.add(piv); mk.position.y = 0.0; piv.add(mk); mk.castShadow = true; p.marker = piv;
+});
+
+/* ---- the plants: grown by the shader and by instanced leaves, from an outline (the stem) through sections (branches) to paragraphs (leaves) ---- */
+const leafTex = canvasTex(128, 256, (x, w, h) => {
+  x.clearRect(0, 0, w, h);
+  const path = () => { x.beginPath(); x.moveTo(w / 2, h - 4); x.bezierCurveTo(w * 1.02, h * 0.72, w * 0.86, h * 0.2, w / 2, 4); x.bezierCurveTo(w * 0.14, h * 0.2, -w * 0.02, h * 0.72, w / 2, h - 4); x.closePath(); };
+  const g = x.createLinearGradient(0, h, 0, 0); g.addColorStop(0, '#3f6a2a'); g.addColorStop(0.6, '#5f8f39'); g.addColorStop(1, '#7aa94a'); path(); x.fillStyle = g; x.fill();
+  x.strokeStyle = 'rgba(210,235,170,.55)'; x.lineWidth = 3; x.beginPath(); x.moveTo(w / 2, h - 4); x.lineTo(w / 2, 14); x.stroke();
+  x.lineWidth = 1.5; for (let k = 0; k < 7; k++) { const y = h - 40 - k * 28; x.beginPath(); x.moveTo(w / 2, y); x.quadraticCurveTo(w / 2 + 22, y - 14, w / 2 + 40 - k * 3, y - 34); x.moveTo(w / 2, y); x.quadraticCurveTo(w / 2 - 22, y - 14, w / 2 - 40 + k * 3, y - 34); x.stroke(); }
+  x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(30,50,15,.25)'; for (let k = 0; k < 300; k++) x.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+}, { static: true });
+const leafM = new THREE.MeshStandardMaterial({ map: leafTex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.55, envMapIntensity: 0.9 });
+leafM.onBeforeCompile = sh => {   // leaves glow when the sun is behind them
+  sh.uniforms.uSun = { value: SUN }; sh.uniforms.uSunCol = { value: SUNCOL };
+  sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWp;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWp = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+  sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWp; uniform vec3 uSun, uSunCol;')
+    .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n{ float f = max(dot(normalize(vWp - cameraPosition), uSun), 0.0); totalEmissiveRadiance += diffuseColor.rgb * uSunCol * (0.25 + pow(f, 3.0) * 1.4); }');
+};
+const leafG = (() => { const g = new THREE.PlaneGeometry(0.05, 0.1, 1, 6); g.translate(0, 0.05, 0); const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const y = p.getY(i); p.setZ(i, -y * y * 2.2 + Math.abs(p.getX(i)) * 0.25); } g.computeVertexNormals(); return g; })();
+const stemM = () => {   // stems and branches appear from the base up, each from its own moment (aB) over its own time (aD)
+  const m = new THREE.MeshStandardMaterial({ color: 0x5d7f36, roughness: 0.6 }); m.userData.u = { value: 0 };
+  m.onBeforeCompile = sh => { sh.uniforms.uGrowV = m.userData.u;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float aB, aD; uniform float uGrowV; varying float vV;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvV = clamp((uGrowV - aB) / aD, 0.0, 1.0) - uv.x;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vV;').replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nif (vV < 0.0) discard;'); };
+  return m; };
+function curveTube(pts, r, birth, dur, segs = 24) {
+  const c = new THREE.CatmullRomCurve3(pts), g = new THREE.TubeGeometry(c, segs, r, 6, false), n = g.attributes.position.count;
+  g.setAttribute('aB', new THREE.Float32BufferAttribute(new Float32Array(n).fill(birth), 1)); g.setAttribute('aD', new THREE.Float32BufferAttribute(new Float32Array(n).fill(dur), 1));
+  return { g, c };
+}
+const plants = pots.map((p, i) => {
+  if (ROWS[i].fail) return null;
+  seed = 31 + i * 17;
+  const Hs = 0.42 + rnd() * 0.12, lean = V((rnd() - 0.5) * 0.06, 0, (rnd() - 0.5) * 0.06);
+  const stemPts = [V(0, 0, 0), V(lean.x * 0.3, Hs * 0.35, lean.z * 0.3), V(lean.x * 0.7, Hs * 0.7, lean.z * 0.7), V(lean.x, Hs, lean.z)];
+  const parts = [], leaves = [];
+  const stem = curveTube(stemPts, 0.006, 0, 0.32, 30); parts.push(stem.g);
+  const NB = 6;
+  for (let k = 0; k < NB; k++) {   // the sections
+    const t = 0.28 + k * 0.11, base = stem.c.getPoint(t), ang = k * 2.4 + rnd() * 0.4, len = 0.12 + rnd() * 0.06 - k * 0.006;
+    const out = V(Math.cos(ang), 0, Math.sin(ang)), b = 0.2 + k * 0.075;
+    const pts = [base, base.clone().addScaledVector(out, len * 0.45).add(V(0, len * 0.35, 0)), base.clone().addScaledVector(out, len).add(V(0, len * 0.55, 0))];
+    const br = curveTube(pts, 0.0035, b, 0.16, 12); parts.push(br.g);
+    for (let j = 0; j < 4; j++) {   // the paragraphs
+      const tt = 0.35 + j * 0.2, pos = br.c.getPoint(tt), side = j % 2 ? 1 : -1;
+      const dir = out.clone().applyAxisAngle(V(0, 1, 0), side * 0.9).add(V(0, 0.55, 0)).normalize();
+      leaves.push({ pos, dir, s: 0.75 + rnd() * 0.45 - j * 0.06, b: b + 0.06 + j * 0.035, roll: rnd() * 6 });
+    }
+  }
+  for (let j = 0; j < 5; j++) { const pos = stem.c.getPoint(0.96); const a = j * 1.26; leaves.push({ pos, dir: V(Math.cos(a) * 0.6, 1, Math.sin(a) * 0.6).normalize(), s: 0.7 + rnd() * 0.3, b: 0.6 + j * 0.03, roll: a }); }
+  for (let j = 0; j < 2; j++) { const pos = stem.c.getPoint(0.12 + j * 0.05); const a = j * 3.1 + 0.5; leaves.push({ pos, dir: V(Math.cos(a), 0.4, Math.sin(a)).normalize(), s: 0.9, b: 0.08 + j * 0.03, roll: a }); }
+  const sm = stemM(); const mesh = new THREE.Mesh(mergeGeometries(parts), sm); mesh.castShadow = true; mesh.position.y = 0.205; p.g.add(mesh);
+  const im = new THREE.InstancedMesh(leafG, leafM, leaves.length); im.castShadow = true; im.position.y = 0.205; im.frustumCulled = false; p.g.add(im);
+  const zero = new THREE.Matrix4().makeScale(0, 0, 0); for (let k = 0; k < leaves.length; k++) im.setMatrixAt(k, zero);
+  // the word counter: a brass plate on the pot
+  const ct = canvasTex(256, 80, (x, w, h, n = 0) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#c9a35a'); g.addColorStop(1, '#8c6a2e'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    x.strokeStyle = 'rgba(60,40,10,.6)'; x.lineWidth = 3; x.strokeRect(4, 4, w - 8, h - 8); x.fillStyle = '#2a1d08'; x.font = `700 38px ${MONO}`; x.textAlign = 'center'; x.fillText(n.toLocaleString('en-US'), w / 2 - 22, 52); x.font = `700 16px ${SANS}`; x.fillText('WORDS', w - 46, 50); });
+  const plate = new THREE.Mesh(new THREE.PlaneGeometry(0.075, 0.0234), new THREE.MeshStandardMaterial({ map: ct, metalness: 0.6, roughness: 0.4 }));
+  plate.position.set(0, 0.11, -0.112); plate.rotation.set(0.06, Math.PI, 0); p.g.add(plate);
+  return { mesh, sm, im, leaves, g: -1, ct, n: -1, words: ROWS[i].words };
+});
+const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _s = new THREE.Vector3();
+function setGrow(pl, G) {
+  if (!pl || Math.abs(G - pl.g) < 1e-4) return; pl.g = G;
+  pl.sm.userData.u.value = G;
+  pl.leaves.forEach((L, k) => { const v = sstep(L.b, L.b + 0.12, G); if (v <= 0) { pl.im.setMatrixAt(k, _m.makeScale(0, 0, 0)); return; }
+    _q.setFromUnitVectors(V(0, 1, 0), L.dir); _q2.setFromAxisAngle(V(0, 1, 0), L.roll); _q.multiply(_q2);
+    const unfurl = (1 - v) * 1.2; _q2.setFromAxisAngle(V(1, 0, 0), unfurl); _q.multiply(_q2);
+    _s.setScalar(L.s * (0.25 + 0.75 * v)); _m.compose(L.pos, _q, _s); pl.im.setMatrixAt(k, _m); });
+  pl.im.instanceMatrix.needsUpdate = true;
+  const n = Math.round(pl.words * sstep(0.05, 1, G) / 7) * 7, nn = G >= 1 ? pl.words : n;
+  if (nn !== pl.n) { pl.n = nn; pl.ct.userData.redraw(nn); }
+}
+plants.forEach(pl => setGrow(pl, 0));
+
+/* ---- the voice tins on the shelf against the glass ---- */
+const SHELF = { x: -0.55, y: 1.12, z: 2.28 };
+const VOICES = ['Voice A', 'Voice B', 'Voice C', 'Any writer'];
+const tins = VOICES.map((v, i) => {
+  const t = canvasTex(512, 160, (x, w, h) => { x.fillStyle = i === 3 ? '#e9e1cf' : ['#2f4a3a', '#6b3a2a', '#2c3e5a'][i]; x.fillRect(0, 0, w, h);
+    x.fillStyle = i === 3 ? '#2b2620' : '#f1e8d6'; x.textAlign = 'center'; x.font = `700 40px ${SANS}`; x.fillText(v, w / 2, 76);
+    x.font = `700 17px ${SANS}`; try { x.letterSpacing = '3px'; } catch (_) {} x.fillText(i === 3 ? '+ ADD A STYLE FILE' : 'STYLE FILE', w / 2, 116); try { x.letterSpacing = '0px'; } catch (_) {} });
+  const g = new THREE.Group(); g.position.set(SHELF.x - 0.6 + i * 0.36, SHELF.y + 0.02, SHELF.z - 0.02); scene.add(g);
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.14, 32, 1, true), new THREE.MeshStandardMaterial({ map: t, roughness: 0.5, metalness: 0.2 }));
+  body.position.y = 0.07; body.castShadow = true; g.add(body);
+  const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.062, 0.02, 32), new THREE.MeshStandardMaterial({ color: 0x9a9286, metalness: 0.9, roughness: 0.35 })); lid.position.y = 0.145; g.add(lid);
+  const bot = new THREE.Mesh(new THREE.CircleGeometry(0.06, 32), lid.material); bot.rotation.x = Math.PI / 2; g.add(bot);
+  return { g, home: g.position.clone() };
+});
+{ const b = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.035, 0.22), plankM); b.position.set(SHELF.x, SHELF.y, SHELF.z - 0.02); b.castShadow = b.receiveShadow = true; scene.add(b);
+  for (const sx of [-0.8, 0.8]) { const br = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.25, 0.03), frameM); br.position.set(SHELF.x + sx, SHELF.y - 0.14, SHELF.z + 0.06); scene.add(br); } }
+// seeds that fall from the voice tin into each pot
+const seeds = (() => {
+  const N = 5 * 10, p = new Float32Array(N * 3), g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  const m = new THREE.PointsMaterial({ color: 0x4a3420, size: 0.012, sizeAttenuation: true, transparent: true, opacity: 0 });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; scene.add(pts);
+  const off = []; for (let i = 0; i < N; i++) off.push([(Math.random() - 0.5) * 0.08, Math.random(), (Math.random() - 0.5) * 0.08]);
+  return { p, g, m, off, N };
+})();
+
+/* ---- the grow lamp on its rail: it moves pot to pot ---- */
+const lamp = (() => {
+  const y = 1.92, z = -0.08;
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.03, 0.05), frameM); rail.position.set(TABLE.x - 0.28, y + 0.06, z); scene.add(rail);
+  for (const x of [TABLE.x - 1.4, TABLE.x + 0.85]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, roofY(z) - y - 0.06, 6), frameM); w.position.set(x, (roofY(z) + y + 0.06) / 2, z); scene.add(w); }
+  const g = new THREE.Group(); g.position.set(POTS[0].x, y, z); scene.add(g);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.05, 0.14), new THREE.MeshStandardMaterial({ color: 0x1c1f22, metalness: 0.6, roughness: 0.4 })); head.castShadow = true; g.add(head);
+  const panelM = new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0xfff1dc, emissiveIntensity: 0 });
+  const panel = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.11), panelM); panel.rotation.x = Math.PI / 2; panel.position.y = -0.026; g.add(panel);
+  const L = new THREE.SpotLight(0xfff0d8, 0, 3, 0.55, 0.7, 1.5); L.position.set(0, -0.03, 0); L.target.position.set(0, -2, 0); g.add(L, L.target);
+  return { g, panelM, L };
+})();
+
+/* ---- the crate by the door (where finished drafts go), the bell over the door (Slack) ---- */
+const CRATE = { x: -3.25, z: -1.35, ry: 0.35 };
+const crate = (() => {
+  const g = new THREE.Group(); g.position.set(CRATE.x, FLOOR, CRATE.z); g.rotation.y = CRATE.ry; scene.add(g);
+  const Wc = 0.66, Dc = 0.6, Hc = 0.32, parts = [];
+  const slat = (cx, cy, cz, w, h, d) => { const b = new THREE.BoxGeometry(w, h, d); b.translate(cx, cy, cz); parts.push(worldUV(b, 1.2)); };
+  for (let k = 0; k < 3; k++) { const y = 0.05 + k * 0.105; slat(0, y, -Dc / 2, Wc, 0.08, 0.018); slat(0, y, Dc / 2, Wc, 0.08, 0.018); slat(-Wc / 2, y, 0, 0.018, 0.08, Dc); slat(Wc / 2, y, 0, 0.018, 0.08, Dc); }
+  slat(0, 0.015, 0, Wc, 0.02, Dc); for (const sx of [-1, 1]) for (const sz of [-1, 1]) slat(sx * (Wc / 2 - 0.02), Hc / 2, sz * (Dc / 2 - 0.02), 0.04, Hc, 0.04);
+  const m = new THREE.Mesh(mergeGeometries(parts), new THREE.MeshStandardMaterial({ ...pbr('planks', 1), color: 0xd8c2a0, roughness: 1 })); m.castShadow = m.receiveShadow = true; g.add(m);
+  const st = canvasTex(512, 128, (x, w, h) => { x.clearRect(0, 0, w, h); x.fillStyle = 'rgba(28,22,16,.82)'; x.font = `800 64px ${SANS}`; x.textAlign = 'center'; try { x.letterSpacing = '8px'; } catch (_) {} x.fillText('GOOGLE DOCS', w / 2, 86); });
+  const stamp = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.125), new THREE.MeshStandardMaterial({ map: st, transparent: true, roughness: 0.9 })); stamp.position.set(0, 0.16, -Dc / 2 - 0.011); stamp.rotation.y = Math.PI; g.add(stamp);
+  const slots = [V(-0.16, 0.025, -0.14), V(0.16, 0.025, -0.14), V(-0.16, 0.025, 0.14), V(0.16, 0.025, 0.14)];
+  return { g, slots };
+})();
+const bell = (() => {
+  const g = new THREE.Group(); g.position.set(GH.x0 + 0.1, 2.32, -0.62); scene.add(g);
+  const brass = new THREE.MeshStandardMaterial({ color: 0xb8913f, metalness: 1, roughness: 0.28, envMapIntensity: 1.3 });
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.02, 0.18), frameM); arm.position.set(0.0, 0.0, 0.09); g.add(arm);
+  const piv = new THREE.Group(); piv.position.set(0, -0.01, 0.17); g.add(piv);
+  const prof = [[0.0, 0], [0.012, 0], [0.016, -0.01], [0.02, -0.03], [0.026, -0.06], [0.034, -0.085], [0.046, -0.1], [0.052, -0.108], [0.0, -0.108]].map(([r, y]) => new THREE.Vector2(r, y));
+  const b = new THREE.Mesh(new THREE.LatheGeometry(prof.slice(0, -1), 32), new THREE.MeshStandardMaterial({ color: 0xb8913f, metalness: 1, roughness: 0.28, envMapIntensity: 1.3, side: THREE.DoubleSide })); b.position.y = -0.01; b.castShadow = true; piv.add(b);
+  const clap = new THREE.Mesh(new THREE.SphereGeometry(0.012, 12, 8), brass); clap.position.y = -0.1; piv.add(clap);
+  return { g, piv, t: -1 };
+})();
+
+/* ---- the run log for the row that failed: a clipboard propped by its pot ---- */
+const runlog = (() => {
+  const t = canvasTex(400, 540, (x, w, h) => {
+    x.fillStyle = '#f5f1e8'; x.fillRect(0, 0, w, h);
+    x.fillStyle = '#2b2620'; x.font = `700 26px ${SANS}`; x.fillText('Run log · row 6', 26, 56);
+    x.font = `500 16px ${MONO}`; x.fillStyle = '#6b6357'; x.fillText('n8n · executions', 26, 84);
+    const L = [['✓', 'Sheet trigger', '#2f7a3a'], ['✓', 'Loop · next row', '#2f7a3a'], ['✕', 'Read brief', '#b8321f'], ['·', 'Write draft', '#9a9286'], ['·', 'Save to Docs', '#9a9286'], ['·', 'Notify Slack', '#9a9286']];
+    L.forEach(([m, s, c], i) => { const y = 140 + i * 56; if (m === '✕') { x.fillStyle = 'rgba(184,50,31,.1)'; x.fillRect(16, y - 34, w - 32, 50); }
+      x.fillStyle = c; x.font = `700 28px ${SANS}`; x.fillText(m, 30, y); x.fillStyle = m === '·' ? '#9a9286' : '#2b2620'; x.font = `600 24px ${SANS}`; x.fillText(s, 70, y); });
+    x.fillStyle = '#b8321f'; x.font = `600 19px ${MONO}`; x.fillText('403 · no access to the', 30, 488); x.fillText('brief document', 30, 514);
+  });
+  const g = new THREE.Group(); g.position.set(TABLE.x - 1.36, TT, 0.26); g.rotation.set(0, Math.PI - 0.35, 0); scene.add(g);
+  const board = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.235, 0.006), new THREE.MeshStandardMaterial({ color: 0x7a5a36, roughness: 0.8 })); board.position.set(0, 0.11, 0); board.rotation.x = -0.32; g.add(board);
+  const paper = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 0.2), new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 })); paper.position.set(0, 0, 0.0035); board.add(paper);
+  const clip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.018, 0.012), new THREE.MeshStandardMaterial({ color: 0x9a9286, metalness: 1, roughness: 0.3 })); clip.position.set(0, 0.11, 0.006); board.add(clip);
+  board.castShadow = true; return g;
+})();
+// the red tag that appears on the failed pot
+const failTag = (() => {
+  const t = canvasTex(256, 120, (x, w, h) => { x.fillStyle = '#c8402e'; x.beginPath(); x.moveTo(30, 0); x.lineTo(w, 0); x.lineTo(w, h); x.lineTo(30, h); x.lineTo(0, h / 2); x.closePath(); x.fill();
+    x.fillStyle = '#f6e9df'; x.font = `700 30px ${SANS}`; x.fillText('Brief not', 52, 50); x.fillText('shared', 52, 88); x.fillStyle = '#7a1f14'; x.beginPath(); x.arc(24, h / 2, 7, 0, 7); x.fill(); });
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.047), new THREE.MeshStandardMaterial({ map: t, roughness: 0.8, side: THREE.DoubleSide }));
+  m.position.set(-0.07, 0.17, -0.1); m.rotation.set(0.1, Math.PI + 0.4, -0.15); m.scale.setScalar(0.001); pots[4].g.add(m); return m;
+})();
+
+/* ---- dust in the sunlight ---- */
+const dust = (() => {
+  const N = coarse ? 260 : 520, p = new Float32Array(N * 3), s = new Float32Array(N);
+  for (let i = 0; i < N; i++) { p.set([lerp(-4, 4, Math.random()), 0.3 + Math.random() * 2.4, lerp(-2.3, 2.3, Math.random())], i * 3); s[i] = Math.random(); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3)); g.setAttribute('aS', new THREE.BufferAttribute(s, 1));
+  const m = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uTime: { value: 0 }, uSun: { value: SUN }, uScale: { value: H * DPR } },
+    vertexShader: `attribute float aS; uniform float uTime, uScale; uniform vec3 uSun; varying float vA;
+      void main(){ vec3 q = position + vec3(sin(uTime * 0.11 + aS * 30.0) * 0.25, sin(uTime * 0.07 + aS * 11.0) * 0.18, cos(uTime * 0.09 + aS * 17.0) * 0.25);
+        vec4 mv = modelViewMatrix * vec4(q, 1.0); vec3 vd = normalize((modelMatrix * vec4(q, 1.0)).xyz - cameraPosition);
+        vA = pow(max(dot(vd, uSun), 0.0), 3.0) * (0.3 + 0.7 * aS) * (0.5 + 0.5 * sin(uTime * (0.5 + aS) + aS * 40.0));
+        gl_PointSize = uScale * (0.002 + 0.002 * aS) / -mv.z; gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: 'varying float vA; void main(){ float r = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.0, r) * vA; gl_FragColor = vec4(vec3(1.0, 0.86, 0.66) * a * 1.4, a); }' });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; scene.add(pts); return m;
+})();
+
+/* =====================================================================
+   LET'S TALK: an order pad hanging on the far gable post, which no shot of the walk ever faces. Clicking "Let's talk" glides
+   the camera down the greenhouse to it (the scroll stays where it was). The form is written on the pad's top sheet (talk/surface.js);
+   sending it stamps the sheet RECEIVED.
+   ===================================================================== */
+const PAD = { x: GH.x1 - 0.06, y: 1.42, z: -1.05, ry: -Math.PI / 2 };
+const padN = new THREE.Vector3(-1, 0, 0);
+const talk = { mode: 'off', t: 0, dur: 1.8, P: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], L: [new THREE.Vector3(), new THREE.Vector3()], v: 0, surf: null, group: null, css: null, cssR: null, opener: null, mobile: null, stamp: null, sT: -1 };
+const talkPose = { pos: new THREE.Vector3(), look: new THREE.Vector3() };
+function paintPad() {   // cream ruled paper, the writing in dark ink, labels in garden green, fields as pencilled boxes
+  const s = talk.surf, cv = talk.cv, x = cv.getContext('2d'), k = cv.width / s.fw, w = cv.width, h = cv.height, L = s.layout();
+  x.fillStyle = '#e9dfc7'; x.fillRect(0, 0, w, h);
+  x.strokeStyle = 'rgba(70,110,150,.16)'; x.lineWidth = 1.2 * k; for (let y = 40 * k; y < h; y += 26 * k) { x.beginPath(); x.moveTo(0, y); x.lineTo(w, y); x.stroke(); }
+  x.strokeStyle = 'rgba(180,70,60,.3)'; x.beginPath(); x.moveTo(30 * k, 0); x.lineTo(30 * k, h); x.stroke();
+  let sd = 5; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 2500; i++) { x.fillStyle = `rgba(90,70,40,${r() * 0.05})`; x.fillRect(r() * w, r() * h, 2 * k, 2 * k); }
+  x.fillStyle = '#3a2f20'; x.font = `700 ${11 * k}px ${SANS}`; try { x.letterSpacing = (2.6 * k) + 'px'; } catch (_) {} x.fillText('GREENHOUSE ORDER PAD', 46 * k, 26 * k); try { x.letterSpacing = '0px'; } catch (_) {}
+  for (const f of L.fields) { x.fillStyle = 'rgba(255,250,238,.55)'; x.fillRect(f.x * k, f.y * k, f.w * k, f.h * k); x.strokeStyle = '#4a3c28'; x.lineWidth = 1.6 * k; x.strokeRect(f.x * k, f.y * k, f.w * k, f.h * k); }
+  const COL = { title: '#140f08', intro: '#241b10', label: '#1f4d27', note: '#3a2f20', msg: '#a3301e' };
+  for (const t of L.texts) { x.font = t.font(k); x.textBaseline = 'middle'; try { x.letterSpacing = (t.ls * k) + 'px'; } catch (_) {} x.fillStyle = COL[t.kind] || COL.intro; for (const wd of t.words) x.fillText(wd.w, wd.x * k, (wd.y + wd.h / 2) * k); try { x.letterSpacing = '0px'; } catch (_) {} }
+  for (const sl of L.seals) { const cx = (sl.x + sl.w / 2) * k, cy = (sl.y + sl.h / 2) * k, R = sl.w / 2 * k * 0.86; x.lineCap = x.lineJoin = 'round'; x.strokeStyle = '#35663a'; x.lineWidth = 5 * k; x.beginPath(); x.arc(cx, cy, R, 0, 7); x.stroke(); x.beginPath(); x.moveTo(cx - R * 0.42, cy + R * 0.02); x.lineTo(cx - R * 0.1, cy + R * 0.34); x.lineTo(cx + R * 0.46, cy - R * 0.3); x.stroke(); }
+  talk.tex.needsUpdate = true;
+}
+async function buildTalk(config, send) {
+  const mobile = W / H < 0.85;
+  if (talk.group && talk.mobile === mobile) return;
+  if (talk.group) { scene.remove(talk.group); talk.surf.destroy(); talk.tex.dispose(); }
+  const { createSurface } = await import('../talk/surface.js');
+  if (document.fonts) await Promise.all([document.fonts.load(`600 50px ${SANS}`), document.fonts.load(`800 13px ${SANS}`)]).catch(() => {});
+  const fw = mobile ? 344 : 560, PW = mobile ? 0.4 : 0.42, MPPt = PW / fw;
+  talk.surf = createSurface({ config, send, width: fw, mobile, look: 'tb-look-order', pad: mobile ? ['50px', '24px', '30px'] : ['54px', '46px', '40px'],
+    copy: { sentTitle: 'Order received', sentText: "Message sent. I'll get back to you soon, on WhatsApp or by email." },
+    onChange: () => paintPad(), onClose: () => closeTalk(), onSent: () => { talk.sT = 0; } });
+  const s = talk.surf, pw = s.fw * MPPt, ph = s.fh * MPPt;
+  const kk = Math.min(3, 2048 / Math.max(s.fw, s.fh)); talk.cv = document.createElement('canvas'); talk.cv.width = Math.round(s.fw * kk); talk.cv.height = Math.round(s.fh * kk);
+  talk.tex = new THREE.CanvasTexture(talk.cv); talk.tex.colorSpace = THREE.SRGBColorSpace; talk.tex.anisotropy = 8;
+  const g = new THREE.Group(); g.position.set(PAD.x, PAD.y, PAD.z); g.rotation.y = PAD.ry; scene.add(g);
+  const bw = pw + 0.06, bh = ph + 0.11;
+  const board = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, 0.008), new THREE.MeshStandardMaterial({ color: 0x7a5a36, roughness: 0.75 })); board.position.y = -0.025; board.castShadow = true; g.add(board);
+  const under = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), new THREE.MeshStandardMaterial({ color: 0xe6dcc6, roughness: 0.95 })); under.position.set(0.004, -0.05, 0.0045); under.rotation.z = -0.012; g.add(under);
+  const paper = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), new THREE.MeshStandardMaterial({ map: talk.tex, roughness: 0.9, emissive: 0xffffff, emissiveMap: talk.tex, emissiveIntensity: 0.22 })); paper.position.set(0, -0.045, 0.0055); g.add(paper);   // the pad faces away from the sun: a little of its own warmth keeps the paper reading as cream
+  const clip = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.035, 0.018), new THREE.MeshStandardMaterial({ color: 0xa9a294, metalness: 1, roughness: 0.3 })); clip.position.set(0, bh / 2 - 0.045, 0.012); g.add(clip);
+  const nail = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.03, 6), clip.material); nail.rotation.x = Math.PI / 2; nail.position.set(0, bh / 2 + 0.04, -0.004); g.add(nail);
+  const st = (() => { const c = document.createElement('canvas'); c.width = 512; c.height = 256; const x = c.getContext('2d'); x.strokeStyle = 'rgba(53,102,58,.85)'; x.lineWidth = 10; x.strokeRect(14, 30, 484, 196); x.lineWidth = 3; x.strokeRect(30, 46, 452, 164);
+    x.fillStyle = 'rgba(53,102,58,.9)'; x.font = `800 86px ${SANS}`; x.textAlign = 'center'; try { x.letterSpacing = '6px'; } catch (_) {} x.fillText('RECEIVED', 256, 160); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  talk.stamp = new THREE.Mesh(new THREE.PlaneGeometry(0.17, 0.085), new THREE.MeshBasicMaterial({ map: st, transparent: true, depthWrite: false, color: new THREE.Color(0.7, 0.7, 0.7) }));
+  talk.stamp.position.set(pw * 0.22, -0.045 - ph * 0.33, 0.0075); talk.stamp.rotation.z = 0.18; talk.stamp.visible = false; g.add(talk.stamp);
+  talk.css = new CSS3DObject(s.el); talk.css.scale.setScalar(MPPt); talk.css.position.set(0, -0.045, 0.006); g.add(talk.css);
+  talk.group = g; talk.mobile = mobile; paintPad();
+  // stand square on to the pad, far enough back to see all of it
+  const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), d = Math.max(bh * (mobile ? 1.1 : 1.18) / (2 * tn), (bw + (mobile ? 0.03 : 0.5)) / (2 * tn * camera.aspect));
+  const cy = PAD.y - 0.03 + (mobile ? 0.01 : 0); talkPose.look.set(PAD.x, cy, PAD.z); talkPose.pos.set(PAD.x + padN.x * d, cy, PAD.z);
+}
+function talkMid(P0, P2) {   // from outside, come in through the door; inside, an easy arc down the aisle
+  if (P0.x < GH.x0 + 0.2) return V(GH.x0 + 0.6, 1.65, 0);
+  return V((P0.x + P2.x) / 2, Math.max(P0.y, P2.y) + 0.15, (P0.z + P2.z) / 2 - 0.4);
+}
+async function openTalk({ config, send, opener, fallback }) {
+  if (talk.mode === 'in' || talk.mode === 'on') return;
+  talk.opener = opener;
+  if (!talk.cssR) { talk.cssR = new CSS3DRenderer(); document.getElementById('talk3d').appendChild(talk.cssR.domElement); talk.cssR.setSize(W, H); }
+  document.documentElement.classList.add('talking'); document.documentElement.style.overflow = 'hidden';
+  try { await buildTalk(config, send); } catch (err) {
+    console.warn('[contact] order pad unavailable:', err && err.message); document.documentElement.classList.remove('talking'); document.documentElement.style.removeProperty('overflow'); talk.group = null; if (fallback) fallback(); return; }
+  talk.surf.reset(); talk.sT = -1; talk.stamp.visible = false;
+  const P0 = camera.position.clone(), P2 = talkPose.pos.clone();
+  talk.P[0].copy(P0); talk.P[1].copy(talkMid(P0, P2)); talk.P[2].copy(P2); talk.L[0].copy(camLook); talk.L[1].copy(talkPose.look);
+  talk.dur = P0.x < GH.x0 ? 2.8 : 1.9; talk.mode = 'in'; talk.t = reduce ? talk.dur : 0;
+}
+function closeTalk() {
+  if (talk.mode === 'off' || talk.mode === 'out') return;
+  cameraAt(stage.prog);
+  const P0 = camera.position.clone(), P2 = tgtPos.clone();
+  talk.P[0].copy(P0); talk.P[1].copy(talkMid(P2, P0)); talk.P[2].copy(P2); talk.L[0].copy(talkPose.look); talk.L[1].copy(tgtLook);
+  talk.dur = P2.x < GH.x0 ? 2.6 : 1.9; talk.mode = 'out'; talk.t = reduce ? talk.dur : 0;
+  document.documentElement.classList.remove('talking');
+}
+function talkTick(dt) {   // the RECEIVED stamp comes down onto the sheet
+  if (talk.sT < 0 || !talk.stamp) return; talk.sT += dt;
+  const k = clamp((talk.sT - 0.35) / 0.25, 0, 1); talk.stamp.visible = talk.sT > 0.35; talk.stamp.scale.setScalar(lerp(1.6, 1, k * k)); talk.stamp.material.opacity = k;
+}
+function talkFrame(dt, t) {
+  if (talk.mode === 'off') return false;
+  talk.t = Math.min(talk.dur, talk.t + dt); const e = easeIO(talk.t / talk.dur), u = 1 - e;
+  camera.position.set(u * u * talk.P[0].x + 2 * u * e * talk.P[1].x + e * e * talk.P[2].x, u * u * talk.P[0].y + 2 * u * e * talk.P[1].y + e * e * talk.P[2].y, u * u * talk.P[0].z + 2 * u * e * talk.P[1].z + e * e * talk.P[2].z);
+  _a.copy(talk.L[0]).lerp(talk.L[1], sstep(0.05, 0.8, talk.t / talk.dur)); camera.lookAt(_a);
+  if (talk.mode === 'in' && talk.t >= talk.dur) { talk.mode = 'on'; talk.surf.focusFirst(); }
+  if (talk.mode === 'out' && talk.t >= talk.dur) { talk.mode = 'off'; camPos.copy(camera.position); camLook.copy(_a); document.documentElement.style.removeProperty('overflow'); if (talk.opener && talk.opener.focus) talk.opener.focus({ preventScroll: true }); }
+  return true;
+}
+addEventListener('keydown', e => { if (talk.mode !== 'on' && talk.mode !== 'in') return; if (e.key === 'Escape') { e.preventDefault(); closeTalk(); } else talk.surf && talk.surf.trap(e); });
+window.__talkScene = { open: o => { openTalk(o); } };
+
+/* =====================================================================
+   SCROLL → WHAT HAPPENS
+   ===================================================================== */
+const CK = { flag: [0.255, 0.275], tinUp: [0.355, 0.37], tinGo: [0.37, 0.385], sow: [0.385, 0.43], tinBack: [0.43, 0.45],
+  grow: [[0.48, 0.555], [0.565, 0.59], [0.59, 0.615], [0.615, 0.64]], lampOn: 0.47, lampOff: 0.9, fail: 0.645,
+  carry: [0.68, 0.73], links: [0.735, 0.775], bell: 0.73, failTag: 0.82 };
+let progL = 0;
+const _v = new THREE.Vector3(), _w = new THREE.Vector3();
+function update(t, dt, p) {
+  // 02 · the markers all turn to YES at once, and YES appears in every row of the ledger
+  const fl = easeIO(sstep(...CK.flag, p));
+  pots.forEach(pt => { pt.marker.rotation.y = fl * Math.PI; });
+  if ((fl > 0.5) !== ledgerState.yes) { ledgerState.yes = fl > 0.5; redrawLedger(); }
+  // 03 · the voice tin comes down off the shelf, sows each pot, and goes back
+  { const tin = tins[1], up = sstep(...CK.tinUp, p), go = easeIO(sstep(...CK.tinGo, p)), sow = sstep(...CK.sow, p), back = easeIO(sstep(...CK.tinBack, p));
+    const over = V(lerp(POTS[0].x, POTS[4].x, sow), SOIL + 0.32, POTS[0].z);
+    _v.copy(tin.home).add(V(0, 0.18 * up, -0.18 * up)).lerp(over, go); _v.lerp(tin.home, back);
+    tin.g.position.copy(_v); tin.g.rotation.z = -1.9 * sstep(0, 0.15, sow) * (1 - sstep(0.9, 1, sow)) * (1 - back) - Math.sin(t * 10) * 0.05 * (sow > 0 && sow < 1 ? 1 : 0);
+    // seeds: each pot's seeds fall as the tin passes over it
+    for (let i = 0; i < seeds.N; i++) { const pi = Math.floor(i / 10), o = seeds.off[i], pt = POTS[pi]; const at = (pt.x - POTS[0].x) / (POTS[4].x - POTS[0].x);
+      const f = clamp((sow - at + 0.02 + o[1] * 0.03) / 0.08, 0, 1); seeds.p.set([pt.x + o[0] * (0.4 + f), lerp(SOIL + 0.27, SOIL + 0.002, f * f), pt.z + o[2] * (0.4 + f)], i * 3); }
+    seeds.g.attributes.position.needsUpdate = true; seeds.m.opacity = sstep(CK.sow[0], CK.sow[0] + 0.005, p) * (1 - sstep(0.47, 0.5, p)); }
+  // 04 · the lamp travels; under it, each draft grows from outline to sections to paragraphs
+  { let lx = POTS[0].x; CK.grow.forEach(([a, b], i) => { if (p >= a - 0.012) lx = lerp(i ? POTS[i - 1].x : POTS[0].x, POTS[i].x, easeIO(sstep(a - 0.012, a, p))); setGrow(plants[i], sstep(a, b, p)); });
+    if (p >= CK.fail - 0.012) lx = lerp(POTS[3].x, POTS[4].x, easeIO(sstep(CK.fail - 0.012, CK.fail, p)));
+    lamp.g.position.x = lx; const on = sstep(CK.lampOn, CK.lampOn + 0.01, p) * (1 - sstep(CK.lampOff, CK.lampOff + 0.02, p));
+    const failing = p >= CK.fail ? 0.35 + 0.65 * (Math.sin(t * 9) > 0.6 ? 0.3 : 1) : 1;   // over the failed pot the lamp falters
+    lamp.panelM.emissiveIntensity = 2.4 * on * failing; lamp.L.intensity = 5 * on * failing; }
+  // 05 · finished pots are carried to the crate; the links fill in; the bell rings
+  pots.slice(0, 4).forEach((pt, i) => { const s0 = CK.carry[0] + i * 0.0125, k = easeIO(sstep(s0, s0 + 0.012, p));
+    const dst = crate.slots[i].clone().applyAxisAngle(V(0, 1, 0), CRATE.ry).add(V(CRATE.x, FLOOR, CRATE.z));
+    pt.g.position.lerpVectors(pt.home, dst, k); pt.g.position.y += Math.sin(k * Math.PI) * 0.45; pt.g.rotation.y = CRATE.ry * k; });
+  { const n = Math.floor(sstep(...CK.links, p) * 4 + 0.001); if (n !== ledgerState.links) { ledgerState.links = n; redrawLedger(); } }
+  { if (p >= CK.bell && bell.t < 0) bell.t = SNAP ? 3 : 0; if (p < CK.bell - 0.01) bell.t = -1; if (bell.t >= 0) { bell.t += dt; bell.piv.rotation.x = 0.45 * Math.exp(-1.6 * bell.t) * Math.sin(bell.t * 11); } }
+  // 06 · the failed row's tag
+  failTag.scale.setScalar(Math.max(0.001, backOut(sstep(CK.failTag, CK.failTag + 0.012, p))));
+  GH.leaf.rotation.y = -1.25;
+}
+
+/* ---- camera stations ---- */
+const KEY = {
+  hero:   { pos: [-14.5, 2.2, -4.2], look: [0.6, 1.75, 0.9] },
+  door:   { pos: [-7.2, 1.65, -0.2], look: [0, 1.35, 0.2] },
+  inside: { pos: [-3.7, 1.62, -0.25], look: [0, 1.0, 0.2] },
+  ledger: { pos: [BOOK.x + 0.12, TT + 0.9, BOOK.z - 0.035], look: [BOOK.x + 0.12, TT, BOOK.z - 0.02], m: { pos: [BOOK.x, TT + 1.25, BOOK.z - 0.235], look: [BOOK.x, TT, BOOK.z - 0.22] } },
+  flag:   { pos: [TABLE.x - 0.05, 1.36, -1.55], look: [TABLE.x - 0.15, 0.92, -0.02], close: 1, pb: 1.5 },
+  voice:  { pos: [-0.35, 1.5, -0.7], look: [-0.45, 1.15, 2.2], close: 1, pb: 1.35 },
+  sow:    { pos: [TABLE.x - 0.15, 1.5, -1.3], look: [TABLE.x - 0.15, 1.0, 0.2], close: 1, pb: 1.5 },
+  grow1:  { pos: [POTS[0].x + 0.15, 1.14, -0.72], look: [POTS[0].x, 1.08, -0.06], close: 1, pb: 1.7 },
+  row:    { pos: [TABLE.x - 0.2, 1.45, -1.75], look: [TABLE.x - 0.15, 1.02, 0.1], close: 1, pb: 1.5 },
+  crate:  { pos: [-1.3, 1.6, -2.1], look: [-3.0, 0.75, -0.9], close: 1, pb: 1.4 },
+  ledger2:{ pos: [BOOK.x + 0.12, TT + 0.9, BOOK.z - 0.035], look: [BOOK.x + 0.12, TT, BOOK.z - 0.02], m: { pos: [BOOK.x, TT + 1.25, BOOK.z - 0.235], look: [BOOK.x, TT, BOOK.z - 0.22] } },
+  fail:   { pos: [POTS[4].x + 0.12, 1.2, -0.86], look: [POTS[4].x - 0.2, 0.94, 0.05], close: 1, pb: 1.7 },
+  end:    { pos: [-16.5, 4.2, -3.5], look: [0.3, 1.8, 1.5] },
+};
+const STATIONS = [
+  { p: 0.00, ...KEY.hero }, { p: 0.03, ...KEY.hero },
+  { p: 0.075, ...KEY.door }, { p: 0.11, ...KEY.inside },
+  { p: 0.15, ...KEY.ledger }, { p: 0.2, ...KEY.ledger },
+  { p: 0.235, ...KEY.flag }, { p: 0.31, ...KEY.flag },
+  { p: 0.345, ...KEY.voice }, { p: 0.375, ...KEY.voice }, { p: 0.395, ...KEY.sow }, { p: 0.455, ...KEY.sow },
+  { p: 0.48, ...KEY.grow1 }, { p: 0.55, ...KEY.grow1 }, { p: 0.57, ...KEY.row }, { p: 0.655, ...KEY.row },
+  { p: 0.68, ...KEY.crate }, { p: 0.73, ...KEY.crate }, { p: 0.745, ...KEY.ledger2 }, { p: 0.785, ...KEY.ledger2 },
+  { p: 0.81, ...KEY.fail }, { p: 0.895, ...KEY.fail },
+  { p: 0.95, ...KEY.end }, { p: 1.00, ...KEY.end },
+];
+const _d = new THREE.Vector3(), _a = new THREE.Vector3();
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), tgtPos = new THREE.Vector3(), tgtLook = new THREE.Vector3();
+function cameraAt(p) {
+  let a = STATIONS[0], b = STATIONS[1];
+  for (let i = 0; i < STATIONS.length - 1; i++) if (p >= STATIONS[i].p) { a = STATIONS[i]; b = STATIONS[i + 1]; }
+  const t = easeIO(clamp((p - a.p) / Math.max(1e-4, b.p - a.p), 0, 1));
+  const por = W / H < 0.85, A0 = por && a.m ? a.m : a, B0 = por && b.m ? b.m : b;   // a pose can carry its own phone framing
+  tgtPos.set(lerp(A0.pos[0], B0.pos[0], t), lerp(A0.pos[1], B0.pos[1], t), lerp(A0.pos[2], B0.pos[2], t));
+  tgtLook.set(lerp(A0.look[0], B0.look[0], t), lerp(A0.look[1], B0.look[1], t), lerp(A0.look[2], B0.look[2], t));
+  if (por) {   // portrait: close-ups step back along the view (staying inside the glass), wide shots step back a little
+    const kc = lerp(a.close && !a.m ? 1 : 0, b.close && !b.m ? 1 : 0, t), pb = lerp(a.pb || 1.4, b.pb || 1.4, t);
+    _d.copy(tgtPos).sub(tgtLook).multiplyScalar((pb - 1) * kc + 0.25 * (1 - kc)); tgtPos.add(_d);
+    if (kc > 0.5) { tgtPos.x = clamp(tgtPos.x, GH.x0 + 0.3, GH.x1 - 0.3); tgtPos.z = clamp(tgtPos.z, GH.z0 + 0.25, GH.z1 - 0.25); tgtPos.y = Math.min(tgtPos.y, GH.eave - 0.15); }
+  }
+}
+
+/* ---- pointer parallax ---- */
+const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
+addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty = (e.clientY / H) * 2 - 1; }, { passive: true });
+function resize() {
+  W = innerWidth; H = innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); bloom.resolution.set(W / 2, H / 2);
+  if (talk.cssR) talk.cssR.setSize(W, H);
+  camera.aspect = W / H; camera.fov = W / H < 0.85 ? 58 : 40; camera.updateProjectionMatrix();
+  dust.uniforms.uScale.value = H * DPR;
+}
+addEventListener('resize', resize);
+
+/* ---- frame loop ---- */
+let last = performance.now(), t0 = last;
+function frame(now) {
+  const dt = Math.min(SNAP ? 0.5 : 0.05, (now - last) / 1000); last = now; const t = (now - t0) / 1000 * (reduce ? 0.5 : 1);
+  const prog = stage.prog;
+  progL = SNAP ? prog : lerp(progL, prog, 1 - Math.exp(-dt * 5));
+  ptr.x = lerp(ptr.x, ptr.tx, 0.05); ptr.y = lerp(ptr.y, ptr.ty, 0.05);
+  if (!talkFrame(dt, t)) {
+    cameraAt(progL);
+    const kc = SNAP ? 1 : 1 - Math.exp(-dt * 3.4); camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc);
+    const pk = camPos.x < GH.x0 - 1 ? 0.3 : (camPos.y - camLook.y > 2 * Math.abs(camPos.z - camLook.z) + 0.3 ? 0 : 0.04);
+    camera.position.set(camPos.x + ptr.x * pk, camPos.y - ptr.y * pk * 0.6, camPos.z); camera.lookAt(camLook);
+  }
+  update(t, dt, progL);
+  dust.uniforms.uTime.value = t;
+  { const want = talk.mode === 'in' || talk.mode === 'on' ? 1 : 0; talk.v = lerp(talk.v, want, 1 - Math.exp(-dt * (want ? 2.2 : 0.8))); }
+  talkTick(dt, t);
+  composer.render(dt);
+  if (talk.cssR && talk.mode !== 'off') talk.cssR.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+resize(); cameraAt(stage.prog); camPos.copy(tgtPos); camLook.copy(tgtLook); progL = stage.prog;
+requestAnimationFrame(frame);
+window.__gh = { scene, camera, renderer, STATIONS, KEY, plants, pots, talk };
+</script>
+<script src="../site.js" defer></script>
