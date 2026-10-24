@@ -1,0 +1,1161 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Webinar to Webflow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Archivo:wdth,wght@62..125,300..700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* The studio at night. One automation, shown as a recording studio: a webinar arrives as a tape, the speakers get their own
+   channels, the cleanup never cuts what was said, and the finished recap is filed like a record. Scrolling moves the camera. */
+:root{
+  --bg:#0e0c10; --ink:#f3eee8; --ink-soft:#a49a92; --ink-mid:#d8cfc6; --pill:#f3eee8; --pill-ink:#0e0c10; --line:#26212a; --card:#16131a;
+  --amber:#ffb15a; --host:#ffb15a; --guest:#5fd4c4; --red:#ff5a4a; --green:#6fd88a;
+  --font:'Elms Sans','Archivo','Helvetica Neue',Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a,button{color:inherit;font:inherit}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;transition:filter .9s ease}
+body.hush #gl{filter:blur(9px) saturate(.85) brightness(.85)}
+.hushveil{position:fixed;inset:0;z-index:2;pointer-events:none;background:rgba(12,10,14,.45);opacity:0;transition:opacity .9s ease}
+body.hush .hushveil{opacity:1}
+.scrim{position:fixed;left:0;right:0;bottom:0;height:48%;z-index:2;pointer-events:none;background:linear-gradient(to top,rgba(12,10,14,.9),rgba(12,10,14,.45) 45%,rgba(12,10,14,0))}
+.vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%)}
+.grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.08;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 1.6s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+
+.ui{position:fixed;inset:0;z-index:4;pointer-events:none}
+.ui > *{pointer-events:auto}
+.ui.off > :not(.mark):not(.actions){opacity:0!important;pointer-events:none!important}
+.mark{position:absolute;top:calc(28px + env(safe-area-inset-top,0px));left:max(28px,env(safe-area-inset-left,0px));font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:14px}
+.mark svg{display:block}
+.actions{position:absolute;top:calc(22px + env(safe-area-inset-top,0px));right:max(24px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center}
+.pill{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 26px;border-radius:999px;background:var(--pill);color:var(--pill-ink);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transition:transform .25s cubic-bezier(.2,.7,.2,1),background .25s;text-decoration:none;white-space:nowrap}
+.pill:hover{transform:translateY(-2px);background:#fff8ea}
+.pill:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.pill .dot{width:5px;height:5px;border-radius:999px;background:var(--pill-ink)}
+.pill.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #34404f}
+.pill.ghost:hover{background:rgba(239,232,218,.06)}
+
+.cap{position:absolute;left:max(28px,env(safe-area-inset-left,0px));bottom:calc(36px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100vw - 56px));opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;pointer-events:none}
+.cap.on{opacity:1;transform:none;pointer-events:auto}
+.cap em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.cap em b{font-weight:600;color:var(--amber)}
+.cap h2{margin:0 0 10px;font-weight:500;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1.05}
+.cap p{margin:0;font-size:16px;line-height:1.5;color:var(--ink-mid);max-width:44ch}
+.cap .key{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.cap .key i{font-style:normal;display:inline-flex;align-items:center;gap:7px}
+.cap .key i::before{content:'';width:9px;height:9px;border-radius:999px;background:var(--c,#fff)}
+
+.hero-title{position:absolute;left:max(28px,env(safe-area-inset-left,0px));right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);pointer-events:none;transition:opacity .5s ease}
+.hero-title em{display:block;font-style:normal;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
+.hero-title h1{margin:0;font-weight:500;font-size:clamp(44px,7.4vw,124px);letter-spacing:-.035em;line-height:.92;max-width:9ch}
+.hero-title p{margin:22px 0 0;font-size:clamp(16px,1.4vw,20px);color:var(--ink-mid);max-width:32ch}
+.hero-title .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.hero-title .row > *{pointer-events:auto}
+
+.progress{position:absolute;right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px}
+.progress i{width:6px;height:6px;border-radius:999px;background:#2a3442;transition:background .3s,transform .3s}
+.progress i.on{background:var(--amber);transform:scale(1.4)}
+
+.end{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:calc(112px + env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(28px,env(safe-area-inset-left,0px));opacity:0;transition:opacity .6s ease;pointer-events:none}
+.end.on{opacity:1;pointer-events:auto}
+.end .big{margin:0;font-weight:500;font-size:clamp(34px,min(6.2vw,9vh),100px);letter-spacing:-.035em;line-height:.95;max-width:14ch}
+.end .sub{margin:22px 0 0;font-size:clamp(17px,1.5vw,22px);color:var(--ink-mid);max-width:42ch}
+.end .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;align-items:center}
+.end .next{margin-top:48px;font-size:14px;color:var(--ink-soft)}
+.end .next a{color:var(--ink);text-decoration:none;font-weight:500}
+
+.scroll{position:absolute;right:max(28px,env(safe-area-inset-right,0px));bottom:calc(32px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);transition:opacity .6s ease}
+.scroll i{display:block;width:44px;height:2px;background:var(--ink-soft);animation:line 2.2s cubic-bezier(.7,0,.3,1) infinite}
+@keyframes line{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+
+#fly{position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;display:block}
+.runway{position:relative;z-index:0;height:1300svh;pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------------- the runbook ---------------- */
+.doc{position:relative;z-index:3;background:var(--bg);padding:0 0 120px}
+.doc::before{content:'';position:absolute;left:0;right:0;top:-220px;height:220px;background:linear-gradient(to bottom,rgba(12,10,14,0),var(--bg));pointer-events:none}
+.doc-in{width:min(1240px,calc(100% - 56px));margin:0 auto}
+.doc-head{padding:140px 0 56px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:end}
+.doc-head em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:18px}
+.doc-head h2{margin:0;font-weight:500;font-size:clamp(34px,4.6vw,68px);letter-spacing:-.03em;line-height:1}
+.doc-head p{margin:20px 0 0;font-size:18px;line-height:1.5;color:var(--ink-mid);max-width:52ch}
+.facts{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.facts div{background:var(--card);padding:18px 20px}
+.facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.facts dd{margin:0;font-size:16px;font-weight:500}
+.doc-grid{display:grid;grid-template-columns:220px 1fr;gap:64px;padding-top:56px}
+.toc{position:sticky;top:120px;align-self:start;display:flex;flex-direction:column;gap:4px;font-size:13px;letter-spacing:.04em}
+.toc a{text-decoration:none;color:var(--ink-soft);padding:8px 0;display:flex;gap:12px;transition:color .25s}
+.toc a span{font-variant-numeric:tabular-nums;color:#556273}
+.toc a:hover,.toc a.on{color:var(--ink)}
+.toc .foot{margin-top:28px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:12px;line-height:1.5}
+article{min-width:0}
+.sec{padding:0 0 72px;margin-bottom:72px;border-bottom:1px solid var(--line)}
+.sec:last-child{border:0;margin:0;padding:0}
+.sec h3{margin:0 0 26px;font-weight:500;font-size:clamp(24px,2.4vw,34px);letter-spacing:-.02em;display:flex;gap:18px;align-items:baseline}
+.sec h3 span{font-family:var(--font);font-size:13px;letter-spacing:.1em;color:var(--ink-soft);font-weight:500}
+.sec p{margin:0 0 16px;font-size:17px;line-height:1.6;color:var(--ink-mid);max-width:64ch}
+.sec p:last-child{margin-bottom:0}
+.lede{font-size:clamp(20px,1.8vw,26px)!important;line-height:1.35!important;letter-spacing:-.01em;color:var(--ink)!important;max-width:30ch!important}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.steps li{background:var(--card);display:grid;grid-template-columns:72px 1fr;gap:20px;padding:24px 26px 26px 22px;align-items:start}
+.steps .n{font-size:13px;letter-spacing:.08em;color:var(--ink-soft);font-variant-numeric:tabular-nums;padding-top:4px;display:flex;align-items:center;gap:10px}
+.steps .n::before{content:'';width:8px;height:8px;border-radius:999px;background:var(--c,#555)}
+.steps h4{margin:0 0 6px;font-weight:500;font-size:18px;letter-spacing:-.01em}
+.steps p{font-size:15px!important;color:#b4bfcb!important;margin:0!important;max-width:60ch!important}
+.steps .node{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:#0d131b;border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+.rules{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.rules li{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.rules b{display:block;font-weight:500;font-size:17px;margin-bottom:8px}
+.rules span{font-size:15px;color:#b4bfcb;line-height:1.5;display:block}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px}
+.checks{width:100%;min-width:520px;border-collapse:collapse;font-size:15px;background:var(--card)}
+.checks th,.checks td{text-align:left;padding:14px 20px;border-bottom:1px solid var(--line);vertical-align:top}
+.checks tr:last-child td{border-bottom:0}
+.checks th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;background:#101720}
+.checks td:first-child{color:var(--ink-soft);font-variant-numeric:tabular-nums;width:48px}
+.checks td i{font-style:normal;color:var(--ink-soft)}
+.checks code{font-family:var(--mono);font-size:13px;color:var(--amber)}
+.note{font-size:14px!important;color:var(--ink-soft)!important;margin-top:16px!important}
+.prio{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.prio div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;border-top:4px solid var(--c)}
+.prio b{display:block;font-weight:600;font-size:28px;letter-spacing:-.02em;color:var(--c);margin-bottom:6px}
+.prio span{font-size:15px;color:#b4bfcb;line-height:1.5}
+.report{margin:28px 0 0;background:#f4eee2;color:#1d2a25;border-radius:20px;max-width:660px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.report .hd{padding:20px 24px;border-bottom:1px solid #e0d8c8;display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.report .hd b{font-weight:600;font-size:17px}
+.report .hd span{font-size:13px;color:#5f6b65}
+.report .st{display:inline-block;background:var(--p0);color:#fff;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;letter-spacing:.06em}
+.report ul{list-style:none;margin:0;padding:10px 24px 18px}
+.report li{display:grid;grid-template-columns:44px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #e7e0d2;font-size:14px;align-items:baseline}
+.report li:last-child{border:0}
+.report li i{font-style:normal;font-weight:700;font-size:12px;letter-spacing:.04em}
+.report li small{display:block;color:#5f6b65;font-size:13px;margin-top:2px}
+.report .p0 i{color:var(--p0)}.report .p1 i{color:#b97614}.report .ok i{color:#2f8a57}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:8px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 22px}
+.stats b{display:block;font-weight:500;font-size:clamp(30px,3vw,44px);letter-spacing:-.03em;line-height:1;margin-bottom:10px;color:var(--amber)}
+.stats span{font-size:14px;color:var(--ink-soft)}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pills i{font-style:normal;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border-radius:999px;background:#18212c}
+.doc-foot{margin-top:96px;padding-top:40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.doc-foot .nm{font-size:14px;color:var(--ink-soft)}
+.doc-foot .nm a{color:var(--ink);text-decoration:none;font-weight:500}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:980px){
+  .doc-head{grid-template-columns:1fr;gap:32px;padding-top:110px}
+  .doc-grid{grid-template-columns:1fr;gap:0}
+  .toc{display:none}
+}
+@media (max-width:760px){
+  .cap{bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+  .cap h2{font-size:26px}.cap p{font-size:15px}
+  .hero-title{top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:none}
+  .hero-title h1{font-size:15vw}
+  .progress{display:none}
+  .scroll{display:none}
+  .mark span{display:none}
+  .doc-in{width:calc(100% - 40px)}
+  .steps li{grid-template-columns:1fr;gap:10px;padding:20px}
+  .checks th,.checks td{padding:12px 14px}
+  .report li{grid-template-columns:38px 1fr}
+}
+@media (prefers-reduced-motion:reduce){#gl,.hushveil{transition:none}.scroll i,.grain{animation:none}.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+.pill:hover{background:#ffffff}
+.runway{height:1650svh}
+/* Let's talk: the camera goes through the glass into the vocal booth, to the lyric sheet on the music stand */
+#talk3d{position:fixed;inset:0;z-index:3;pointer-events:none;display:none}
+html.talking #talk3d{display:block}
+html.talking #talk3d .tb-live{pointer-events:auto}
+html.talking .cap,html.talking .hero-title,html.talking .end,html.talking .progress,html.talking .scroll,html.talking .scrim,html.talking .hushveil{opacity:0!important;pointer-events:none!important;transition:opacity .5s ease}
+html.talking .doc{visibility:hidden}
+html.talking body.hush #gl{filter:none}
+.tb-look-lyric{--tb-display:'Elms Sans',Archivo,Arial,sans-serif;--tb-display-w:600;--tb-display-ls:-.035em;--tb-ink:#15110c;--tb-field-ink:#15110c;--tb-accent:#c2402f;--tb-accent-soft:rgba(194,64,47,.2);--tb-placeholder:rgba(30,24,16,.58);--tb-bad:#a3301e;--tb-ghost:#15110c}
+.tb-look-lyric .tb-btn{color:#fff6ee;background:#b33a2a;border-radius:6px;box-shadow:0 2px 0 #7d2418,0 6px 14px rgba(60,20,10,.25)}
+.tb-look-lyric .tb-btn:hover{filter:brightness(1.07)}
+.tb-look-lyric .tb-knob{color:#15110c;background:rgba(30,24,16,.1);box-shadow:inset 0 0 0 1.5px rgba(30,24,16,.5)}
+</style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div id="talk3d"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="scrim" aria-hidden="true"></div>
+<div class="hushveil" aria-hidden="true"></div>
+
+<div class="ui" id="ui">
+  <a class="mark" href="../index.html#from-webinar-to-webflow" id="mark" aria-label="Back to the projects forest"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3 5 9l6 6"/></svg><span>Vasant Suraj</span></a>
+  <div class="actions"><a class="pill" href="mailto:vasantsuraj02@gmail.com" data-contact aria-haspopup="dialog">Let's talk <span class="dot" aria-hidden="true"></span></a></div>
+
+  <div class="hero-title" id="heroTitle">
+    <em>Automation · Content</em>
+    <h1>Webinar to Webflow</h1>
+    <p>YouTube link in, labelled transcript and CMS recap page out.</p>
+    <div class="row"><a class="pill ghost" href="#doc">Read the runbook</a></div>
+  </div>
+
+  <div class="cap" data-i="1"><em><b>01</b> · The link</em><h2>A webinar link goes in.</h2><p>From an internal web app, a YouTube link goes to the transcript webhook. Supadata fetches the video's title and its timestamped captions, checking every 8 seconds until they're ready.</p></div>
+  <div class="cap" data-i="2"><em><b>02</b> · Blocks</em><h2>Captions become readable blocks.</h2><p>The caption cues are merged into blocks of up to 18 seconds and split wherever the captions mark a new speaker with &gt;&gt;, so a handover never lands mid-sentence.</p></div>
+  <div class="cap" data-i="3"><em><b>03</b> · Speakers</em><h2>The model names the speakers, never the words.</h2><p>Gemini returns only where the speaker changes and who it is. Code applies the labels and restores any marked handover the model missed, so nothing can be paraphrased or dropped.</p><div class="key"><i style="--c:#ffb15a">host</i><i style="--c:#5fd4c4">guest</i></div></div>
+  <div class="cap" data-i="4"><em><b>04</b> · Cleanup</em><h2>Cleaned, but never shortened.</h2><p>Gemini Flash Lite strips fillers, typos and false starts in 16k-character batches. A batch that shrinks below 55% or stops matching what was said is thrown out, and the original words stay.</p><div class="key"><i style="--c:#6fd88a">batch kept</i><i style="--c:#ff5a4a">reverted to the original</i></div></div>
+  <div class="cap" data-i="5"><em><b>05</b> · Transcript</em><h2>The transcript lands in Google Docs.</h2><p>Timestamps, speaker names and a confidence header, saved as a Google Doc with SRT and JSON copies. The app gets the link back two to four minutes after the YouTube link went in.</p></div>
+  <div class="cap" data-i="6"><em><b>06</b> · Conversation</em><h2>The doc becomes a Conversation page.</h2><p>From the transcript, Gemini writes the recap page as HTML: an intro, the guest's bio, 6 to 10 themed sections and a conclusion. Code cleans the HTML, rescues output cut off at the token limit, and flags anything the reviewer should check.</p></div>
+  <div class="cap" data-i="7"><em><b>07</b> · Webflow CMS</em><h2>Approved, then pushed into Webflow.</h2><p>Once a person approves it, the page is mapped onto the Conversations collection's fields (slug, read time, guest, video link and thumbnail) and created as a CMS item. If the high-res thumbnail is rejected, the standard one goes in instead.</p></div>
+
+  <div class="end" id="end">
+    <p class="big">A one-hour webinar becomes a named transcript and a draft recap page within minutes.</p>
+    <p class="sub">A person approves every step. The words are never rewritten.</p>
+    <div class="row"><a class="pill" href="#doc">Read the runbook <span class="dot" aria-hidden="true"></span></a><span class="pill ghost">n8n</span><span class="pill ghost">Gemini</span><span class="pill ghost">Supadata</span><span class="pill ghost">Google Docs</span><span class="pill ghost">Webflow</span></div>
+    <p class="next">Next automation → <a href="#" id="nextLink">Video to Blog</a></p>
+  </div>
+
+  <div class="progress" id="progress" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="scroll" id="scrollHint" aria-hidden="true">Scroll to roll tape <i></i></div>
+</div>
+
+<canvas id="fly" aria-hidden="true"></canvas>
+<div class="runway" id="runway" aria-hidden="true"></div>
+<h1 class="sr">Webinar to Webflow. A YouTube webinar link becomes a speaker-labelled, cleaned transcript in Google Docs and then a reviewed recap page created in the Webflow CMS, from an internal web app with a person approving each step.</h1>
+
+<!-- ============================ RUNBOOK ============================ -->
+<section class="doc" id="doc">
+  <div class="doc-in">
+    <header class="doc-head">
+      <div class="rv"><em>Runbook</em><h2>How Webinar to Webflow works</h2><p>The full picture of the studio above: the three requests from the app, how speakers are named without touching the words, the guard on cleanup, and how the recap reaches Webflow.</p></div>
+      <dl class="facts rv">
+        <div><dt>Trigger</dt><dd>Three webhooks from an internal web app: transcript, recap, publish</dd></div>
+        <div><dt>Runs</dt><dd>On demand, with a person approving each step</dd></div>
+        <div><dt>Stack</dt><dd>n8n · Gemini (3.5 Flash, 3.5 Flash Lite) · Supadata · Google Docs · Webflow CMS</dd></div>
+        <div><dt>Output</dt><dd>A Google Doc transcript and a Webflow CMS recap item</dd></div>
+      </dl>
+    </header>
+
+    <div class="doc-grid">
+      <nav class="toc" id="toc" aria-label="Runbook sections">
+        <a href="#d-problem"><span>01</span>Problem</a>
+        <a href="#d-flow"><span>02</span>Flow</a>
+        <a href="#d-guards"><span>03</span>Keeping the words</a>
+        <a href="#d-errors"><span>04</span>Error handling</a>
+        <a href="#d-outcome"><span>05</span>Outcome</a>
+        <div class="foot">Names, keys, site and collection IDs and credential names are left out on purpose. The webinar, speakers and recap in the scene are illustrative.</div>
+      </nav>
+
+      <article>
+        <section class="sec rv" id="d-problem">
+          <h3><span>01</span>Problem</h3>
+          <p class="lede">A one-hour webinar took a day to become a recap page.</p>
+          <p>Get the transcript, work out who said what, strip the filler, write a detailed summary, then rebuild it as HTML in Webflow with the guest bio, read time and thumbnail. Recaps lagged the event by weeks, or never got written.</p>
+        </section>
+
+        <section class="sec rv" id="d-flow">
+          <h3><span>02</span>Flow</h3>
+          <ol class="steps">
+            <li><div class="n" style="--c:#f3eee8">01</div><div><h4>Transcript request</h4><p>Code checks the YouTube URL. Supadata returns the video title and timestamped caption cues, polled every 8 seconds until the job is ready.</p><span class="node">Webhook · Supadata</span></div></li>
+            <li><div class="n" style="--c:#f3eee8">02</div><div><h4>Readable blocks</h4><p>Cues are merged into blocks of up to 18 seconds and split on the captions' &gt;&gt; speaker markers, so handovers never land mid-sentence.</p><span class="node">Code</span></div></li>
+            <li><div class="n" style="--c:#ffb15a">03</div><div><h4>Speakers by change point</h4><p>Gemini 3.5 Flash (JSON output) returns only the points where the speaker changes and the names, never a rewritten transcript. Code applies the labels and repairs any marked boundary the model missed.</p><span class="node">Gemini · Code</span></div></li>
+            <li><div class="n" style="--c:#6fd88a">04</div><div><h4>Guarded cleanup</h4><p>Gemini 3.5 Flash Lite cleans each 16k-character batch (typos, fillers, false starts) under strict rules. Code rejects any batch that shrinks below 55% or no longer matches the original turn, and keeps the raw wording.</p><span class="node">Gemini · Code</span></div></li>
+            <li><div class="n" style="--c:#f3eee8">05</div><div><h4>The transcript</h4><p>Assembled with timestamps, a confidence header, and SRT and JSON copies. Google Docs creates the doc; the webhook returns the link and text to the app.</p><span class="node">Code · Google Docs</span></div></li>
+            <li><div class="n" style="--c:#5fd4c4">06</div><div><h4>Recap request</h4><p>Gemini 3.5 Flash (JSON output) writes the recap page as HTML: intro, guest bio, 6–10 themed sections of specific bullets, conclusion. Code sanitises the HTML, recovers partial output if the token limit is hit, and returns warnings for the reviewer.</p><span class="node">Webhook · Gemini · Code</span></div></li>
+            <li><div class="n" style="--c:#f3eee8">07</div><div><h4>Publish request</h4><p>Once approved in the app, Code maps the recap onto the CMS fields (slug, read time, guest details, video link, YouTube thumbnail) and Webflow creates the item in the Conversations collection.</p><span class="node">Webhook · Webflow CMS</span></div></li>
+          </ol>
+        </section>
+
+        <section class="sec rv" id="d-guards">
+          <h3><span>03</span>Keeping the words</h3>
+          <ul class="rules">
+            <li><b>Change points, not text</b><span>The model only says where a new speaker starts and who they are. The words themselves never pass through it for labelling, so they can't be paraphrased or dropped.</span></li>
+            <li><b>Boundaries repaired</b><span>If the captions marked a handover the model missed, code restores it.</span></li>
+            <li><b>Shrink ratio</b><span>A cleaned batch shorter than 55% of the original is treated as a summary and thrown away.</span></li>
+            <li><b>Word overlap</b><span>A cleaned batch that no longer matches the original turn is also thrown away. Either way, the raw wording is kept.</span></li>
+          </ul>
+        </section>
+
+        <section class="sec rv" id="d-errors">
+          <h3><span>04</span>Error handling</h3>
+          <ul class="rules">
+            <li><b>Thumbnail rejected</b><span>If Webflow rejects the high-res YouTube thumbnail, code falls back to the standard one and retries the create.</span></li>
+            <li><b>Model hiccups</b><span>Every Gemini call retries 3 times.</span></li>
+            <li><b>Cleanup never blocks</b><span>A failed cleanup batch keeps its original text; the transcript still completes.</span></li>
+            <li><b>Cut-off recap</b><span>If the recap hits the token limit, the partial HTML is recovered and the reviewer is warned.</span></li>
+          </ul>
+        </section>
+
+        <section class="sec rv" id="d-outcome">
+          <h3><span>05</span>Outcome</h3>
+          <div class="stats">
+            <div><b>2–4 min</b><span>for a named, cleaned transcript (longer past an hour)</span></div>
+            <div><b>55%</b><span>the shrink floor: below it, the original words are kept</span></div>
+            <div><b>3</b><span>requests from the app, each approved by a person</span></div>
+          </div>
+          <p style="margin-top:26px">A draft recap page follows the transcript within a few minutes and lands in Webflow as a ready CMS item: fields filled, thumbnail set, slug generated. The model labels and cleans, but it can never rewrite or shorten what was said.</p>
+          <div class="pills" style="margin-top:28px"><i>n8n</i><i>Gemini</i><i>Supadata</i><i>Google Docs</i><i>Webflow CMS</i></div>
+        </section>
+      </article>
+    </div>
+
+    <footer class="doc-foot">
+      <a class="pill ghost" href="#top">Back to the studio</a>
+      <p class="nm">Next automation → <a href="#" id="nextLink2">Video to Blog</a></p>
+    </footer>
+  </div>
+</section>
+
+<script>
+/* UI layer: scroll → station. Runs before the 3D module so the page reads even if WebGL is unavailable. */
+(() => {
+  const caps = [...document.querySelectorAll('.cap')], dots = [...document.querySelectorAll('.progress i')];
+  const runway = document.getElementById('runway'), ui = document.getElementById('ui'), hero = document.getElementById('heroTitle'), hint = document.getElementById('scrollHint'), end = document.getElementById('end');
+  const S = window.__stage = { prog: 0, station: 0, doc: 0 };
+  // stations: 0 hero · 1 the link · 2 blocks · 3 speakers · 4 cleanup · 5 transcript · 6 recap · 7 publish · 8 end
+  const CUT = [0.05, 0.16, 0.27, 0.39, 0.52, 0.64, 0.77, 0.9];
+  function onScroll() {
+    const H = innerHeight, max = Math.max(1, runway.offsetHeight - H);
+    const pr = Math.max(0, Math.min(1, scrollY / max));
+    let st = 0; while (st < CUT.length && pr >= CUT[st]) st++;
+    S.prog = pr; S.station = st; S.doc = Math.max(0, Math.min(1, (scrollY - (runway.offsetHeight - H * 0.9)) / (H * 0.5)));
+    caps.forEach(c => c.classList.toggle('on', Number(c.dataset.i) === st));
+    dots.forEach((d, i) => d.classList.toggle('on', i === st));
+    hero.style.opacity = String(1 - Math.min(1, pr / 0.04));
+    hint.style.opacity = String(pr < 0.02 ? 1 : 0);
+    end.classList.toggle('on', st === 8 && S.doc < 0.5);
+    document.body.classList.toggle('hush', st === 8 && S.doc < 0.5);
+    ui.classList.toggle('off', S.doc >= 0.5);
+  }
+  addEventListener('scroll', onScroll, { passive: true }); addEventListener('resize', onScroll); onScroll();
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  const links = [...document.querySelectorAll('.toc a')];
+  const io2 = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-30% 0px -55% 0px' });
+  document.querySelectorAll('.sec').forEach(s => io2.observe(s));
+})();
+
+/* back to the forest: when the visitor came from the home page, the arrow is a real browser "back" (usually instant, no reload,
+   exactly where they left). Otherwise the link opens the home page at this page's card. */
+(() => {
+  const mark = document.getElementById('mark'); if (!mark) return;
+  const slug = (/#from-([\w-]+)$/.exec(mark.getAttribute('href')) || [])[1];
+  mark.addEventListener('click', e => {
+    let ref; try { ref = new URL(document.referrer); } catch (_) { return; }
+    const home = new URL('../', location.href).pathname;
+    const fromHome = ref.origin === location.origin && [home, home + 'index.html', home + 'index'].includes(ref.pathname);
+    if (!fromHome || history.length < 2) return;
+    e.preventDefault();
+    try { if (slug) sessionStorage.setItem('returnTo', slug); } catch (_) {}
+    history.back();
+  });
+  // in-page links (#doc, #top) scroll without adding history entries, so "back" always means the forest
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || e.defaultPrevented) return;
+    const id = a.getAttribute('href'); e.preventDefault(); if (id === '#') return;
+    const el = id === '#top' ? null : document.querySelector(id), how = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (el) el.scrollIntoView({ behavior: how }); else scrollTo({ top: 0, behavior: how });
+    history.replaceState(null, '', id);
+  });
+})();
+</script>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(hover: none)').matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = t => t * t * (3 - 2 * t);
+const sstep = (a, b, v) => smooth(clamp((v - a) / (b - a), 0, 1));
+const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const backOut = t => { const c1 = 1.9, c3 = c1 + 1; return t <= 0 ? 0 : 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+let W = innerWidth, H = innerHeight;
+const stage = window.__stage; const SNAP = /snap/.test(location.search);
+const SANS = "'Elms Sans', Archivo, Arial, sans-serif", HAND = "Caveat, 'Segoe Print', 'Bradley Hand', cursive", MONO = "ui-monospace, Menlo, Consolas, monospace";
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+/* =====================================================================
+   RENDERER · a control room at night: practical lamps, screens and the booth's glow
+   ===================================================================== */
+const canvas = document.getElementById('gl');
+canvas.style.opacity = '0'; canvas.style.transition = 'opacity 1.2s ease';
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+const DPR = Math.min(coarse ? 1.25 : 1.5, devicePixelRatio || 1);
+renderer.setPixelRatio(DPR);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x070608);
+const camera = new THREE.PerspectiveCamera(40, W / H, 0.03, 60);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.42, 0.55, 0.9);
+composer.addPass(bloom); composer.addPass(new OutputPass());
+
+/* ---- loading ---- */
+const manager = new THREE.LoadingManager();
+manager.onLoad = () => { canvas.style.opacity = '1'; };
+manager.onError = u => console.warn('[studio] missing', u);
+setTimeout(() => { canvas.style.opacity = '1'; }, 7000);
+const TL = new THREE.TextureLoader(manager);
+const ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+function tex(name, srgb, rep = 1) { const t = TL.load('studio/' + name); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; if (srgb) t.colorSpace = THREE.SRGBColorSpace; if (rep !== 1) t.repeat.set(rep, rep); return t; }
+function pbr(base, rep = 1, metal = false) {
+  const m = { map: tex(base + '_diff_1k.jpg', true, rep), normalMap: tex(base + '_nor_1k.jpg', false, rep), roughnessMap: tex(base + '_rough_1k.jpg', false, rep) };
+  if (metal) m.metalnessMap = tex(base + '_metal_1k.jpg', false, rep); return m;
+}
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer;
+async function loadPacked(file) {
+  const r = await fetch('studio/' + file); if (!r.ok) throw new Error(file + ' ' + r.status); const d = await r.json(); const out = {};
+  for (const mat in d) out[mat] = d[mat].parts.map(p => {
+    const q = new Uint16Array(b64(p.p)), nr = new Int8Array(b64(p.nr)), uvq = new Int16Array(b64(p.uv)), ix = p.i32 ? new Uint32Array(b64(p.i)) : new Uint16Array(b64(p.i));
+    const P = new Float32Array(p.n * 3), N = new Float32Array(p.n * 3), U = new Float32Array(p.n * 2);
+    for (let i = 0; i < p.n; i++) { for (let c = 0; c < 3; c++) { P[i * 3 + c] = p.lo[c] + q[i * 3 + c] / 65535 * p.sc[c]; N[i * 3 + c] = nr[i * 3 + c] / 127; } U[i * 2] = uvq[i * 2] / 8000; U[i * 2 + 1] = uvq[i * 2 + 1] / 8000; }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.BufferAttribute(N, 3)); g.setAttribute('uv', new THREE.BufferAttribute(U, 2)); g.setIndex(new THREE.BufferAttribute(ix, 1));
+    g.name = p.name; return g;
+  });
+  return out;
+}
+function canvasTex(w, h, draw, opts = {}) {   // a canvas texture that redraws when the web fonts arrive
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  const t = new THREE.CanvasTexture(c); t.colorSpace = opts.linear ? THREE.LinearSRGBColorSpace : THREE.SRGBColorSpace; t.anisotropy = ANISO;
+  if (opts.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; }
+  const redraw = (...a) => { x.save(); x.textAlign = 'left'; x.textBaseline = 'alphabetic'; draw(x, w, h, ...a); x.restore(); t.needsUpdate = true; };
+  redraw(); t.userData.redraw = redraw; if (!opts.static && document.fonts) document.fonts.ready.then(() => redraw());
+  return t;
+}
+function wrapText(x, text, X, Y, maxW, lh, maxLines = 4) {
+  const words = text.split(' '); let line = '', y = Y, n = 0;
+  for (const w of words) { const t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { x.fillText(line, X, y); line = w; y += lh; if (++n >= maxLines - 1) { } } else line = t; }
+  if (line) x.fillText(line, X, y); return y + lh;
+}
+
+
+/* ---- the room's light: the studio HDRI (warmed) for reflections and fill, kept low — it's night ---- */
+const pmrem = new THREE.PMREMGenerator(renderer);
+fetch('studio/studio_env.json').then(r => r.json()).then(d => {
+  const src = new Uint8Array(b64(d.d)), w = d.w, h = d.h, out = new Uint16Array(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4, o = ((h - 1 - y) * w + x) * 4, e = src[i + 3], f = e ? Math.pow(2, e - 136) : 0;
+    out[o] = THREE.DataUtils.toHalfFloat(src[i] * f); out[o + 1] = THREE.DataUtils.toHalfFloat(src[i + 1] * f); out[o + 2] = THREE.DataUtils.toHalfFloat(src[i + 2] * f); out[o + 3] = THREE.DataUtils.toHalfFloat(1);
+  }
+  const t = new THREE.DataTexture(out, w, h, THREE.RGBAFormat, THREE.HalfFloatType);
+  t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.LinearSRGBColorSpace; t.magFilter = t.minFilter = THREE.LinearFilter; t.needsUpdate = true;
+  scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose();
+}).catch(err => console.warn('[studio] room light unavailable:', err && err.message));
+
+/* =====================================================================
+   THE CONTROL ROOM: plaster walls, fabric panels, a slatted diffuser over the booth window, a marble-chequer floor under a rug
+   ===================================================================== */
+const R = { x0: -3.6, x1: 3.6, z0: -3.0, z1: 3.4, h: 3.0, win: { x0: -1.3, x1: 1.3, y0: 1.0, y1: 2.2 }, wall: 0.28 };
+const BOOTH = { x0: -2.2, x1: 2.2, z0: -6.0, z1: R.z0 - R.wall, h: 2.8 };
+const plasterM = new THREE.MeshStandardMaterial({ ...pbr('plaster', 1), color: 0x9a8a78, roughness: 1, envMapIntensity: 0.35 });
+const tilesM = new THREE.MeshStandardMaterial({ ...pbr('tiles', 1), color: 0x8a8178, roughness: 1, envMapIntensity: 0.6 });
+function uvScale(g, sx, sy) { const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * sx, uv.getY(i) * sy); return g; }
+function plane(w, h, m, tile = 2.5) { const g = uvScale(new THREE.PlaneGeometry(w, h), w / tile, h / tile); const me = new THREE.Mesh(g, m); me.receiveShadow = true; return me; }
+{
+  const W = R.x1 - R.x0, D = R.z1 - R.z0, cx = (R.x0 + R.x1) / 2, cz = (R.z0 + R.z1) / 2;
+  const floor = plane(W, D, tilesM, 1.6); floor.rotation.x = -Math.PI / 2; floor.position.set(cx, 0, cz); scene.add(floor);
+  const ceil = plane(W, D, new THREE.MeshStandardMaterial({ color: 0x1a1719, roughness: 1 }), 3); ceil.rotation.x = Math.PI / 2; ceil.position.set(cx, R.h, cz); scene.add(ceil);
+  for (const [x, ry] of [[R.x0, Math.PI / 2], [R.x1, -Math.PI / 2]]) { const m = plane(D, R.h, plasterM); m.rotation.y = ry; m.position.set(x, R.h / 2, cz); scene.add(m); }
+  { const m = plane(W, R.h, plasterM); m.rotation.y = Math.PI; m.position.set(cx, R.h / 2, R.z1); scene.add(m); }
+  // the back wall, with the booth window cut through it
+  const { x0, x1, y0, y1 } = R.win;
+  const seg = (xa, xb, ya, yb) => { const m = plane(xb - xa, yb - ya, plasterM); m.position.set((xa + xb) / 2, (ya + yb) / 2, R.z0); scene.add(m); };
+  seg(R.x0, x0, 0, R.h); seg(x1, R.x1, 0, R.h); seg(x0, x1, 0, y0); seg(x0, x1, y1, R.h);
+  // the window's deep reveal and frame, and its two panes (angled, as studio glass is)
+  const trimM = new THREE.MeshStandardMaterial({ color: 0x2a2420, roughness: 0.6 });
+  const rv = (w, h, d, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), trimM); m.position.set(x, y, z); scene.add(m); };
+  rv(x1 - x0 + 0.1, 0.05, R.wall, 0, y0 - 0.025, R.z0 - R.wall / 2); rv(x1 - x0 + 0.1, 0.05, R.wall, 0, y1 + 0.025, R.z0 - R.wall / 2);
+  rv(0.05, y1 - y0, R.wall, x0 - 0.025, (y0 + y1) / 2, R.z0 - R.wall / 2); rv(0.05, y1 - y0, R.wall, x1 + 0.025, (y0 + y1) / 2, R.z0 - R.wall / 2);
+  const glassM = new THREE.MeshStandardMaterial({ color: 0x9fb0b8, transparent: true, opacity: 0.1, roughness: 0.04, metalness: 0, envMapIntensity: 1.6, depthWrite: false });
+  for (const [z, tilt] of [[R.z0 - 0.03, 0.06], [R.z0 - R.wall + 0.04, -0.04]]) { const g = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, y1 - y0), glassM); g.position.set(0, (y0 + y1) / 2, z); g.rotation.x = tilt; g.renderOrder = 4; scene.add(g); }
+  // slatted wooden diffuser above the window
+  const slatM = new THREE.MeshStandardMaterial({ color: 0x6b4a30, roughness: 0.7 });
+  const n = 34, sg = new THREE.BoxGeometry(0.06, 0.62, 1), im = new THREE.InstancedMesh(sg, slatM, n), m4 = new THREE.Matrix4();
+  for (let i = 0; i < n; i++) { const d = 0.04 + ((i * 7) % 5) * 0.035; m4.compose(V(-1.7 + i * 0.103, 2.6, R.z0 + d / 2 + 0.005), new THREE.Quaternion(), V(1, 1, d)); im.setMatrixAt(i, m4); }
+  im.castShadow = true; im.receiveShadow = true; scene.add(im);
+  // fabric absorbers on the side walls
+  const fab = [0x2b2a2e, 0x3a2622, 0x2a3030];
+  for (const sx of [-1, 1]) for (let i = 0; i < 4; i++) {
+    const p = new THREE.Mesh(new RoundedBoxGeometry(0.08, 1.15, 0.62, 3, 0.02), new THREE.MeshStandardMaterial({ color: fab[(i + (sx > 0 ? 1 : 0)) % 3], roughness: 1 }));
+    p.position.set(sx > 0 ? R.x1 - 0.045 : R.x0 + 0.045, 1.6, -2.3 + i * 0.95); p.castShadow = p.receiveShadow = true; scene.add(p);
+  }
+  // a big rug under the desk and chair
+  const rugT = canvasTex(512, 512, (x, w, h) => { x.fillStyle = '#3a2a24'; x.fillRect(0, 0, w, h); let s = 4; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 9000; i++) { const v = 40 + r() * 40; x.fillStyle = `rgba(${v + 20},${v},${v - 8},.35)`; x.fillRect(r() * w, r() * h, 2, 1 + r() * 3); }
+    x.strokeStyle = 'rgba(160,110,70,.35)'; x.lineWidth = 10; x.strokeRect(26, 26, w - 52, h - 52); x.lineWidth = 3; x.strokeRect(46, 46, w - 92, h - 92); }, { static: true });
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 2.6), new THREE.MeshStandardMaterial({ map: rugT, roughness: 1 })); rug.rotation.x = -Math.PI / 2; rug.position.set(0, 0.006, -0.6); rug.receiveShadow = true; scene.add(rug);
+}
+
+/* ---- the booth behind the glass: fabric walls, a warm lamp, the mic, the music stand (Let's talk lives here) ---- */
+{
+  const bm = new THREE.MeshStandardMaterial({ color: 0x2c2826, roughness: 1 }), W = BOOTH.x1 - BOOTH.x0, D = BOOTH.z1 - BOOTH.z0, cz = (BOOTH.z0 + BOOTH.z1) / 2;
+  const f = plane(W, D, tilesM, 1.6); f.rotation.x = -Math.PI / 2; f.position.set(0, 0, cz); scene.add(f);
+  for (const [x, ry] of [[BOOTH.x0, Math.PI / 2], [BOOTH.x1, -Math.PI / 2]]) { const m = plane(D, BOOTH.h, bm); m.rotation.y = ry; m.position.set(x, BOOTH.h / 2, cz); scene.add(m); }
+  { const m = plane(W, BOOTH.h, bm); m.position.set(0, BOOTH.h / 2, BOOTH.z0); scene.add(m); const c = plane(W, D, bm); c.rotation.x = Math.PI / 2; c.position.set(0, BOOTH.h, cz); scene.add(c); }
+  { const m = plane(W, BOOTH.h, bm); m.rotation.y = Math.PI; m.position.set(0, BOOTH.h / 2, BOOTH.z1 + 0.001); scene.add(m); }
+  const lampL = new THREE.PointLight(0xffb070, 3.2, 6, 1.6); lampL.position.set(-1.4, 2.2, -5.2); scene.add(lampL);
+  const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.2, 0.22, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0x2a2018, emissive: 0xffa860, emissiveIntensity: 0.6, side: THREE.DoubleSide })); shade.position.copy(lampL.position).add(V(0, 0.05, 0)); scene.add(shade);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 2.1, 8), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.7, roughness: 0.4 })); pole.position.set(-1.4, 1.05, -5.2); scene.add(pole);
+}
+
+/* ---- light: dim ceiling spots on the desk and rug, the screen's glow, a warm practical by the tape machine ---- */
+scene.add(new THREE.HemisphereLight(0x8a8478, 0x1c1410, 0.12));
+const spots = [];
+for (const [x, z, I] of [[0, -0.9, 11], [-1.6, 0.6, 9], [2.3, -1.45, 30], [1.6, 1.4, 6], [3.0, -0.35, 12]]) {
+  const s = new THREE.SpotLight(0xffd0a0, I, 7, 0.55, 0.65, 1.8); s.position.set(x, R.h - 0.05, z); s.target.position.set(x, 0, z + 0.1); scene.add(s, s.target);
+  if (spots.length < 2) { s.castShadow = true; s.shadow.mapSize.set(coarse ? 512 : 1024, coarse ? 512 : 1024); s.shadow.bias = -0.0008; s.shadow.normalBias = 0.02; }
+  const can = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.02, 20), new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0.86, 0.68).multiplyScalar(2.2) })); can.position.set(x, R.h - 0.012, z); scene.add(can);
+  spots.push(s);
+}
+const screenGlow = new THREE.PointLight(0x9ab8ff, 2.4, 3.2, 1.6); scene.add(screenGlow);
+const practical = new THREE.PointLight(0xffa860, 2.2, 3.5, 1.6); practical.position.set(-0.95, 1.25, -1.0); scene.add(practical);
+
+/* =====================================================================
+   THE DESK AND WHAT IS ON IT
+   ===================================================================== */
+const DESK = { x: 0, z: -1.45, top: 0.788 };
+const metalDark = new THREE.MeshStandardMaterial({ color: 0x1b1c1f, metalness: 0.6, roughness: 0.42, envMapIntensity: 1 });
+const metalMid = new THREE.MeshStandardMaterial({ color: 0x3a3c41, metalness: 0.75, roughness: 0.35, envMapIntensity: 1 });
+async function placeModels() {
+  try {
+    const [desk, chair] = await Promise.all([loadPacked('metal_office_desk_p.json'), loadPacked('modern_arm_chair_01_p.json')]);
+    const dm = new THREE.MeshStandardMaterial({ ...pbr('desk', 1, true), color: 0x7a7e84, roughness: 1, metalness: 1, envMapIntensity: 0.9 });
+    for (const k in desk) desk[k].forEach(g => { const m = new THREE.Mesh(g, dm); m.castShadow = m.receiveShadow = true; m.position.set(DESK.x, 0, DESK.z); scene.add(m); });
+    const cm = { modern_arm_chair_01_legs: new THREE.MeshStandardMaterial({ ...pbr('chairlegs', 1, true), roughness: 1, metalness: 1 }), modern_arm_chair_01_pillow: new THREE.MeshStandardMaterial({ ...pbr('chair', 1, true), roughness: 1, metalness: 1, envMapIntensity: 0.8 }) };
+    const cg = new THREE.Group(); for (const k in chair) chair[k].forEach(g => { const m = new THREE.Mesh(g, cm[k]); m.castShadow = m.receiveShadow = true; cg.add(m); });
+    cg.position.set(0.15, 0, -0.05); cg.rotation.y = Math.PI + 0.12; scene.add(cg);
+  } catch (err) { console.warn('[studio] models unavailable:', err && err.message); }
+}
+placeModels();
+
+/* ---- the mixing desk: a sloped console, twelve channel strips, a meter bridge with two VU meters ---- */
+const CON = { w: 1.24, d: 0.62, x: 0, z: DESK.z + 0.06, y: DESK.top };
+const NCH = 12;
+const scribble = canvasTex(1024, 64, (x, w, h, names = []) => {
+  x.fillStyle = '#0b0f0c'; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < NCH; i++) { const cw = w / NCH, X = i * cw; x.fillStyle = '#121a14'; x.fillRect(X + 3, 6, cw - 6, h - 12);
+    const nm = names[i]; if (nm) { x.fillStyle = nm.c; x.font = `700 22px ${MONO}`; x.textAlign = 'center'; x.fillText(nm.t, X + cw / 2, 41); } }
+});
+const consoleK = (() => {
+  const g = new THREE.Group(); g.position.set(CON.x, CON.y, CON.z); scene.add(g);
+  // the sloped body: front 6 cm high, back 15 cm
+  const shape = new THREE.Shape(); shape.moveTo(-CON.d / 2, 0); shape.lineTo(CON.d / 2, 0); shape.lineTo(CON.d / 2, 0.06); shape.lineTo(-CON.d / 2, 0.15); shape.closePath();
+  const body = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: CON.w, bevelEnabled: false }), metalDark); body.rotation.y = Math.PI / 2; body.position.x = -CON.w / 2;
+  body.geometry.translate(0, 0, 0); body.castShadow = body.receiveShadow = true; g.add(body);
+  const slope = Math.atan2(0.09, CON.d), panel = new THREE.Group(); panel.position.set(0, 0.105, 0); panel.rotation.x = slope; g.add(panel);
+  // knobs, faders, buttons: instanced
+  const knobG = new THREE.CylinderGeometry(0.011, 0.012, 0.016, 14); knobG.translate(0, 0.008, 0);
+  const knobs = new THREE.InstancedMesh(knobG, new THREE.MeshStandardMaterial({ color: 0x24262a, roughness: 0.45, metalness: 0.3 }), NCH * 5);
+  const capG = new THREE.BoxGeometry(0.026, 0.016, 0.036); capG.translate(0, 0.008, 0);
+  const caps = new THREE.InstancedMesh(capG, new THREE.MeshStandardMaterial({ color: 0xc9c4ba, roughness: 0.4 }), NCH);
+  const slotG = new THREE.BoxGeometry(0.006, 0.002, 0.15); const slots = new THREE.InstancedMesh(slotG, new THREE.MeshBasicMaterial({ color: 0x050505 }), NCH);
+  const btnG = new THREE.BoxGeometry(0.02, 0.008, 0.014); const btns = new THREE.InstancedMesh(btnG, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.0, roughness: 0.4 }), NCH);
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), c = new THREE.Color();
+  const cw = (CON.w - 0.14) / NCH;
+  for (let i = 0; i < NCH; i++) {
+    const X = -CON.w / 2 + 0.07 + cw * (i + 0.5);
+    for (let k = 0; k < 5; k++) { m4.compose(V(X, 0, -0.26 + k * 0.055), q, V(1, 1, 1)); knobs.setMatrixAt(i * 5 + k, m4); }
+    m4.compose(V(X, 0, 0.17), q, V(1, 1, 1)); slots.setMatrixAt(i, m4);
+    m4.compose(V(X, 0.001, 0.13 + (i % 4) * 0.02), q, V(1, 1, 1)); caps.setMatrixAt(i, m4);
+    m4.compose(V(X, 0.002, 0.04), q, V(1, 1, 1)); btns.setMatrixAt(i, m4); btns.setColorAt(i, c.setRGB(0.25, 0.22, 0.2));
+  }
+  [knobs, caps, slots, btns].forEach(m => { m.castShadow = true; panel.add(m); });
+  // the scribble strip across the top of the channels
+  const ss = new THREE.Mesh(new THREE.PlaneGeometry(CON.w - 0.14, 0.03), new THREE.MeshBasicMaterial({ map: scribble, color: new THREE.Color(1.3, 1.3, 1.3) })); ss.rotation.x = -Math.PI / 2; ss.position.set(0, 0.0015, -0.3); panel.add(ss);
+  // the meter bridge with its two VU meters (left: what a cleaned batch kept; right: how well it still matches)
+  const bridge = new THREE.Mesh(new THREE.BoxGeometry(CON.w, 0.11, 0.07), metalDark); bridge.position.set(0, 0.2, -CON.d / 2 + 0.035); bridge.castShadow = true; g.add(bridge);
+  const vus = [-0.2, 0.2].map((x, i) => {
+    const t = canvasTex(256, 160, (cx, w, h) => { const gr = cx.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#f6dfae'); gr.addColorStop(1, '#e7c587'); cx.fillStyle = gr; cx.fillRect(0, 0, w, h);
+      cx.strokeStyle = '#2a2016'; cx.lineWidth = 2; cx.beginPath(); cx.arc(w / 2, h + 20, 130, -Math.PI * 0.78, -Math.PI * 0.22); cx.stroke();
+      cx.strokeStyle = '#c8321f'; cx.lineWidth = 5; cx.beginPath(); cx.arc(w / 2, h + 20, 130, -Math.PI * 0.78, -Math.PI * (0.78 - 0.56 * 0.55)); cx.stroke();   // the red zone: below 55%
+      for (let k = 0; k <= 10; k++) { const a = -Math.PI * 0.78 + k * Math.PI * 0.056; cx.beginPath(); cx.moveTo(w / 2 + Math.cos(a) * 122, h + 20 + Math.sin(a) * 122); cx.lineTo(w / 2 + Math.cos(a) * 134, h + 20 + Math.sin(a) * 134); cx.strokeStyle = '#2a2016'; cx.lineWidth = 2; cx.stroke(); }
+      cx.fillStyle = '#2a2016'; cx.font = `700 22px ${SANS}`; cx.textAlign = 'center'; cx.fillText(i ? 'MATCH' : 'KEPT %', w / 2, h - 18); });
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 0.094), new THREE.MeshStandardMaterial({ map: t, color: 0x9a8e7a, emissive: 0xffd9a0, emissiveMap: t, emissiveIntensity: 0.1, roughness: 0.6 }));
+    face.position.set(x, 0.2, -CON.d / 2 + 0.071); g.add(face);
+    const needle = new THREE.Mesh(new THREE.BoxGeometry(0.0016, 0.08, 0.001), new THREE.MeshBasicMaterial({ color: 0x1a120a })); needle.geometry.translate(0, 0.04, 0);
+    const piv = new THREE.Group(); piv.position.set(x, 0.2 - 0.047 - 0.012, -CON.d / 2 + 0.073); piv.add(needle); g.add(piv); return piv;
+  });
+  const leds = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.006), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.2, 0.75, 0.32) })); leds.position.set(0, 0.248, -CON.d / 2 + 0.071); g.add(leds);
+  // a soft LED strip under the console's front lip
+  const strip = new THREE.Mesh(new THREE.PlaneGeometry(CON.w - 0.1, 0.01), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.4, 0.8, 0.4) })); strip.position.set(0, 0.005, CON.d / 2 + 0.002); g.add(strip);
+  return { g, btns, vus, caps };
+})();
+
+/* ---- the request panel: the three calls from the app, each lit when a person sends it ---- */
+const REQ = ['TRANSCRIPT', 'RECAP', 'PUBLISH'];
+const reqPanel = (() => {
+  const g = new THREE.Group(); g.position.set(0.6, DESK.top, DESK.z + 0.36); g.rotation.y = -0.12; scene.add(g);
+  const box = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.05, 0.16), metalDark); box.position.y = 0.025; box.castShadow = true; g.add(box);
+  const items = REQ.map((nm, i) => {
+    const lab = canvasTex(256, 64, (x, w, h, on = 0, ok = 0) => { x.fillStyle = '#16171a'; x.fillRect(0, 0, w, h); x.fillStyle = on ? '#f3eee8' : '#8d8780'; x.font = `700 26px ${SANS}`; x.textAlign = 'center'; try { x.letterSpacing = '2px'; } catch (_) {} x.fillText(nm, w / 2, 42); });
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.024, 0.016, 24), new THREE.MeshStandardMaterial({ color: 0x3a1d10, emissive: 0xffa040, emissiveIntensity: 0, roughness: 0.3 }));
+    b.position.set(-0.09 + i * 0.09, 0.058, -0.02); g.add(b);
+    const okL = new THREE.Mesh(new THREE.SphereGeometry(0.006, 10, 8), new THREE.MeshStandardMaterial({ color: 0x0a200f, emissive: 0x40ff70, emissiveIntensity: 0 })); okL.position.set(-0.09 + i * 0.09 + 0.03, 0.054, -0.045); g.add(okL);
+    const l = new THREE.Mesh(new THREE.PlaneGeometry(0.085, 0.021), new THREE.MeshBasicMaterial({ map: lab })); l.rotation.x = -Math.PI / 2; l.position.set(-0.09 + i * 0.09, 0.0505, 0.045); g.add(l);
+    return { b, okL, lab, on: -1 };
+  });
+  return { g, items };
+})();
+
+/* ---- the big screen: the internal app and the transcript, drawn for each step ---- */
+const SCR = { w: 0.96, h: 0.54, x: 0, y: DESK.top + 0.46, z: DESK.z - 0.38 };
+const VIDEO = 'Measuring what marketing actually drives';
+// the webinar's speaker turns, as blocks along the timeline (seconds), with the caption markers that split them
+const TURNS = [[0, 74, 'H'], [74, 300, 'G'], [300, 342, 'H'], [342, 702, 'G'], [702, 760, 'H'], [760, 1130, 'G'], [1130, 1180, 'H'], [1180, 1560, 'G'], [1560, 1610, 'H'], [1610, 1900, 'G']];
+const DUR = 1900;
+const COLS = { H: '#ffb15a', G: '#5fd4c4' };
+const BATCHES = [['B1', 94, 97], ['B2', 91, 95], ['B3', 41, 38], ['B4', 93, 96], ['B5', 96, 98]];
+function stageDone(mode, k) {   // how many steps of the journey are complete, for the strip on the screen and the sign on the wall
+  return { idle: 0, link: k >= 1 ? 2 : 1, blocks: 2, speakers: 2, clean: 2, doc: k >= 0.95 ? 4 : 3, recap: k > 0.85 ? 5 : 4, publish: k > 0.8 ? 6 : 5 }[mode] ?? 0;
+}
+const screenTex = canvasTex(1600, 900, (x, w, h, st = { mode: 'idle', k: 0, t: 0 }) => {
+  const { mode, k, t } = st;
+  x.fillStyle = '#0d1016'; x.fillRect(0, 0, w, h);
+  // the app's top bar
+  x.fillStyle = '#151a22'; x.fillRect(0, 0, w, 74); x.fillStyle = '#ffb15a'; x.beginPath(); x.arc(40, 37, 9, 0, 7); x.fill();
+  x.fillStyle = '#e9edf2'; x.font = `600 28px ${SANS}`; x.fillText('Webinar to Webflow', 62, 47);
+  const tabs = ['Transcript', 'Recap', 'Publish'], act = { link: 0, wait: 0, blocks: 0, speakers: 0, clean: 0, doc: 0, recap: 1, publish: 2 }[mode] ?? 0;
+  tabs.forEach((tb, i) => { x.fillStyle = i === act ? '#e9edf2' : '#6c7584'; x.font = `600 24px ${SANS}`; x.fillText(tb, 900 + i * 190, 47); if (i === act) { x.fillStyle = '#ffb15a'; x.fillRect(900 + i * 190, 66, x.measureText(tb).width, 4); } });
+  const P = 60;
+  // the journey, always on show: YouTube video → captions → transcript → Google Doc → Conversation → Webflow CMS
+  { const ST = ['YouTube video', 'Captions', 'Transcript', 'Google Doc', 'Conversation', 'Webflow CMS'], done = stageDone(mode, k), sw = (w - 2 * P - 5 * 34) / 6;
+    ST.forEach((nm, i) => { const X = P + i * (sw + 34), y = 88, isDone = i < done, active = i === done && mode !== 'idle';
+      x.fillStyle = isDone ? 'rgba(111,216,138,.14)' : active ? 'rgba(255,177,90,.14)' : '#141820'; x.fillRect(X, y, sw, 40);
+      x.strokeStyle = isDone ? '#6fd88a' : active ? '#ffb15a' : '#2a3240'; x.lineWidth = 2; x.strokeRect(X + 1, y + 1, sw - 2, 38);
+      x.fillStyle = isDone ? '#6fd88a' : active ? '#ffb15a' : '#6c7584'; x.font = `700 19px ${SANS}`; x.fillText((isDone ? '✓ ' : '') + nm, X + 14, y + 27);
+      if (i < 5) { x.fillStyle = '#4a5260'; x.font = `700 22px ${SANS}`; x.fillText('→', X + sw + 6, y + 28); } }); }
+  x.save(); x.translate(0, 40);
+  const field = (y, label, val) => { x.fillStyle = '#6c7584'; x.font = `600 20px ${SANS}`; x.fillText(label, P, y); x.fillStyle = '#1a202a'; x.fillRect(P, y + 14, w - 2 * P, 56); x.strokeStyle = '#2a3240'; x.strokeRect(P, y + 14, w - 2 * P, 56); x.fillStyle = '#e9edf2'; x.font = `500 24px ${MONO}`; x.fillText(val, P + 18, y + 51); };
+  // the timeline used by blocks / speakers
+  const TL = { x: P, y: 330, w: w - 2 * P, h: 150 }, tx = s => TL.x + s / DUR * TL.w;
+  const timeline = (stage) => {
+    x.fillStyle = '#151a22'; x.fillRect(TL.x, TL.y - 50, TL.w, TL.h + 80);
+    x.fillStyle = '#6c7584'; x.font = `500 18px ${MONO}`; for (let s = 0; s <= DUR; s += 300) x.fillText(`${Math.floor(s / 60)}:00`, tx(s) + 4, TL.y - 24);
+    // the waveform
+    x.fillStyle = 'rgba(200,210,225,.28)'; let sd = 3; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    for (let px = 0; px < TL.w; px += 4) { const a = (0.25 + r() * 0.75) * (0.4 + 0.6 * Math.abs(Math.sin(px * 0.013))); x.fillRect(TL.x + px, TL.y + TL.h / 2 - a * TL.h * 0.42, 3, a * TL.h * 0.84); }
+    if (stage >= 1) {   // blocks of up to 18 s (drawn at scale as thin tiles), split at the >> markers
+      const nb = Math.floor(clamp(k * 1.4, 0, 1) * 106);
+      for (let i = 0; i < nb; i++) { const s0 = i * 18; if (s0 >= DUR) break; const turn = TURNS.find(T => s0 >= T[0] && s0 < T[1]);
+        x.fillStyle = stage >= 2 ? (turn[2] === 'H' ? 'rgba(255,177,90,.42)' : 'rgba(95,212,196,.38)') : 'rgba(233,237,242,.14)'; x.fillRect(tx(s0) + 1, TL.y + 6, Math.max(2, tx(Math.min(s0 + 18, turn[1])) - tx(s0) - 2), TL.h - 12); }
+      TURNS.slice(1).forEach(T => { const X = tx(T[0]); x.strokeStyle = '#e9edf2'; x.lineWidth = 2; x.setLineDash([6, 6]); x.beginPath(); x.moveTo(X, TL.y - 6); x.lineTo(X, TL.y + TL.h + 6); x.stroke(); x.setLineDash([]); x.fillStyle = '#e9edf2'; x.font = `700 20px ${MONO}`; x.fillText('>>', X + 4, TL.y + TL.h + 26); });
+    }
+    if (stage >= 2) {   // speaker change points, as flags; one marked handover the model missed, restored by code
+      TURNS.forEach((T, i) => { const show = clamp(k * 1.6 - i * 0.08, 0, 1); if (show <= 0) return; const X = tx(T[0]) + 2, c = COLS[T[2]], repaired = i === 6;
+        x.globalAlpha = show; x.fillStyle = c; x.fillRect(X, TL.y - 50, 3, 52); x.beginPath(); x.moveTo(X + 3, TL.y - 50); x.lineTo(X + 72, TL.y - 50); x.lineTo(X + 64, TL.y - 37); x.lineTo(X + 72, TL.y - 24); x.lineTo(X + 3, TL.y - 24); x.fill();
+        x.fillStyle = '#0d1016'; x.font = `700 15px ${SANS}`; x.fillText(T[2] === 'H' ? 'HOST' : 'GUEST', X + 9, TL.y - 31);
+        if (repaired) { x.strokeStyle = '#ffd25a'; x.lineWidth = 3; x.setLineDash([5, 4]); x.strokeRect(X - 6, TL.y - 56, 86, 40); x.setLineDash([]); x.fillStyle = '#ffd25a'; x.font = `600 17px ${SANS}`; x.fillText('missed by the model, restored by code', X - 6, TL.y - 66); }
+        x.globalAlpha = 1; });
+    }
+  };
+  const status = (txt, col = '#9aa4b3') => { x.fillStyle = col; x.font = `600 24px ${SANS}`; x.fillText(txt, P, h - 70); };
+  if (mode === 'idle' || mode === 'link' || mode === 'wait') {
+    field(130, 'YOUTUBE LINK', mode === 'idle' ? '' : 'https://www.youtube.com/watch?v=••••••••••');
+    x.fillStyle = mode === 'idle' ? '#2a3240' : '#ffb15a'; x.fillRect(P, 240, 260, 60); x.fillStyle = mode === 'idle' ? '#6c7584' : '#140d02'; x.font = `700 22px ${SANS}`; x.fillText('Get transcript', P + 46, 278);
+    if (mode !== 'idle') {
+      x.fillStyle = '#e9edf2'; x.font = `600 30px ${SANS}`; x.fillText(VIDEO, P, 380);
+      x.fillStyle = '#6c7584'; x.font = `500 22px ${SANS}`; x.fillText('Supadata · fetching timestamped captions', P, 418);
+      const cyc = (t % 8) / 8; x.strokeStyle = '#2a3240'; x.lineWidth = 10; x.beginPath(); x.arc(P + 60, 540, 46, 0, 7); x.stroke();
+      x.strokeStyle = '#ffb15a'; x.beginPath(); x.arc(P + 60, 540, 46, -Math.PI / 2, -Math.PI / 2 + cyc * Math.PI * 2); x.stroke();
+      x.fillStyle = '#e9edf2'; x.font = `700 26px ${MONO}`; x.textAlign = 'center'; x.fillText(`${Math.ceil(8 - cyc * 8)}s`, P + 60, 549); x.textAlign = 'left';
+      x.fillStyle = '#9aa4b3'; x.font = `500 22px ${SANS}`; x.fillText(k >= 1 ? 'Captions ready · 1,412 cues' : `Not ready yet · checking again every 8 seconds (try ${1 + Math.floor(t / 8) % 6})`, P + 140, 548);
+      if (k >= 1) { x.fillStyle = '#6fd88a'; x.font = `700 22px ${SANS}`; x.fillText('✓ READY', P + 140, 512);
+        x.fillStyle = '#151a22'; x.fillRect(960, 330, 580, 400); x.fillStyle = '#6c7584'; x.font = `600 18px ${SANS}`; x.fillText('RAW CAPTIONS FROM THE VIDEO', 984, 366);
+        [['00:00.04', '>> thanks everyone for joining'], ['00:02.71', 'today we are looking at what'], ['00:05.10', 'marketing actually moves'], ['01:14.20', '>> thanks for having me um so'], ['01:16.88', 'the first thing i would say is'], ['01:19.40', 'most teams measure the the easy'], ['01:22.02', 'things']].forEach(([a, b], i) => {
+          x.fillStyle = '#6c7584'; x.font = `500 19px ${MONO}`; x.fillText(a, 984, 410 + i * 44); x.fillStyle = b.startsWith('>>') ? '#ffd25a' : '#c9d1dc'; x.fillText(b, 1110, 410 + i * 44); }); }
+    }
+    status(mode === 'idle' ? 'Waiting for a link' : 'POST /transcript', '#6c7584');
+  } else if (mode === 'blocks' || mode === 'speakers') {
+    x.fillStyle = '#e9edf2'; x.font = `600 30px ${SANS}`; x.fillText(VIDEO, P, 140);
+    x.fillStyle = '#9aa4b3'; x.font = `500 22px ${SANS}`; x.fillText(mode === 'blocks' ? '1,412 caption cues → 106 blocks of up to 18 seconds, split at every >>' : 'Gemini 3.5 Flash · JSON · change points and names only', P, 182);
+    timeline(mode === 'blocks' ? 1 : 2);
+    if (mode === 'speakers') { x.fillStyle = '#151a22'; x.fillRect(P, 590, w - 2 * P, 200); x.fillStyle = '#6c7584'; x.font = `500 20px ${MONO}`;
+      ['{ "changes": [', '  { "at": "01:14", "speaker": "Guest" },', '  { "at": "05:00", "speaker": "Host" },', '  …', '] }'].forEach((l, i) => x.fillText(l, P + 24, 630 + i * 32));
+      x.fillStyle = '#9aa4b3'; x.font = `600 22px ${SANS}`; x.fillText('No transcript text in the reply: the words never pass through the model', P + 660, 700); }
+    status(mode === 'blocks' ? 'Code · merge cues, split on >>' : 'Code · labels applied, boundaries repaired');
+  } else if (mode === 'clean') {
+    x.fillStyle = '#e9edf2'; x.font = `600 30px ${SANS}`; x.fillText('Cleanup · Gemini 3.5 Flash Lite · 16k-character batches', P, 140);
+    const nb = Math.floor(clamp(k * 1.25, 0, 1) * BATCHES.length + 0.001);
+    BATCHES.forEach(([nm, kept, match], i) => { const y = 200 + i * 92, done = i < nb, bad = kept < 55;
+      x.fillStyle = '#151a22'; x.fillRect(P, y, w - 2 * P, 76);
+      x.fillStyle = '#e9edf2'; x.font = `700 26px ${MONO}`; x.fillText(nm, P + 22, y + 48);
+      x.fillStyle = '#2a3240'; x.fillRect(P + 110, y + 28, 600, 20); if (done) { x.fillStyle = bad ? '#ff5a4a' : '#6fd88a'; x.fillRect(P + 110, y + 28, 600 * kept / 100, 20); }
+      x.fillStyle = 'rgba(255,90,74,.8)'; x.fillRect(P + 110 + 600 * 0.55, y + 20, 3, 36);
+      if (done) { x.fillStyle = bad ? '#ff5a4a' : '#9aa4b3'; x.font = `600 22px ${SANS}`; x.fillText(`kept ${kept}% · match ${match}%`, P + 740, y + 46);
+        x.fillStyle = bad ? '#ff5a4a' : '#6fd88a'; x.font = `700 22px ${SANS}`; x.fillText(bad ? '✕ REVERTED · original words kept' : '✓ CLEANED', P + 1040, y + 46); } });
+    x.fillStyle = '#9aa4b3'; x.font = `500 22px ${SANS}`; x.fillText('Removed: "um", "you know", false starts, typos.   Never removed: what was said.', P, 700);
+    status('Below 55%, or no longer matching the turn: the batch is thrown out');
+  } else if (mode === 'doc') {
+    // the app, left: done, with the doc's link and the two copies
+    x.fillStyle = '#151a22'; x.fillRect(P, 150, 400, 560);
+    x.fillStyle = '#6fd88a'; x.font = `700 28px ${SANS}`; x.fillText('✓ Transcript ready', P + 26, 206);
+    x.fillStyle = '#9aa4b3'; x.font = `500 22px ${SANS}`; x.fillText('3 min 12 s · 2 speakers · 31:40', P + 26, 244);
+    x.fillStyle = '#ffb15a'; x.fillRect(P + 26, 280, 348, 62); x.fillStyle = '#140d02'; x.font = `700 23px ${SANS}`; x.fillText('Open Google Doc ↗', P + 66, 320);
+    [['SRT', 'subtitles'], ['JSON', 'for the app']].forEach(([a2, b2], i) => { x.fillStyle = '#0d1016'; x.fillRect(P + 26, 372 + i * 86, 348, 68); x.fillStyle = '#ffb15a'; x.font = `700 26px ${MONO}`; x.fillText(a2, P + 48, 416 + i * 86); x.fillStyle = '#9aa4b3'; x.font = `500 21px ${SANS}`; x.fillText(b2, P + 140, 414 + i * 86); });
+    x.fillStyle = '#6c7584'; x.font = `500 19px ${SANS}`; wrapText(x, 'The transcript text and the doc link are sent back to the app.', P + 26, 600, 350, 26, 3);
+    // the doc, right: a Google Doc window, the transcript being written into it line by line
+    const DX = P + 440, DW = w - P - DX;
+    x.fillStyle = '#e7e9ec'; x.fillRect(DX, 150, DW, 60); x.fillStyle = '#4a7bd6'; x.fillRect(DX + 20, 164, 24, 32); x.fillStyle = '#fff'; x.fillRect(DX + 25, 172, 14, 3); x.fillRect(DX + 25, 179, 14, 3); x.fillRect(DX + 25, 186, 10, 3);
+    x.fillStyle = '#202124'; x.font = `600 21px ${SANS}`; x.fillText('Transcript · ' + VIDEO, DX + 60, 182); x.fillStyle = '#5f6368'; x.font = `500 15px ${SANS}`; x.fillText('Google Docs', DX + 60, 202);
+    x.fillStyle = '#c9ccd1'; x.fillRect(DX, 210, DW, 520);
+    x.fillStyle = '#ffffff'; x.fillRect(DX + 60, 226, DW - 120, 504);
+    x.fillStyle = '#1b1b1b'; x.font = `700 24px ${SANS}`; x.fillText(VIDEO, DX + 96, 270);
+    x.fillStyle = '#5a5f66'; x.font = `600 16px ${SANS}`; x.fillText('Speakers: Host, Guest · Length 31:40 · Confidence: high', DX + 96, 298);
+    const lines = [['00:00', 'H', 'Thanks for joining. Today we are looking at what marketing actually moves.'], ['01:14', 'G', 'Thanks for having me. The first thing I would say is that most teams measure the easy things.'], ['05:00', 'H', 'So where would you start, if you were rebuilding it from scratch?'], ['05:42', 'G', 'I would start with the questions the board keeps asking, and work back from revenue.'], ['11:42', 'H', 'Let us talk about attribution for a minute.'], ['12:09', 'G', 'Sure. Honestly, most of it is about agreeing what counts before you count it.']];
+    const nl = Math.floor(clamp(k * 1.15, 0, 1) * lines.length * 10) / 10;
+    lines.forEach(([ts, sp, tx2], i) => { if (i >= nl) return; const y = 342 + i * 64, part = clamp(nl - i, 0, 1), txt = tx2.slice(0, Math.ceil(tx2.length * part));
+      x.fillStyle = '#8a8f96'; x.font = `500 15px ${MONO}`; x.fillText(ts, DX + 96, y); x.fillStyle = sp === 'H' ? '#b86a14' : '#1f8a7b'; x.font = `700 15px ${SANS}`; x.fillText(sp === 'H' ? 'HOST' : 'GUEST', DX + 160, y);
+      x.fillStyle = '#26282b'; x.font = `500 18px ${SANS}`; wrapText(x, txt, DX + 96, y + 24, DW - 200, 22, 2); });
+    status('POST /transcript · done: doc created, link and text returned');
+  } else if (mode === 'recap') {
+    x.fillStyle = '#e9edf2'; x.font = `600 30px ${SANS}`; x.fillText('Transcript doc → Conversation page', P, 140);
+    // the doc going in
+    x.fillStyle = '#ffffff'; x.fillRect(P, 180, 300, 400); x.fillStyle = '#1b1b1b'; x.font = `700 17px ${SANS}`; wrapText(x, 'Transcript · ' + VIDEO, P + 20, 214, 260, 20, 2);
+    for (let i = 0; i < 12; i++) { const y = 268 + i * 24; x.fillStyle = i % 3 === 0 ? (i % 2 ? '#1f8a7b' : '#b86a14') : '#b9bcc2'; x.fillRect(P + 20, y, i % 3 === 0 ? 46 : 220 - (i * 37) % 70, 8); }
+    x.fillStyle = '#9aa4b3'; x.font = `600 19px ${SANS}`; x.fillText('Google Doc', P, 612);
+    // the model in the middle
+    x.fillStyle = '#ffb15a'; x.font = `700 46px ${SANS}`; x.fillText('→', P + 330, 390); x.fillStyle = '#9aa4b3'; x.font = `600 18px ${SANS}`; x.fillText('Gemini 3.5 Flash', P + 318, 432); x.fillText('JSON → HTML', P + 330, 458);
+    // the page coming out
+    const CX = P + 520, CW = 560; x.fillStyle = '#f6f3ee'; x.fillRect(CX, 180, CW, 540);
+    x.fillStyle = '#b33a2a'; x.font = `700 14px ${SANS}`; try { x.letterSpacing = '3px'; } catch (_) {} x.fillText('CONVERSATION', CX + 28, 214); try { x.letterSpacing = '0px'; } catch (_) {}
+    x.fillStyle = '#1b1712'; x.font = `700 26px ${SANS}`; wrapText(x, VIDEO, CX + 28, 250, CW - 56, 30, 2);
+    const parts = [['Intro', 1], ['About the guest', 2], ['The questions the board asks', 0], ['Measuring the easy things', 0], ['Starting from revenue', 0], ['Attribution, honestly', 0], ['What changed in a year', 0], ['Mistakes to skip', 0], ['Conclusion', 1]];
+    const n = Math.floor(clamp(k * 1.25, 0, 1) * parts.length + 0.001);
+    parts.forEach(([nm, kind], i) => { if (i >= n) return; const y = 318 + i * 44;
+      if (kind === 2) { x.fillStyle = '#5fd4c4'; x.beginPath(); x.arc(CX + 44, y - 6, 14, 0, 7); x.fill(); x.fillStyle = '#1b1712'; x.font = `700 19px ${SANS}`; x.fillText(nm, CX + 68, y); x.fillStyle = '#c9c3b8'; x.fillRect(CX + 300, y - 10, 200, 8); return; }
+      x.fillStyle = kind ? '#6a6058' : '#1b1712'; x.font = `${kind ? 700 : 600} 19px ${SANS}`; x.fillText((kind ? '' : (i - 1) + ' · ') + nm, CX + 28, y); x.fillStyle = '#d6d0c6'; x.fillRect(CX + 360, y - 10, 140 - (i * 23) % 60, 8); });
+    if (k > 0.55) { x.fillStyle = 'rgba(255,210,90,.12)'; x.fillRect(CX + CW + 30, 180, 380, 140); x.fillStyle = '#ffd25a'; x.font = `700 21px ${SANS}`; x.fillText('1 warning for the reviewer', CX + CW + 50, 220); x.fillStyle = '#d8c9a0'; x.font = `500 19px ${SANS}`; x.fillText('A section was cut at the token', CX + CW + 50, 256); x.fillText('limit and recovered.', CX + CW + 50, 284); }
+    if (k > 0.85) { x.fillStyle = '#6fd88a'; x.fillRect(CX + CW + 30, 350, 260, 62); x.fillStyle = '#08140b'; x.font = `700 23px ${SANS}`; x.fillText('✓ Approved', CX + CW + 80, 390); }
+    status('POST /recap · HTML sanitised · a person approves before anything is published');
+  } else if (mode === 'publish') {
+    x.fillStyle = '#e9edf2'; x.font = `600 30px ${SANS}`; x.fillText('Webflow CMS  ›  Conversations', P, 140);
+    const COLX = [P + 20, P + 560, P + 1010, P + 1160, P + 1330];
+    x.fillStyle = '#151a22'; x.fillRect(P, 166, w - 2 * P, 50); x.fillStyle = '#6c7584'; x.font = `700 17px ${SANS}`; ['NAME', 'SLUG', 'READ TIME', 'THUMBNAIL', 'STATUS'].forEach((c, i) => x.fillText(c, COLX[i], 198));
+    const old = [['Pipeline reviews that sales trusts', 'pipeline-reviews-that-sales-trusts', '7 min'], ['Building a brand on a small budget', 'building-a-brand-on-a-small-budget', '8 min'], ['What we learned from 50 launches', 'what-we-learned-from-50-launches', '11 min']];
+    const enter = sstep(0.55, 0.8, k), dy = 74 * enter;
+    old.forEach(([a2, b2, c2], i) => { const y = 226 + i * 74 + dy; x.fillStyle = '#11151c'; x.fillRect(P, y, w - 2 * P, 66); x.fillStyle = '#c9d1dc'; x.font = `500 20px ${SANS}`; x.fillText(a2, COLX[0], y + 41); x.fillStyle = '#6c7584'; x.font = `500 17px ${MONO}`; x.fillText(b2.slice(0, 34), COLX[1], y + 41); x.fillText(c2, COLX[2], y + 41);
+      x.fillStyle = '#2a3240'; x.fillRect(COLX[3], y + 14, 66, 38); x.fillStyle = '#6fd88a'; x.font = `600 17px ${SANS}`; x.fillText('Published', COLX[4], y + 41); });
+    if (enter > 0) { const y = 226; x.globalAlpha = enter; x.fillStyle = 'rgba(255,177,90,.16)'; x.fillRect(P, y, w - 2 * P, 66); x.strokeStyle = '#ffb15a'; x.lineWidth = 2; x.strokeRect(P + 1, y + 1, w - 2 * P - 2, 64);
+      x.fillStyle = '#ffffff'; x.font = `600 20px ${SANS}`; x.fillText(VIDEO, COLX[0], y + 41); x.fillStyle = '#c9d1dc'; x.font = `500 17px ${MONO}`; x.fillText('measuring-what-marketing-actu…', COLX[1], y + 41); x.fillText('9 min', COLX[2], y + 41);
+      x.fillStyle = '#20324a'; x.fillRect(COLX[3], y + 14, 66, 38); x.fillStyle = '#ffb15a'; x.font = `600 17px ${SANS}`; x.fillText('New item', COLX[4], y + 41); x.globalAlpha = 1; }
+    // the mapping, as it happens
+    const M = [['Name', 'from the recap title'], ['Slug', 'generated'], ['Read time', 'counted from the HTML'], ['Guest', 'name, title, company'], ['Video link', 'the YouTube URL'], ['Thumbnail', k < 0.3 ? 'maxresdefault.jpg' : k < 0.45 ? 'maxresdefault ✕ rejected → falling back' : 'hqdefault.jpg ✓']];
+    const nm = Math.floor(clamp(k * 1.8, 0, 1) * M.length + 0.001);
+    M.forEach(([a2, b2], i) => { if (i >= nm) return; const y = 530 + Math.floor(i / 2) * 50, X = P + (i % 2) * 720; x.fillStyle = '#6c7584'; x.font = `700 17px ${SANS}`; x.fillText(a2.toUpperCase(), X, y); x.fillStyle = b2.includes('✕') ? '#ff5a4a' : b2.includes('✓') ? '#6fd88a' : '#c9d1dc'; x.font = `500 20px ${SANS}`; x.fillText(b2, X + 170, y); });
+    status(k > 0.8 ? '✓ POST /publish · item created in the Conversations collection' : 'POST /publish · approved in the app · mapping the CMS fields', k > 0.8 ? '#6fd88a' : '#9aa4b3');
+  }
+  x.restore();
+  // a faint scanline and glass sheen
+  x.fillStyle = 'rgba(255,255,255,.025)'; for (let y = 0; y < h; y += 4) x.fillRect(0, y, w, 1);
+});
+const screen = (() => {
+  const g = new THREE.Group(); g.position.set(SCR.x, SCR.y, SCR.z); g.rotation.x = -0.06; scene.add(g);
+  const bez = new THREE.Mesh(new RoundedBoxGeometry(SCR.w + 0.03, SCR.h + 0.03, 0.035, 3, 0.008), new THREE.MeshStandardMaterial({ color: 0x0c0c0e, metalness: 0.4, roughness: 0.4 })); bez.position.z = -0.018; bez.castShadow = true; g.add(bez);
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(SCR.w, SCR.h), new THREE.MeshBasicMaterial({ map: screenTex, color: new THREE.Color(0.85, 0.85, 0.85) })); face.position.z = 0.001; g.add(face);
+  const neck = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.32, 0.03), metalMid); neck.position.set(0, -SCR.h / 2 - 0.1, -0.06); g.add(neck);
+  const foot = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.012, 0.2), metalMid); foot.position.set(0, -(SCR.y - DESK.top) + 0.006, -0.04); g.add(foot);
+  screenGlow.position.set(SCR.x, SCR.y, SCR.z + 0.5);
+  return { g, st: { mode: '', k: -1, t: -1 } };
+})();
+function drawScreen(mode, k, t) {
+  const kq = Math.round(k * 80) / 80, tq = mode === 'link' || mode === 'wait' ? Math.floor(t * 4) / 4 : 0, s = screen.st;
+  if (s.mode === mode && s.k === kq && s.t === tq) return; s.mode = mode; s.k = kq; s.t = tq; screenTex.userData.redraw({ mode, k: kq, t: tq });
+}
+
+/* ---- monitor speakers on stands, toed in at the chair ---- */
+const monitors = [-1, 1].map(sx => {
+  const g = new THREE.Group(); g.position.set(sx * 1.32, 0, DESK.z - 0.1); g.lookAt(V(0, 0, 0.3)); scene.add(g);
+  const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.02, 10), metalDark); stand.position.y = 0.51; g.add(stand);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.02, 24), metalDark); base.position.y = 0.01; g.add(base);
+  const box = new THREE.Mesh(new RoundedBoxGeometry(0.22, 0.34, 0.26, 3, 0.015), new THREE.MeshStandardMaterial({ color: 0x141416, roughness: 0.55, metalness: 0.1 })); box.position.y = 1.2; box.castShadow = true; g.add(box);
+  const coneP = [[0.0, 0], [0.07, 0.0], [0.078, 0.004], [0.05, -0.022], [0.02, -0.03], [0.0, -0.028]].map(([r, y]) => new THREE.Vector2(r, y));
+  const woof = new THREE.Mesh(new THREE.LatheGeometry(coneP, 32), new THREE.MeshStandardMaterial({ color: 0x2a2a2c, roughness: 0.75, side: THREE.DoubleSide })); woof.rotation.x = Math.PI / 2; woof.position.set(0, 1.14, 0.131); g.add(woof);
+  const tw = new THREE.Mesh(new THREE.SphereGeometry(0.018, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x8a8a8a, metalness: 0.9, roughness: 0.3 })); tw.rotation.x = Math.PI / 2; tw.position.set(0, 1.29, 0.13); g.add(tw);
+  const led = new THREE.Mesh(new THREE.CircleGeometry(0.004, 10), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.4, 0.9, 2.5) })); led.position.set(0.07, 1.06, 0.1305); g.add(led);
+  return g;
+});
+
+/* ---- the tape machine: a cassette with the webinar's title, its reels turning while the captions are fetched ---- */
+const TAPE = { x: -0.86, z: DESK.z + 0.18 };
+const deck = (() => {
+  const g = new THREE.Group(); g.position.set(TAPE.x, DESK.top, TAPE.z); g.rotation.y = 0.28; scene.add(g);
+  const body = new THREE.Mesh(new RoundedBoxGeometry(0.3, 0.09, 0.24, 3, 0.012), new THREE.MeshStandardMaterial({ color: 0xa8a49c, metalness: 0.7, roughness: 0.35, envMapIntensity: 1 })); body.position.y = 0.045; body.castShadow = true; g.add(body);
+  const win = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.004, 0.1), new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.2, transparent: true, opacity: 0.55 })); win.position.set(-0.04, 0.091, -0.01); g.add(win);
+  const keys = new THREE.Group(); for (let i = 0; i < 5; i++) { const k = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.014, 0.04), new THREE.MeshStandardMaterial({ color: i === 1 ? 0x8a2a1a : 0x2a2a2c, roughness: 0.5 })); k.position.set(-0.11 + i * 0.037, 0.096, 0.085); keys.add(k); } g.add(keys);
+  const wait = new THREE.Mesh(new THREE.SphereGeometry(0.006, 10, 8), new THREE.MeshStandardMaterial({ color: 0x2a1406, emissive: 0xffa040, emissiveIntensity: 0 })); wait.position.set(0.1, 0.092, -0.06); g.add(wait);
+  // the cassette (sits in the window when inserted)
+  const ct = canvasTex(512, 300, (x, w, h) => { x.fillStyle = '#1e1c1a'; x.fillRect(0, 0, w, h); x.fillStyle = '#efe6d2'; x.fillRect(30, 26, w - 60, 120);
+    x.fillStyle = '#b8321f'; x.fillRect(30, 26, w - 60, 14); x.fillStyle = '#1b1712'; x.font = `700 30px ${SANS}`; wrapText(x, VIDEO, 46, 82, w - 92, 32, 2);
+    x.fillStyle = '#0d0c0b'; x.fillRect(110, 170, 292, 86); x.fillStyle = '#3a2f26'; x.beginPath(); x.arc(170, 213, 34, 0, 7); x.arc(342, 213, 30, 0, 7); x.fill(); });
+  const cas = new THREE.Group(); cas.position.set(-0.04, 0.094, -0.01); g.add(cas);
+  const shell = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.012, 0.064), [metalDark, metalDark, new THREE.MeshStandardMaterial({ map: ct, roughness: 0.6 }), metalDark, metalDark, metalDark]); cas.add(shell);
+  const reels = [-0.022, 0.022].map(x => { const r = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.013, 6), new THREE.MeshStandardMaterial({ color: 0xe8e2d6, roughness: 0.5 })); r.position.set(x, 0.001, 0.003); cas.add(r); return r; });
+  const lampL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 0.12, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0x2a1c12, emissive: 0xffa860, emissiveIntensity: 0.45, side: THREE.DoubleSide, roughness: 0.8 }));
+  return { g, cas, reels, wait };
+})();
+
+/* ---- the printer: the cue sheet (the transcript) comes out of it ---- */
+const printer = (() => {
+  const g = new THREE.Group(); g.position.set(0.86, DESK.top, DESK.z - 0.2); g.rotation.y = -0.2; scene.add(g);
+  const body = new THREE.Mesh(new RoundedBoxGeometry(0.3, 0.11, 0.24, 3, 0.015), new THREE.MeshStandardMaterial({ color: 0x55534f, roughness: 0.55 })); body.position.y = 0.055; body.castShadow = true; g.add(body);
+  const slot = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.008, 0.01), new THREE.MeshBasicMaterial({ color: 0x050505 })); slot.position.set(0, 0.09, 0.121); g.add(slot);
+  const t = canvasTex(800, 1104, (x, w, h) => { x.fillStyle = '#f8f6f1'; x.fillRect(0, 0, w, h);
+    x.fillStyle = '#1b1b1b'; x.font = `700 40px ${SANS}`; x.fillText('Transcript', 48, 84);
+    x.fillStyle = '#5a5f66'; x.font = `600 24px ${SANS}`; wrapText(x, VIDEO, 48, 126, w - 96, 28, 1); x.fillText('2 speakers · 31:40 · confidence: high', 48, 162);
+    x.fillStyle = '#d9d5cc'; x.fillRect(48, 186, w - 96, 3);
+    const L = [['00:00', 'H', 'Thanks for joining. Today we are looking at what marketing actually moves.'], ['01:14', 'G', 'Thanks for having me. Most teams measure the easy things.'], ['05:00', 'H', 'So where would you start, if you were rebuilding it?'], ['05:42', 'G', 'With the questions the board keeps asking, and work back from revenue.'], ['11:42', 'H', 'Let us talk about attribution for a minute.'], ['12:09', 'G', 'Most of it is agreeing what counts before you count it.'], ['18:30', 'H', 'What changed for you over the last year?'], ['18:51', 'G', 'We stopped reporting on everything and picked five numbers.']];
+    L.forEach(([ts, sp, tx2], i) => { const y = 244 + i * 106; x.fillStyle = '#8a8f96'; x.font = `500 22px ${MONO}`; x.fillText(ts, 48, y); x.fillStyle = sp === 'H' ? '#b86a14' : '#1f8a7b'; x.font = `700 22px ${SANS}`; x.fillText(sp === 'H' ? 'HOST' : 'GUEST', 140, y);
+      x.fillStyle = '#26282b'; x.font = `500 25px ${SANS}`; wrapText(x, tx2, 48, y + 36, w - 96, 30, 2); });
+  });
+  const piv = new THREE.Group(); piv.position.set(0, 0.09, 0.12); g.add(piv);
+  const pg = new THREE.PlaneGeometry(0.21, 0.29); pg.translate(0, -0.145, 0); pg.rotateX(-Math.PI / 2 + 0.0);
+  const paper = new THREE.Mesh(pg, new THREE.MeshStandardMaterial({ map: t, roughness: 0.9, side: THREE.DoubleSide })); paper.castShadow = true; piv.add(paper);
+  return { g, piv, paper };
+})();
+
+/* ---- the recap as a record: a sleeve on an easel on the side cabinet, the record shelf (the recap collection) on the right wall ---- */
+const CAB = { x: 2.35, z: -1.5 };
+{ const c = new THREE.Mesh(new RoundedBoxGeometry(1.0, 0.62, 0.5, 3, 0.02), new THREE.MeshStandardMaterial({ color: 0x4a3324, roughness: 0.6 })); c.position.set(CAB.x, 0.31, CAB.z); c.castShadow = c.receiveShadow = true; scene.add(c); }
+function sleeveTex(thumb) {
+  return canvasTex(512, 512, (x, w, h, mode = 'max') => {
+    const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#20324a'); g.addColorStop(1, '#0f1622'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    // two speakers, as soft silhouettes (an illustrative cover)
+    x.fillStyle = 'rgba(255,177,90,.85)'; x.beginPath(); x.arc(170, 250, 54, 0, 7); x.fill(); x.fillRect(110, 310, 120, 140);
+    x.fillStyle = 'rgba(95,212,196,.85)'; x.beginPath(); x.arc(340, 240, 58, 0, 7); x.fill(); x.fillRect(276, 304, 128, 146);
+    x.fillStyle = '#f3eee8'; x.font = `700 40px ${SANS}`; wrapText(x, VIDEO, 34, 70, w - 68, 42, 2);
+    x.fillStyle = 'rgba(243,238,232,.7)'; x.font = `700 18px ${SANS}`; try { x.letterSpacing = '4px'; } catch (_) {} x.fillText('WEBINAR RECAP', 34, h - 30); try { x.letterSpacing = '0px'; } catch (_) {}
+    if (mode === 'max-x') { x.fillStyle = 'rgba(120,20,12,.75)'; x.fillRect(0, h / 2 - 50, w, 100); x.fillStyle = '#ffd9cf'; x.font = `700 30px ${MONO}`; x.textAlign = 'center'; x.fillText('maxresdefault ✕ rejected', w / 2, h / 2 + 11); }
+    if (mode === 'hq') { x.fillStyle = 'rgba(16,80,40,.7)'; x.fillRect(w - 230, 18, 212, 46); x.fillStyle = '#d6ffe0'; x.font = `700 22px ${MONO}`; x.fillText('hqdefault ✓', w - 214, 50); }
+  });
+}
+const sleeve = (() => {
+  const t = sleeveTex();
+  const g = new THREE.Group(); scene.add(g);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(0.31, 0.31, 0.006), [metalDark, metalDark, metalDark, metalDark, new THREE.MeshStandardMaterial({ map: t, roughness: 0.55, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: 0.12 }), new THREE.MeshStandardMaterial({ color: 0x181818 })]);
+  m.castShadow = true; g.add(m);
+  // the liner card: what the recap contains
+  const lt = canvasTex(400, 520, (x, w, h) => { x.fillStyle = '#efe9dc'; x.fillRect(0, 0, w, h); x.fillStyle = '#b33a2a'; x.font = `700 15px ${SANS}`; x.fillText('CONVERSATION', 24, 30); x.fillStyle = '#1b1712'; x.font = `700 24px ${SANS}`; x.fillText('Recap page', 24, 60);
+    const L = ['Intro', 'About the guest', '1  The questions the board asks', '2  Measuring the easy things', '3  Starting from revenue', '4  Attribution, honestly', '5  What changed in a year', '6  Tools that earned their place', '7  Mistakes to skip', 'Conclusion'];
+    L.forEach((s, i) => { x.fillStyle = i < 2 || i === 9 ? '#6a6058' : '#1b1712'; x.font = `${i < 2 || i === 9 ? 700 : 500} 18px ${SANS}`; x.fillText(s, 24, 92 + i * 40); }); });
+  const liner = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.208), new THREE.MeshStandardMaterial({ map: lt, roughness: 0.9 })); scene.add(liner);
+  const note = new THREE.Mesh(new THREE.PlaneGeometry(0.075, 0.075), new THREE.MeshStandardMaterial({ map: canvasTex(200, 200, (x, w, h) => { x.fillStyle = '#ffd95a'; x.fillRect(0, 0, w, h); x.fillStyle = '#3a2a08'; x.font = `600 26px ${SANS}`; x.fillText('1 warning:', 16, 48); x.font = `500 22px ${SANS}`; x.fillText('section 7 cut', 16, 92); x.fillText('at the limit,', 16, 124); x.fillText('recovered', 16, 156); }), roughness: 0.9 }));
+  scene.add(note);
+  const lipM = new THREE.MeshStandardMaterial({ color: 0x1e140c, roughness: 0.6 });
+  for (const dz of [-0.016, 0.016]) { const lp = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.014, 0.012), lipM); lp.position.set(CAB.x, 0.627, CAB.z + 0.06 + dz); scene.add(lp); }
+  const gap = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.02), new THREE.MeshBasicMaterial({ color: 0x050403 })); gap.rotation.x = -Math.PI / 2; gap.position.set(CAB.x, 0.6215, CAB.z + 0.06); scene.add(gap);
+  return { g, t, liner, note, mode: '' };
+})();
+const SHELF = { x: R.x1 - 0.2, z: -0.35, y: 0.9 };
+const recordShelf = (() => {
+  const g = new THREE.Group(); g.position.set(SHELF.x, 0, SHELF.z); g.rotation.y = -Math.PI / 2; scene.add(g);
+  const woodM = new THREE.MeshStandardMaterial({ color: 0x5a3c26, roughness: 0.65 });
+  for (const y of [0.55, 0.95, 1.35]) { const b = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.025, 0.36), woodM); b.position.set(0, y, 0); b.castShadow = b.receiveShadow = true; g.add(b); }
+  for (const x of [-0.76, 0.76]) { const s = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.86, 0.36), woodM); s.position.set(x, 0.96, 0); g.add(s); }
+  const n = 46, ig = new THREE.BoxGeometry(0.008, 0.31, 0.31), im = new THREE.InstancedMesh(ig, new THREE.MeshStandardMaterial({ roughness: 0.7 }), n), m4 = new THREE.Matrix4(), c = new THREE.Color(), q = new THREE.Quaternion();
+  let sd = 3; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < n; i++) { const row = i < 23 ? 0 : 1, k = i % 23, x = -0.7 + k * 0.052 + (k > 14 ? 0.08 : 0); q.setFromAxisAngle(V(0, 0, 1), (r() - 0.5) * 0.08);
+    m4.compose(V(x, (row ? 0.95 : 0.55) + 0.17, 0.01), q, V(1, 1, 1)); im.setMatrixAt(i, m4); im.setColorAt(i, c.setHSL(r() * 0.15 + (r() < 0.5 ? 0.02 : 0.55), 0.12 + r() * 0.18, 0.08 + r() * 0.14)); }
+  im.castShadow = true; g.add(im);
+  const lab = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.06), new THREE.MeshBasicMaterial({ map: canvasTex(400, 80, (x, w, h) => { x.fillStyle = '#efe6d2'; x.fillRect(0, 0, w, h); x.fillStyle = '#1b1712'; x.font = `700 30px ${SANS}`; try { x.letterSpacing = '4px'; } catch (_) {} x.fillText('CONVERSATIONS', 22, 52); }), color: new THREE.Color(0.9, 0.9, 0.9) }));
+  lab.position.set(0.4, 0.92, 0.185); g.add(lab);
+  const slot = V(0.094, 0.55 + 0.17, 0.01).applyAxisAngle(V(0, 1, 0), -Math.PI / 2).add(V(SHELF.x, 0, SHELF.z));   // the gap in the bottom row, where the new recap goes
+  return { g, slot };
+})();
+
+/* ---- the journey as a lit sign on the right wall, above the shelf ---- */
+const journey = (() => {
+  const ST = ['YOUTUBE', 'CAPTIONS', 'TRANSCRIPT', 'GOOGLE DOC', 'CONVERSATION', 'WEBFLOW CMS'];
+  const t = canvasTex(2048, 200, (x, w, h, done = 0) => { x.fillStyle = '#0e0c0c'; x.fillRect(0, 0, w, h); const sw = (w - 80 - 5 * 52) / 6;
+    ST.forEach((nm, i) => { const X = 40 + i * (sw + 52), on = i < done; x.fillStyle = on ? 'rgba(111,216,138,.16)' : '#171414'; x.fillRect(X, 46, sw, 108); x.strokeStyle = on ? '#6fd88a' : '#2e2826'; x.lineWidth = 4; x.strokeRect(X + 2, 48, sw - 4, 104);
+      x.fillStyle = on ? '#bff5cc' : '#5a524e'; x.font = `800 28px ${SANS}`; x.textAlign = 'center'; try { x.letterSpacing = '3px'; } catch (_) {} x.fillText(nm, X + sw / 2, 114); try { x.letterSpacing = '0px'; } catch (_) {}
+      if (i < 5) { x.fillStyle = i < done - 1 ? '#6fd88a' : '#3a3230'; x.fillText('→', X + sw + 26, 114); } x.textAlign = 'left'; }); });
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 0.225), new THREE.MeshBasicMaterial({ map: t, color: new THREE.Color(1.1, 1.1, 1.1) }));
+  m.position.set(R.x1 - 0.095, 1.95, -0.55); m.rotation.y = -Math.PI / 2; scene.add(m);
+  const fr = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.27, 2.36), metalDark); fr.position.set(R.x1 - 0.075, 1.95, -0.55); scene.add(fr);
+  return { t, done: -1 };
+})();
+
+/* ---- ON AIR, over the booth window ---- */
+const onAir = (() => {
+  const t = canvasTex(512, 160, (x, w, h, on = 0) => { x.fillStyle = on ? '#3a0a06' : '#1a1414'; x.fillRect(0, 0, w, h); x.fillStyle = on ? '#ff5a4a' : '#4a2a26'; x.font = `800 96px ${SANS}`; x.textAlign = 'center'; try { x.letterSpacing = '10px'; } catch (_) {} x.fillText('ON AIR', w / 2, 116); });
+  const m = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.16, 0.06), [metalDark, metalDark, metalDark, metalDark, new THREE.MeshBasicMaterial({ map: t }), metalDark]); m.position.set(0, 2.35, R.z0 + 0.04); scene.add(m);
+  const m2 = m.clone(); m2.rotation.y = Math.PI; m2.position.set(1.0, 2.35, BOOTH.z1 - 0.04); scene.add(m2);
+  const L = new THREE.PointLight(0xff3020, 0, 2.5, 2); L.position.set(0, 2.25, R.z0 + 0.4); scene.add(L);
+  return { t, L, on: 0 };
+})();
+
+/* ---- the TV on the left, playing the webinar; the boombox on top of the record shelf ---- */
+const TVPOS = { x: -2.35, z: -1.55 };
+{ const c = new THREE.Mesh(new RoundedBoxGeometry(0.95, 0.55, 0.5, 3, 0.02), new THREE.MeshStandardMaterial({ color: 0x3a2a20, roughness: 0.6 })); c.position.set(TVPOS.x, 0.275, TVPOS.z); c.castShadow = c.receiveShadow = true; scene.add(c); }
+const tvVideo = canvasTex(512, 384, (x, w, h, t = 0) => {
+  x.fillStyle = '#0b0d12'; x.fillRect(0, 0, w, h);
+  const talk = Math.floor(t / 3) % 2;
+  [[12, '#3a2a1a', '#ffb15a', 'HOST'], [262, '#16302c', '#5fd4c4', 'GUEST']].forEach(([X, bg, c, nm], i) => {
+    x.fillStyle = bg; x.fillRect(X, 70, 238, 200); x.fillStyle = c; x.globalAlpha = 0.9; x.beginPath(); x.arc(X + 119, 150, 34, 0, 7); x.fill(); x.fillRect(X + 74, 192, 90, 78); x.globalAlpha = 1;
+    if (talk === i) { x.strokeStyle = c; x.lineWidth = 5; x.strokeRect(X + 2, 72, 234, 196); }
+    x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(X, 244, 80, 26); x.fillStyle = '#e9edf2'; x.font = `700 15px ${SANS}`; x.fillText(nm, X + 10, 262); });
+  x.fillStyle = '#e9edf2'; x.font = `700 22px ${SANS}`; x.fillText(VIDEO, 14, 40);
+  x.fillStyle = '#3a3f48'; x.fillRect(14, 316, w - 28, 6); x.fillStyle = '#e8352a'; x.fillRect(14, 316, (w - 28) * ((t / 300) % 1), 6);
+  x.fillStyle = '#9aa4b3'; x.font = `600 15px ${MONO}`; x.fillText(`${Math.floor((t % 300) / 60) + 12}:${String(Math.floor(t % 60)).padStart(2, '0')} / 31:40`, 14, 350);
+  x.fillStyle = 'rgba(255,255,255,.04)'; for (let y = 0; y < h; y += 3) x.fillRect(0, y, w, 1);
+});
+const tv = { g: new THREE.Group(), last: -1 };
+tv.g.position.set(TVPOS.x, 0.55, TVPOS.z); tv.g.rotation.y = 1.0; scene.add(tv.g);
+const tvLight = new THREE.PointLight(0xbfd2ff, 0.8, 2.5, 1.8); scene.add(tvLight);
+async function placeGear() {
+  try {
+    const [tvm, boom] = await Promise.all([loadPacked('Television_01_p.json'), loadPacked('boombox_p.json')]);
+    const tm = new THREE.MeshStandardMaterial({ map: tex('tv_diff_1k.jpg', true), normalMap: tex('tv_nor_1k.jpg', false), roughnessMap: tex('tv_rough_1k.jpg', false), metalnessMap: tex('tv_metal_1k.jpg', false), roughness: 1, metalness: 1, envMapIntensity: 1 });
+    for (const k in tvm) tvm[k].forEach(g => { const m = new THREE.Mesh(g, tm); m.castShadow = m.receiveShadow = true; tv.g.add(m); });
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(TVS.w, TVS.h), new THREE.MeshBasicMaterial({ map: tvVideo, color: new THREE.Color(0.95, 0.95, 0.95) }));
+    scr.position.set(TVS.x, TVS.y, TVS.z); tv.g.add(scr); tv.scr = scr;
+    const bm = { boombox: new THREE.MeshStandardMaterial({ map: tex('boom_diff_1k.jpg', true), normalMap: tex('boom_nor_1k.jpg', false), roughnessMap: tex('boom_rough_1k.jpg', false), metalnessMap: tex('boom_metal_1k.jpg', false), roughness: 1, metalness: 1, envMapIntensity: 1 }),
+      boombox_speakers: new THREE.MeshStandardMaterial({ map: tex('boomspk_diff_1k.jpg', true), roughnessMap: tex('boomspk_rough_1k.jpg', false), roughness: 1 }) };
+    const bg = new THREE.Group(); for (const k in boom) boom[k].forEach(g => { const m = new THREE.Mesh(g, bm[k] || bm.boombox); m.castShadow = true; bg.add(m); });
+    bg.scale.setScalar(0.62); bg.position.set(-0.35, 1.3625, 0); recordShelf.g.add(bg);
+  } catch (err) { console.warn('[studio] gear unavailable:', err && err.message); }
+}
+const TVS = { x: -0.045, y: 0.245, z: 0.2, w: 0.37, h: 0.28 };   // the picture tube, in the TV model's own space
+placeGear();
+{ const p = V(TVS.x, TVS.y, TVS.z + 0.3).applyAxisAngle(V(0, 1, 0), 1.0).add(V(TVPOS.x, 0.55, TVPOS.z)); tvLight.position.copy(p); }
+
+/* =====================================================================
+   LET'S TALK: in the vocal booth, behind the glass. Clicking "Let's talk" takes the camera through the window to the music stand,
+   where the form is the lyric sheet (talk/surface.js). Sending puts the ON AIR light on.
+   ===================================================================== */
+const STAND = { x: 0.55, z: -4.45, y: 1.22, tilt: 0.42 };
+const standN = new THREE.Vector3(0, Math.sin(STAND.tilt), Math.cos(STAND.tilt));
+{   // the music stand and the booth mic
+  const sm = new THREE.MeshStandardMaterial({ color: 0x18181a, metalness: 0.7, roughness: 0.4 });
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.012, STAND.y - 0.1, 10), sm); rod.position.set(STAND.x, (STAND.y - 0.1) / 2, STAND.z - 0.05); scene.add(rod);
+  for (let i = 0; i < 3; i++) { const a = i * 2.094, l = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, 0.42, 6), sm); l.position.set(STAND.x + Math.cos(a) * 0.17, 0.11, STAND.z - 0.05 + Math.sin(a) * 0.17); l.rotation.set(Math.sin(a) * 1.05, 0, -Math.cos(a) * 1.05); scene.add(l); }
+  const mic = new THREE.Group(); mic.position.set(-0.45, 0, -4.7); scene.add(mic);
+  const ms = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.45, 10), sm); ms.position.y = 0.725; mic.add(ms);
+  const mb = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.02, 24), sm); mb.position.y = 0.01; mic.add(mb);
+  const boom = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.6, 8), sm); boom.rotation.z = Math.PI / 2 - 0.3; boom.position.set(0.25, 1.52, 0); mic.add(boom);
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.03, 0.12, 6, 16), new THREE.MeshStandardMaterial({ color: 0x9c9890, metalness: 0.9, roughness: 0.3, envMapIntensity: 1.2 })); body.position.set(0.53, 1.58, 0.05); mic.add(body);
+  const pop = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.005, 8, 32), sm); pop.position.set(0.53, 1.56, 0.18); mic.add(pop);
+  const popF = new THREE.Mesh(new THREE.CircleGeometry(0.073, 32), new THREE.MeshStandardMaterial({ color: 0x111111, transparent: true, opacity: 0.45, roughness: 1 })); popF.position.copy(pop.position); mic.add(popF);
+}
+const talk = { mode: 'off', t: 0, dur: 2, P: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], L: [new THREE.Vector3(), new THREE.Vector3()], v: 0, surf: null, group: null, css: null, cssR: null, opener: null, mobile: null, sT: -1 };
+const talkPose = { pos: new THREE.Vector3(), look: new THREE.Vector3() };
+const standLight = new THREE.SpotLight(0xffd6a8, 0, 3, 0.5, 0.6, 1.4); standLight.position.set(STAND.x + 0.4, 2.4, STAND.z + 0.9); standLight.target.position.set(STAND.x, STAND.y, STAND.z); scene.add(standLight, standLight.target);
+function paintSheet() {   // a lyric sheet: clean white paper, black ink, red rules
+  const s = talk.surf, cv = talk.cv, x = cv.getContext('2d'), k = cv.width / s.fw, w = cv.width, h = cv.height, L = s.layout();
+  x.fillStyle = '#efe9de'; x.fillRect(0, 0, w, h);
+  x.fillStyle = 'rgba(194,64,47,.8)'; x.fillRect(0, 0, w, 6 * k);
+  x.fillStyle = '#3a2f20'; x.font = `700 ${11 * k}px ${SANS}`; try { x.letterSpacing = (2.6 * k) + 'px'; } catch (_) {} x.fillText('BOOTH · TAKE 1', 46 * k, 28 * k); try { x.letterSpacing = '0px'; } catch (_) {}
+  for (const f of L.fields) { x.fillStyle = 'rgba(255,253,248,.7)'; x.fillRect(f.x * k, f.y * k, f.w * k, f.h * k); x.strokeStyle = '#4a3c28'; x.lineWidth = 1.6 * k; x.strokeRect(f.x * k, f.y * k, f.w * k, f.h * k); }
+  const COL = { title: '#120d08', intro: '#211910', label: '#9b2f20', note: '#3a2f20', msg: '#a3301e' };
+  for (const t of L.texts) { x.font = t.font(k); x.textBaseline = 'middle'; try { x.letterSpacing = (t.ls * k) + 'px'; } catch (_) {} x.fillStyle = COL[t.kind] || COL.intro; for (const wd of t.words) x.fillText(wd.w, wd.x * k, (wd.y + wd.h / 2) * k); try { x.letterSpacing = '0px'; } catch (_) {} }
+  for (const sl of L.seals) { const cx = (sl.x + sl.w / 2) * k, cy = (sl.y + sl.h / 2) * k, R0 = sl.w / 2 * k * 0.86; x.lineCap = x.lineJoin = 'round'; x.strokeStyle = '#b33a2a'; x.lineWidth = 5 * k; x.beginPath(); x.arc(cx, cy, R0, 0, 7); x.stroke(); x.beginPath(); x.moveTo(cx - R0 * 0.42, cy + R0 * 0.02); x.lineTo(cx - R0 * 0.1, cy + R0 * 0.34); x.lineTo(cx + R0 * 0.46, cy - R0 * 0.3); x.stroke(); }
+  talk.tex.needsUpdate = true;
+}
+async function buildTalk(config, send) {
+  const mobile = W / H < 0.85;
+  if (talk.group && talk.mobile === mobile) return;
+  if (talk.group) { scene.remove(talk.group); talk.surf.destroy(); talk.tex.dispose(); }
+  const { createSurface } = await import('../talk/surface.js');
+  if (document.fonts) await Promise.all([document.fonts.load(`600 50px ${SANS}`), document.fonts.load(`800 13px ${SANS}`)]).catch(() => {});
+  const fw = mobile ? 344 : 560, PW = mobile ? 0.4 : 0.44, MPPt = PW / fw;
+  talk.surf = createSurface({ config, send, width: fw, mobile, look: 'tb-look-lyric', pad: mobile ? ['46px', '24px', '30px'] : ['50px', '46px', '40px'],
+    copy: { sentTitle: "You're on air", sentText: "Message sent. I'll get back to you soon, on WhatsApp or by email." },
+    onChange: () => paintSheet(), onClose: () => closeTalk(), onSent: () => { talk.sT = 0; } });
+  const s = talk.surf, pw = s.fw * MPPt, ph = s.fh * MPPt;
+  const kk = Math.min(3, 2048 / Math.max(s.fw, s.fh)); talk.cv = document.createElement('canvas'); talk.cv.width = Math.round(s.fw * kk); talk.cv.height = Math.round(s.fh * kk);
+  talk.tex = new THREE.CanvasTexture(talk.cv); talk.tex.colorSpace = THREE.SRGBColorSpace; talk.tex.anisotropy = 8;
+  const g = new THREE.Group(); g.position.set(STAND.x, STAND.y, STAND.z); g.rotation.x = -STAND.tilt; scene.add(g);
+  const desk = new THREE.Mesh(new THREE.BoxGeometry(pw + 0.06, ph + 0.04, 0.008), new THREE.MeshStandardMaterial({ color: 0x18181a, metalness: 0.7, roughness: 0.45 })); desk.castShadow = true; g.add(desk);
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(pw + 0.06, 0.02, 0.03), desk.material); lip.position.set(0, -ph / 2 - 0.02, 0.012); g.add(lip);
+  const paper = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), new THREE.MeshStandardMaterial({ map: talk.tex, roughness: 0.9, emissive: 0xffffff, emissiveMap: talk.tex, emissiveIntensity: 0.3 })); paper.position.z = 0.0055; g.add(paper);
+  talk.css = new CSS3DObject(s.el); talk.css.scale.setScalar(MPPt); talk.css.position.set(0, 0, 0.006); g.add(talk.css);
+  talk.group = g; talk.mobile = mobile; paintSheet();
+  const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), d = Math.max((ph + 0.06) * (mobile ? 1.12 : 1.18) / (2 * tn), (pw + (mobile ? 0.04 : 0.5)) / (2 * tn * camera.aspect));
+  talkPose.look.set(STAND.x, STAND.y, STAND.z); talkPose.pos.copy(talkPose.look).addScaledVector(standN, d);
+}
+const WINDOW_MID = V(0.2, 1.55, R.z0 - R.wall / 2);
+function talkMid(P0, P2) { return P0.z > R.z0 ? (P0.distanceTo(WINDOW_MID) > 1.5 ? V(0.2, 1.6, R.z0 + 0.6) : WINDOW_MID.clone()) : WINDOW_MID.clone(); }
+function bez(P, e, out) { const u = 1 - e; return out.set(u * u * P[0].x + 2 * u * e * P[1].x + e * e * P[2].x, u * u * P[0].y + 2 * u * e * P[1].y + e * e * P[2].y, u * u * P[0].z + 2 * u * e * P[1].z + e * e * P[2].z); }
+async function openTalk({ config, send, opener, fallback }) {
+  if (talk.mode === 'in' || talk.mode === 'on') return;
+  talk.opener = opener;
+  if (!talk.cssR) { talk.cssR = new CSS3DRenderer(); document.getElementById('talk3d').appendChild(talk.cssR.domElement); talk.cssR.setSize(W, H); }
+  document.documentElement.classList.add('talking'); document.documentElement.style.overflow = 'hidden';
+  try { await buildTalk(config, send); } catch (err) {
+    console.warn('[contact] lyric sheet unavailable:', err && err.message); document.documentElement.classList.remove('talking'); document.documentElement.style.removeProperty('overflow'); talk.group = null; if (fallback) fallback(); return; }
+  talk.surf.reset(); talk.sT = -1;
+  // straight through the glass: line up in front of the window, pass through it, then come round to the stand
+  const P0 = camera.position.clone(), P2 = talkPose.pos.clone();
+  talk.P[0].copy(P0); talk.P[1].copy(talkMid(P0, P2)); talk.P[2].copy(P2); talk.L[0].copy(camLook); talk.L[1].copy(talkPose.look);
+  talk.dur = P0.distanceTo(P2) > 6 ? 2.6 : 2.0; talk.mode = 'in'; talk.t = reduce ? talk.dur : 0;
+}
+function closeTalk() {
+  if (talk.mode === 'off' || talk.mode === 'out') return;
+  cameraAt(stage.prog);
+  const P0 = camera.position.clone(), P2 = tgtPos.clone();
+  talk.P[0].copy(P0); talk.P[1].copy(WINDOW_MID); talk.P[2].copy(P2); talk.L[0].copy(talkPose.look); talk.L[1].copy(tgtLook);
+  talk.dur = 2.2; talk.mode = 'out'; talk.t = reduce ? talk.dur : 0;
+  document.documentElement.classList.remove('talking');
+}
+function talkFrame(dt, t) {
+  if (talk.mode === 'off') return false;
+  talk.t = Math.min(talk.dur, talk.t + dt); const e = easeIO(talk.t / talk.dur);
+  bez(talk.P, e, camera.position);
+  _a.copy(talk.L[0]).lerp(talk.L[1], sstep(0.05, 0.85, talk.t / talk.dur)); camera.lookAt(_a);
+  if (talk.mode === 'in' && talk.t >= talk.dur) { talk.mode = 'on'; talk.surf.focusFirst(); }
+  if (talk.mode === 'out' && talk.t >= talk.dur) { talk.mode = 'off'; camPos.copy(camera.position); camLook.copy(_a); document.documentElement.style.removeProperty('overflow'); if (talk.opener && talk.opener.focus) talk.opener.focus({ preventScroll: true }); }
+  return true;
+}
+addEventListener('keydown', e => { if (talk.mode !== 'on' && talk.mode !== 'in') return; if (e.key === 'Escape') { e.preventDefault(); closeTalk(); } else talk.surf && talk.surf.trap(e); });
+window.__talkScene = { open: o => { openTalk(o); } };
+
+/* =====================================================================
+   SCROLL → WHAT HAPPENS
+   ===================================================================== */
+const CK = { req: [0.07, 0.645, 0.775], insert: [0.075, 0.095], ready: 0.135, link: [0.06, 0.15], blocks: [0.17, 0.245], speakers: [0.28, 0.365], names: 0.3, clean: [0.4, 0.49],
+  doc: [0.53, 0.578], print: [0.57, 0.6], recap: [0.652, 0.7], sleeveUp: [0.708, 0.735], approve: [0.74, 0.86], publish: [0.785, 0.85], file: [0.86, 0.892] };
+let progL = 0, lastScribble = '';
+function update(t, dt, p) {
+  // which request the app has sent, and which have been approved
+  reqPanel.items.forEach((it, i) => { const on = p >= CK.req[i] ? 1 : 0, ok = (i === 0 && p >= CK.ready) || (i === 1 && p >= CK.approve[0]) || (i === 2 && p >= CK.file[0]);
+    it.b.material.emissiveIntensity = on ? (ok ? 1.2 : 1.2 + Math.sin(t * 7) * 0.8) : 0; it.okL.material.emissiveIntensity = ok ? 2.5 : 0;
+    if (it.on !== on) { it.on = on; it.lab.userData.redraw(on); } });
+  // 01 · the tape goes in; its reels turn while Supadata is asked, every 8 seconds, whether the captions are ready
+  { const k = easeIO(sstep(...CK.insert, p)); deck.cas.position.y = 0.094 + (1 - k) * 0.16; deck.cas.position.z = -0.01 + (1 - k) * 0.08; deck.cas.rotation.x = (1 - k) * -0.8; deck.cas.visible = p >= CK.insert[0] - 0.005;
+    const run = p >= CK.insert[1] && p < 0.95, sp = p < CK.ready ? 6 : 2.5; deck.reels.forEach(r => { if (run) r.rotation.y += dt * sp; });
+    const waiting = p >= CK.insert[1] && p < CK.ready; deck.wait.material.emissiveIntensity = waiting ? ((t % 8) < 0.35 ? 3 : 0.3) : (p >= CK.ready ? 0 : 0); }
+  // the screen tells the story step by step
+  { let mode = 'idle', k = 0;
+    if (p >= CK.link[0]) { mode = 'link'; k = p >= CK.ready ? 1 : 0; }
+    if (p >= 0.16) { mode = 'blocks'; k = sstep(...CK.blocks, p); }
+    if (p >= 0.27) { mode = 'speakers'; k = sstep(...CK.speakers, p); }
+    if (p >= 0.39) { mode = 'clean'; k = sstep(...CK.clean, p); }
+    if (p >= 0.52) { mode = 'doc'; k = sstep(...CK.doc, p); }
+    if (p >= 0.64) { mode = 'recap'; k = sstep(...CK.recap, p); }
+    if (p >= 0.77) { mode = 'publish'; k = sstep(...CK.publish, p); }
+    drawScreen(mode, k, t); const dn = stageDone(mode, k); if (dn !== journey.done) { journey.done = dn; journey.t.userData.redraw(dn); } }
+  // 03 · the channels take the speakers' names
+  { const nm = p >= CK.names ? [{ t: 'HOST', c: '#ffb15a' }, { t: 'GUEST', c: '#5fd4c4' }, { t: 'GUEST', c: '#5fd4c4' }] : []; const key = nm.length + '';
+    if (key !== lastScribble) { lastScribble = key; scribble.userData.redraw(nm); }
+    for (let i = 0; i < NCH; i++) { const on = p >= CK.names && i < 3; consoleK.btns.setColorAt(i, on ? (i ? new THREE.Color(0.37 * 2, 0.83 * 2, 0.77 * 2) : new THREE.Color(2, 1.1, 0.4)) : new THREE.Color(0.25, 0.22, 0.2)); }
+    consoleK.btns.instanceColor.needsUpdate = true; }
+  // 04 · the meters read each cleaned batch: how much it kept, how well it still matches; batch 3 drops into the red and is reverted
+  { const kc = sstep(...CK.clean, p) * 1.25 * BATCHES.length, bi = clamp(Math.floor(kc), 0, BATCHES.length - 1), on = p >= CK.clean[0] && p < 0.53;
+    const [, kept, match] = BATCHES[bi], swing = clamp(kc - bi, 0, 1);
+    const toA = v => -0.85 + 1.7 * v / 100, idle = -0.85 + Math.sin(t * 3) * 0.03 + 0.06;
+    consoleK.vus[0].rotation.z = -(on ? lerp(toA(100), toA(kept), sstep(0, 0.4, swing)) : idle);
+    consoleK.vus[1].rotation.z = -(on ? lerp(toA(100), toA(match), sstep(0.1, 0.5, swing)) : idle - 0.04); }
+  // 05 · the cue sheet prints
+  { const k = sstep(...CK.print, p); printer.piv.rotation.x = 0.3 * sstep(0.55, 1, k); printer.paper.position.z = -0.29 * (1 - sstep(0, 0.8, k)); printer.paper.visible = k > 0.01; }
+  // 06 · the recap stands on the easel; 07 · the thumbnail is swapped, then the record is filed on the shelf
+  { const up = easeIO(sstep(...CK.sleeveUp, p)), fl = easeIO(sstep(...CK.file, p));
+    const easel = V(CAB.x, 0.79, CAB.z + 0.06), below = V(CAB.x, 0.2, CAB.z + 0.06);   // from inside the cabinet, up through the slot
+    sleeve.g.position.lerpVectors(below, easel, up); sleeve.g.rotation.set(-0.12 * up, 0, 0); sleeve.g.visible = up > 0.001;
+    if (fl > 0) { const mid = easel.clone().lerp(recordShelf.slot, 0.5).add(V(0, 0.5, 0)), e = fl, u = 1 - e;
+      sleeve.g.position.set(u * u * easel.x + 2 * u * e * mid.x + e * e * recordShelf.slot.x, u * u * easel.y + 2 * u * e * mid.y + e * e * recordShelf.slot.y, u * u * easel.z + 2 * u * e * mid.z + e * e * recordShelf.slot.z);
+      sleeve.g.rotation.set(-0.12 * u, 0, 0); }
+    sleeve.liner.position.set(CAB.x - 0.3, 0.62 + 0.105, CAB.z + 0.12); sleeve.liner.rotation.set(-0.35, 0.25, 0); sleeve.liner.visible = up > 0.6;
+    sleeve.note.position.set(CAB.x + 0.24, 0.625, CAB.z + 0.18); sleeve.note.rotation.set(-Math.PI / 2, 0, 0.3); sleeve.note.visible = p >= 0.705;
+    const pk = sstep(...CK.publish, p), cover = p < 0.77 ? 'max' : pk < 0.3 ? 'max' : pk < 0.45 ? 'max-x' : 'hq';
+    if (cover !== sleeve.mode) { sleeve.mode = cover; sleeve.t.userData.redraw(cover); } }
+  // the TV plays the webinar while the link is being worked on
+  { const play = p < 0.27; if (play) { const f = Math.floor(t * 6); if (f !== tv.last) { tv.last = f; tvVideo.userData.redraw(t); } } tvLight.intensity = play ? 0.8 : 0.25; }
+  // ON AIR: lit when a message is sent from the booth
+  { const on = talk.sT >= 0 ? 1 : 0; if (on !== onAir.on) { onAir.on = on; onAir.t.userData.redraw(on); } onAir.L.intensity = on * 2; }
+}
+
+/* ---- camera stations ---- */
+const KEY = {
+  hero:     { pos: [2.9, 1.75, 3.0], look: [-0.3, 1.15, -1.6] },
+  tape:     { pos: [-0.55, 1.45, 0.45], look: [-1.45, 0.95, -1.45], close: 1, pb: 1.4 },
+  screen:   { pos: [0.05, SCR.y + 0.02, SCR.z + 1.16], look: [-0.11, SCR.y - 0.085, SCR.z], close: 1, pb: 1.6 },   // close enough to read; the screen sits up and right of the caption
+  desk:     { pos: [0.05, 1.42, -0.48], look: [0, 1.1, -1.7], close: 1, pb: 1.5 },
+  meters:   { pos: [0.02, 1.3, -0.62], look: [0, 1.08, -1.72], close: 1, pb: 1.5 },
+  paper:    { pos: [0.7265, 1.47, -1.345], look: [0.7285, 0.85, -1.355], m: { pos: [0.819, 1.85, -1.311], look: [0.821, 0.85, -1.321] } },   // straight down onto the printed transcript, its top towards the printer   // straight down onto the printed transcript
+  recap:    { pos: [1.45, 1.3, -0.35], look: [2.3, 0.8, -1.45], close: 1, pb: 1.45 },
+  shelf:    { pos: [1.3, 1.55, 1.1], look: [3.1, 1.38, -0.75], close: 1, pb: 1.4 },
+  end:      { pos: [3.0, 2.1, 3.15], look: [-0.4, 1.0, -1.8] },
+};
+const STATIONS = [
+  { p: 0.00, ...KEY.hero }, { p: 0.03, ...KEY.hero },
+  { p: 0.07, ...KEY.tape }, { p: 0.145, ...KEY.tape },
+  { p: 0.17, ...KEY.screen }, { p: 0.255, ...KEY.screen },
+  { p: 0.285, ...KEY.desk }, { p: 0.375, ...KEY.desk },
+  { p: 0.4, ...KEY.meters }, { p: 0.505, ...KEY.meters },
+  { p: 0.53, ...KEY.screen }, { p: 0.585, ...KEY.screen }, { p: 0.6, ...KEY.paper }, { p: 0.635, ...KEY.paper },
+  { p: 0.655, ...KEY.screen }, { p: 0.7, ...KEY.screen }, { p: 0.715, ...KEY.recap }, { p: 0.765, ...KEY.recap },
+  { p: 0.785, ...KEY.screen }, { p: 0.835, ...KEY.screen },
+  { p: 0.855, ...KEY.shelf }, { p: 0.905, ...KEY.shelf },
+  { p: 0.95, ...KEY.end }, { p: 1.00, ...KEY.end },
+];
+const _d = new THREE.Vector3(), _a = new THREE.Vector3();
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), tgtPos = new THREE.Vector3(), tgtLook = new THREE.Vector3();
+function cameraAt(p) {
+  let a = STATIONS[0], b = STATIONS[1];
+  for (let i = 0; i < STATIONS.length - 1; i++) if (p >= STATIONS[i].p) { a = STATIONS[i]; b = STATIONS[i + 1]; }
+  const t = easeIO(clamp((p - a.p) / Math.max(1e-4, b.p - a.p), 0, 1));
+  const por = W / H < 0.85, A0 = por && a.m ? a.m : a, B0 = por && b.m ? b.m : b;
+  tgtPos.set(lerp(A0.pos[0], B0.pos[0], t), lerp(A0.pos[1], B0.pos[1], t), lerp(A0.pos[2], B0.pos[2], t));
+  tgtLook.set(lerp(A0.look[0], B0.look[0], t), lerp(A0.look[1], B0.look[1], t), lerp(A0.look[2], B0.look[2], t));
+  if (por) {   // portrait: step back along the view, staying inside the room
+    const kc = lerp(a.close && !a.m ? 1 : 0, b.close && !b.m ? 1 : 0, t), pb = lerp(a.pb || 1.4, b.pb || 1.4, t);
+    _d.copy(tgtPos).sub(tgtLook).multiplyScalar((pb - 1) * kc + 0.15 * (1 - kc)); tgtPos.add(_d);
+    tgtPos.x = clamp(tgtPos.x, R.x0 + 0.25, R.x1 - 0.25); tgtPos.z = clamp(tgtPos.z, R.z0 + 0.3, R.z1 - 0.25); tgtPos.y = clamp(tgtPos.y, 0.4, R.h - 0.2);
+  }
+}
+
+/* ---- pointer parallax ---- */
+const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
+addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty = (e.clientY / H) * 2 - 1; }, { passive: true });
+function resize() {
+  W = innerWidth; H = innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); bloom.resolution.set(W / 2, H / 2);
+  if (talk.cssR) talk.cssR.setSize(W, H);
+  camera.aspect = W / H; camera.fov = W / H < 0.85 ? 58 : 40; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+
+/* ---- frame loop ---- */
+let last = performance.now(), t0 = last;
+function frame(now) {
+  const dt = Math.min(SNAP ? 0.5 : 0.05, (now - last) / 1000); last = now; const t = (now - t0) / 1000 * (reduce ? 0.5 : 1);
+  const prog = stage.prog;
+  progL = SNAP ? prog : lerp(progL, prog, 1 - Math.exp(-dt * 5));
+  ptr.x = lerp(ptr.x, ptr.tx, 0.05); ptr.y = lerp(ptr.y, ptr.ty, 0.05);
+  if (!talkFrame(dt, t)) {
+    cameraAt(progL);
+    const kc = SNAP ? 1 : 1 - Math.exp(-dt * 3.4); camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc);
+    const pk = camPos.distanceTo(camLook) > 2.5 ? 0.12 : 0.03;
+    camera.position.set(camPos.x + ptr.x * pk, camPos.y - ptr.y * pk * 0.6, camPos.z); camera.lookAt(camLook);
+  }
+  update(t, dt, progL);
+  if (talk.sT >= 0) talk.sT += dt;
+  { const want = talk.mode === 'in' || talk.mode === 'on' ? 1 : 0; talk.v = lerp(talk.v, want, 1 - Math.exp(-dt * (want ? 2.2 : 0.8))); standLight.intensity = 3.5 * talk.v; }
+  composer.render(dt);
+  if (talk.cssR && talk.mode !== 'off') talk.cssR.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+resize(); cameraAt(stage.prog); camPos.copy(tgtPos); camLook.copy(tgtLook); progL = stage.prog;
+requestAnimationFrame(frame);
+window.__studio = { scene, camera, renderer, STATIONS, KEY, talk, tv, TVS };
+</script>
+<script src="../site.js" defer></script>
