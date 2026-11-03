@@ -1,6 +1,6 @@
 # "Let's talk" form → WhatsApp: setup
 
-_Updated 3 Nov 2026 (v59). The form now takes each world's own shape, but the setup is unchanged since v50: one function, a few environment variables._
+_Updated 3 Nov 2026 (v60). The form now takes each world's own shape, but the setup is unchanged since v50: one function, a few environment variables._
 
 Every page has a **Let's talk** button. Clicking it opens a contact form that belongs to the page's world (see the table below). Whatever it looks like, every form sends the same four fields to `/api/contact` (`api/contact.js`, a Vercel function), which forwards the message to your WhatsApp.
 
@@ -53,6 +53,7 @@ Every page has a **Let's talk** button. Clicking it opens a contact form that be
 | Webinar to Webflow (studio) | through the window into the vocal booth, to the lyric sheet on the music stand | the ON AIR sign lights up: "You're on air" |
 | Video to Blog (projection booth) | out through the viewing port and down the auditorium to the screen; the form is projected as a silent-film title card | a splice flash and cue marks, then the card "Message received" |
 | Voice to Blog (tracking station) | into the hut to the teleprinter; a fresh sheet feeds up with the form typed on it | the camera steps outside as the dish tilts up and transmits, then comes back to "MESSAGE RECEIVED" typed under a red RECEIVED stamp with the visitor's time |
+| Podcast to CMO Brief (bento counter) | the camera turns to a split-flap order board on the shop's right wall (in under the curtain from the street); the words flip into place, the fields are rows of blank flaps | every flap spins to MESSAGE RECEIVED and the time; the bell on the board's ledge rings; the pickup board over the counter flips too |
 
 On a device without WebGL, every page uses the plain card. If a scene can't draw its surface (for example the painting fails to load), it calls `fallback()` and the plain card opens.
 
