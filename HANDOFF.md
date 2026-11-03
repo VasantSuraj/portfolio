@@ -1,6 +1,6 @@
 # HANDOFF — read this first if you are continuing the work
 
-_For a new collaborator or a new AI session. Updated 3 Nov 2026, current version **v57-voice-to-blog**, docs **v58-docs**._
+_For a new collaborator or a new AI session. Updated 3 Nov 2026, current version **v59-voice-talk** (page and docs)._
 
 Read in this order:
 1. `HANDOFF.md` (this file)
@@ -17,11 +17,11 @@ Read in this order:
 
 - **Owner:** Vasant Suraj, Senior Webflow Lead Developer at Factors.ai, who also builds n8n automations. The site is his personal portfolio. Contact on the site: vasantsuraj02@gmail.com · Bangalore. (His WhatsApp number is private: see §2, rule 14.)
 - **Goal:** an award-level portfolio (Lusion / Igloo / Bruno Simon tier). Scroll-driven, highly interactive and 3D, built only with free tools, with very little text ("the design should speak").
-- **Repo:** `github.com/VasantSuraj/portfolio`, branch `main`, deployed on **Vercel** (`cleanUrls`). Vasant pushes files himself through GitHub's "Add files via upload", so every hand-over is a set of files (and zips for asset folders) with the exact folder each goes in. The repo also shows GitHub Pages deployments; Vercel is the one that runs the contact function.
+- **Repo:** `github.com/VasantSuraj/portfolio`, branch `main`, deployed on **Vercel** (`cleanUrls`). Until 3 Nov Vasant pushed files himself through GitHub's "Add files via upload", so a hand-over was a set of files (and zips for asset folders) with the exact folder each goes in. **Since 3 Nov the Claude GitHub App is installed on the repo**, so a session can push: changes go on a branch, a pull request is opened, Vercel builds a preview of the branch, and merging into `main` makes it live. Push only when he says "push"; merge only when he says "merge" (pushing a branch doesn't change the live site). Files as a hand-over still work if he asks for them. The repo also shows GitHub Pages deployments; Vercel is the one that runs the contact function.
 - **Live now:**
   - the **home page**: particle portrait → rain → 3D projects forest → cliff and fall → beach with testimonial lanterns → footer under the stars
   - **eight automation pages**: Reddit Keyword Alerts, Notion to Webflow ("The Press"), SEO Pre-Live Checks ("Opening Night"), Auto Internal Linking (night city), AI Blog Drafts (greenhouse at dawn), Webinar to Webflow (recording studio), Video to Blog ("The Projection Booth"), Voice to Blog ("The Tracking Station", a look test with the story's basic motion; its own Let's talk is next)
-  - **Let's talk** on every page, in each world's own form (Voice to Blog: the hanging board for now), sending to WhatsApp through `api/contact.js`
+  - **Let's talk** on every page, in each world's own form, sending to WhatsApp through `api/contact.js`
 - **Development** happens in Claude sessions with artifacts as previews; the repo files are the deliverable. The working git repo with every tag lives in the AI workspace (`/home/claude/history/portfolio`, branch `master`). Since 28 Oct it is a fresh copy started from the v54 files Vasant supplied (`284bc58`), so its hashes differ from GitHub's.
 
 ## 2. How Vasant works (follow these)
@@ -126,7 +126,7 @@ The content source for each automation is a runbook Vasant pastes (or his Google
 
 ## 5. Next up
 
-**Finish Voice to Blog first** if Vasant wants: its teleprinter Let's talk (the form typed on the paper; the dish transmits on send; "MESSAGE RECEIVED" prints) and the story animations (DOCS.md §12). Video to Blog's per-station animations are also open (DOCS.md §11.6).
+Open on the two newest pages: **Voice to Blog's story animations** (the slip arriving, the tape and the teleprinter printing, the card being punched; DOCS.md §12.6) and **Video to Blog's per-station animations** (DOCS.md §11.6). Both pages' Let's talk scenes are built.
 
 The remaining **11 automations** need pages, each with its own world (concepts first, then his Poly Haven assets and the workflow JSON):
 Podcast to CMO Brief · Cluster to Pillar Post · Blog Refresh Engine · Blog to Social and Ads · Organic Social Engine · Slack to Post Idea · LinkedIn ICP Leaderboard · Competitive Intel System · Marketing Ticket Desk · Dev Tasks from Slack · Docs to Notion Sync.
@@ -139,7 +139,7 @@ The natural next one is **Podcast to CMO Brief** (Voice to Blog's "Next automati
 2. **Real testimonials:** Vasant will send them. Replace the 6 samples and set `sample: false`.
 3. **Thumbnails** for the 5 Factors.ai pages and the 3 personal projects (`thumbs/`); none in the live repo.
 4. **Mic and cassette models** were never sent; the studio uses procedural ones. Offer to swap if he sends Poly Haven models.
-4a. **Voice to Blog:** Let's talk and story animations; may the recorder's name (Voxlog) appear? Workflow issues were reported to him in chat (a missing node reference and a wrong credential on the second Notion step; unescaped quotes in the Notion request), as were the Video to Blog ones (credential handling, a batch that can exceed Notion's 100-block limit, a filler regex that removes real words). They are his to fix in n8n.
+4a. **Voice to Blog:** the story animations; may the recorder's name (Voxlog) appear? Workflow issues were reported to him in chat (a missing node reference and a wrong credential on the second Notion step; unescaped quotes in the Notion request), as were the Video to Blog ones (credential handling, a batch that can exceed Notion's 100-block limit, a filler regex that removes real words). They are his to fix in n8n.
 5. **Contact setup:** confirm the Vercel env vars are set and a live test message arrived (CONTACT-SETUP.md). Previews can't send.
 6. **Ideas raised earlier, not built** (suggest only): a stronger particle-portrait → forest hand-over; more forest → footer connection (the beach and sky largely cover this now).
 7. **Small known issue** (offered, not requested): while reading a later testimonial, earlier gathered cards can peek briefly at the top edge.
@@ -153,7 +153,7 @@ The natural next one is **Podcast to CMO Brief** (Voice to Blog's "Next automati
 - **The local server** (`python3 -m http.server 8765`) dies when background commands time out; restart it.
 - **Blender:** `bpy` must be run with `python3 -I`.
 - **Artifacts** block outside requests (`connect-src 'self'`) and have no `/api/contact`, so preview copies use `simulate: true`.
-- **The git repo with tags lives only in the AI workspace,** which is temporary. If a new session needs "revert to …", ask Vasant for the history zip, or rebuild tags from his GitHub history.
+- **The git repo with tags lives only in the AI workspace,** which is temporary. If a new session needs "revert to …", ask Vasant for the history zip, or rebuild tags from his GitHub history. GitHub's own history (uploads, then pull requests from 3 Nov: #1 Voice to Blog, #2 its Let's talk) has different commit hashes from the workspace copy; the files are the same.
 
 ## 8. Artifact links (Claude, private previews)
 

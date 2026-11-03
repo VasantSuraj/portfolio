@@ -1,6 +1,6 @@
 # Vasant Suraj — portfolio
 
-_Updated 3 Nov 2026. Current version: **v57-voice-to-blog**, with these docs on top as **v58-docs**._
+_Updated 3 Nov 2026. Current version: **v59-voice-talk** (the Voice to Blog Let's talk, with these docs)._
 
 A scroll-driven 3D portfolio. It is a static site with no build step and no framework: every page is one HTML file with its CSS and JavaScript inline, plus shared scripts and texture folders. Host it on any static host (it runs on Vercel), or locally with `npx serve .` or `python3 -m http.server`.
 
@@ -20,7 +20,7 @@ Pages must be served over **http**, not opened as `file://`. WebGL loads texture
 | `automations/video-to-blog.html` | Video to Blog: "The Projection Booth", an old cinema booth before the first show |
 | `automations/voice-to-blog.html` | Voice to Blog: "The Tracking Station", a radio dish and a tin hut in the desert at dusk |
 
-Every page has a **Let's talk** button. It opens a contact form that belongs to that page's world (the particles, a hanging board, a bottle, a sheet of paper, a painting, a title card on a cinema screen…); Voice to Blog uses the hanging board until its own is built. The message goes to WhatsApp through a Vercel function. The WhatsApp number and keys are never in the code: see `CONTACT-SETUP.md`.
+Every page has a **Let's talk** button. It opens a contact form that belongs to that page's world (the particles, a hanging board, a bottle, a sheet of paper, a painting, a title card on a cinema screen, a sheet typed on a teleprinter…). The message goes to WhatsApp through a Vercel function. The WhatsApp number and keys are never in the code: see `CONTACT-SETUP.md`.
 
 ## Files
 
