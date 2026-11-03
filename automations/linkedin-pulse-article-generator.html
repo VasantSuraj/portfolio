@@ -181,7 +181,7 @@ article{min-width:0}
 .slip-mock em.auto{font-style:normal;color:#f3d27a;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid currentColor;border-radius:999px;padding:1px 9px}
 .sec code{font-family:var(--mono);font-size:.9em;background:rgba(242,240,234,.08);padding:1px 6px;border-radius:5px}
 /* Let's talk: the order slate on the left wall, the form chalked on it; everything else steps aside while it's open */
-#talk3d{position:fixed;inset:0;z-index:3;pointer-events:none;display:none}
+#talk3d{position:fixed;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;display:none}
 html.talking #talk3d{display:block}
 html.talking #talk3d .tb-live{pointer-events:auto}
 html.talking .cap,html.talking .hero-title,html.talking .end,html.talking .progress,html.talking .scroll,html.talking .scrim,html.talking .hushveil{opacity:0!important;pointer-events:none!important;transition:opacity .5s ease}
@@ -1388,12 +1388,32 @@ async function buildTalk(config, send) {
 }
 function fitTalk() {   // square on to the chalked form, far enough back to see all of it
   slate.g.updateWorldMatrix(true, true);
-  const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), m = talk.mobile, vis = clamp(innerHeight / H, 0.6, 1);   // (on iPhones the canvas runs on under the bottom bar: fit in what shows)
+  const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), m = talk.mobile, { vis, mid } = shownPart();   // (on iPhones: fit in what shows)
   const d = Math.max(talk.PH / ((m ? 0.84 : 0.8) * 2 * tn * vis), talk.PW / ((m ? 0.92 : 0.84) * 2 * tn * camera.aspect));
   const c = slate.g.localToWorld(V(0, slate.cy, 0.03)), n = V(0, 0, 1).transformDirection(slate.g.matrixWorld);
   talkPose.look.copy(c); talkPose.pos.copy(c).addScaledVector(n, d);
-  const lift = (m ? talk.PH * 0.03 : 0) - (1 - vis) * d * tn; talkPose.look.y += lift; talkPose.pos.y += lift;
+  const lift = (m ? talk.PH * 0.03 : 0) + mid * d * tn; talkPose.look.y += lift; talkPose.pos.y += lift;   // centred in what shows
 }
+
+/* ---- the live form exactly over the painted one. On iPhones the canvas and the CSS3D layer can be laid out differently (the
+   canvas can start under the address bar, or change size with the toolbars without a resize event), so while Let's talk is open the
+   page measures both every quarter second: it re-renders at the canvas's real size and moves the CSS3D layer onto the canvas.
+   ?talkdbg shows the numbers. ---- */
+const talkEl = document.getElementById('talk3d'), talkDbg = /[?&]talkdbg/.test(location.search) ? document.body.appendChild(Object.assign(document.createElement('pre'), { style: 'position:fixed;left:6px;bottom:6px;z-index:99;margin:0;padding:6px 8px;font:11px/1.35 monospace;color:#fff;background:rgba(0,0,0,.7);pointer-events:none' })) : null;
+let syncT = 0, talkDX = 0, talkDY = 0;
+function syncLayers() {
+  if (!talk.cssR || !document.documentElement.classList.contains('talking')) return;
+  let g = canvas.getBoundingClientRect();
+  if (Math.abs(Math.round(g.height) - H) > 1 || Math.abs(Math.round(g.width) - W) > 1) { resize(); g = canvas.getBoundingClientRect(); }
+  const t = talkEl.getBoundingClientRect(), dx = g.left - t.left, dy = g.top - t.top;
+  if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) { talkDX += dx; talkDY += dy; talkEl.style.transform = talkDX || talkDY ? `translate(${talkDX}px,${talkDY}px)` : ''; }
+  if (talkDbg) { const vv = window.visualViewport; talkDbg.textContent = `canvas ${g.left.toFixed(1)},${g.top.toFixed(1)} ${g.width.toFixed(1)}x${g.height.toFixed(1)}\nlayer  ${t.left.toFixed(1)},${t.top.toFixed(1)} ${t.width.toFixed(1)}x${t.height.toFixed(1)}\nW,H ${W},${H}  inner ${innerWidth}x${innerHeight}\nvv ${vv ? vv.width.toFixed(1) + 'x' + vv.height.toFixed(1) + ' @' + vv.offsetTop.toFixed(1) : '-'}  shift ${talkDX.toFixed(1)},${talkDY.toFixed(1)}`; }
+}
+function shownPart() {   // the part of the canvas on screen: on iPhones it can start above the top and run on under the bottom bar
+  const g = canvas.getBoundingClientRect(), vt = clamp(-g.top, 0, H - 1), vb = clamp(innerHeight - g.top, vt + 1, H);
+  return { vis: clamp((vb - vt) / H, 0.6, 1), mid: ((vt + vb) / 2 - H / 2) / (H / 2) };   // mid: where its middle is, −1…1 of the canvas's half-height
+}
+if (window.visualViewport) { visualViewport.addEventListener('resize', () => syncLayers()); visualViewport.addEventListener('scroll', () => syncLayers()); }
 
 /* ---- the camera's way: inside, straight; from the yard, in at the doors ---- */
 const inHall = p => p.x > R.x0 && p.x < R.x1 && p.z > R.z0 && p.z < R.z1 && p.y < roofY(p.x);
@@ -1427,6 +1447,7 @@ async function openTalk({ config, send, opener, fallback }) {
     console.warn('[contact] the slate is unavailable:', err && err.message); talk.busy = false;
     document.documentElement.classList.remove('talking'); document.documentElement.style.removeProperty('overflow'); talk.group = null; if (fallback) fallback(); return; }
   talk.busy = false; talk.when = new Date(); talk.seq = -1; talk.swapped = false; talk.sentVals = null;
+  syncLayers();   // line the layers up before anything is shown
   talk.hold = true; talk.surf.reset();   // → a wiped slate; the form is chalked on as the camera arrives
   const P0 = camera.position.clone();
   talk.L0.copy(talk.mode === 'out' ? _tl : camLook); talk.L1.copy(talkPose.look);
@@ -1454,6 +1475,7 @@ function closeTalk() {
 }
 function talkFrame(dt) {
   if (talk.mode === 'off') return false;
+  syncT += dt; if (syncT > 0.25) { syncT = 0; syncLayers(); }
   if (talk.mode === 'on') { camera.position.copy(talkPose.pos); _tl.copy(talkPose.look); camera.lookAt(_tl); return true; }
   if (talk.mode === 'away') {
     talk.seq = talk.freeze != null ? talk.freeze : talk.seq + dt; const s = talk.seq;   // (freeze: QA hook)
