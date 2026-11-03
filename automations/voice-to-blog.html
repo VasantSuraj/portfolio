@@ -5,7 +5,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Archivo:wdth,wght@62..125,300..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Archivo:wdth,wght@62..125,300..700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* The Tracking Station. One automation, shown as a radio tracking station in the desert at dusk: the dish locks on to a spoken
    brief, the hut turns the voice into words on the teleprinter, the words are rewritten in the house voice, filed in the binder
@@ -187,6 +187,18 @@ html.talking #talk3d .tb-live{pointer-events:auto}
 html.talking .cap,html.talking .hero-title,html.talking .end,html.talking .progress,html.talking .scroll,html.talking .scrim,html.talking .hushveil{opacity:0!important;pointer-events:none!important;transition:opacity .5s ease}
 html.talking .doc{visibility:hidden}
 html.talking body.hush #gl{filter:none}
+/* the sheet on the teleprinter: typewriter type in two inks, ruled boxes, a dark key to send */
+.tb-face.tb-look-telex{--tb-display:'Courier Prime','Courier New',Courier,ui-monospace,monospace;--tb-display-w:700;--tb-display-ls:.02em;--tb-ink:#1f2328;--tb-field-ink:#1b2a44;--tb-accent:#b02f1f;--tb-accent-soft:rgba(176,47,31,.18);--tb-placeholder:rgba(31,35,40,.38);--tb-bad:#b02f1f;--tb-ghost:#1f2328;font-family:'Courier Prime','Courier New',Courier,ui-monospace,monospace}
+.tb-look-telex h2,.tb-look-telex h3{text-transform:uppercase}
+.tb-look-telex .tb-intro,.tb-look-telex p,.tb-look-telex .tb-note{font-weight:400}
+.tb-look-telex .tb-f input,.tb-look-telex .tb-f textarea{font-family:'Courier Prime','Courier New',Courier,ui-monospace,monospace;font-weight:400;transition:none}
+.tb-look-telex .tb-f input:focus,.tb-look-telex .tb-f textarea:focus{box-shadow:0 0 0 1.5px var(--tb-accent);background:rgba(176,47,31,.04)}
+.tb-look-telex .tb-btn{font-family:'Courier Prime','Courier New',Courier,ui-monospace,monospace;font-weight:700;letter-spacing:.12em;color:#f3ecda;background:#202429;border-radius:2px;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.tb-look-telex .tb-btn:hover{background:#2e343a}
+.tb-look-telex .tb-knob{color:#1f2328;background:transparent;box-shadow:inset 0 0 0 1.5px rgba(31,35,40,.55)}
+.tb-look-telex .tb-knob:hover{background:rgba(31,35,40,.08)}
+.tb-look-telex .tb-tag{font-family:'Courier Prime','Courier New',Courier,ui-monospace,monospace;background:transparent;color:#1b2a44;box-shadow:inset 0 0 0 1.5px rgba(31,35,40,.45);transform:none}
+.tb-look-telex .tb-ghost{font-family:'Courier Prime','Courier New',Courier,ui-monospace,monospace}
 </style>
 
 <canvas id="gl" aria-hidden="true"></canvas>
@@ -420,6 +432,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarse = matchMedia('(hover: none)').matches;
@@ -737,7 +750,7 @@ const dish = (() => {
   const warnM = new THREE.MeshStandardMaterial({ color: 0x3a0806, emissive: 0xff2a14, emissiveIntensity: 0 });
   mesh(new THREE.SphereGeometry(0.07, 12, 8), warnM, bowl, 0, F + 0.56, 0, false);
   // cables from the pad to the hut: a conduit lying on the sand
-  return { root, az, el, bowl, warnM, refl, aim: { az: 0, el: 0 },
+  return { root, az, el, bowl, warnM, refl, F, aim: { az: 0, el: 0 },
     point(a, e) { this.aim.az = a; this.aim.el = e; az.rotation.y = a; el.rotation.x = Math.PI / 2 - e; } };
 })();
 dish.point(SUN_AZ + 0.55, THREE.MathUtils.degToRad(84));   // parked, looking up
@@ -1048,7 +1061,286 @@ gravelM.alphaMap.channel = 1; gravelM.alphaMap.colorSpace = THREE.NoColorSpace;
   const m = new THREE.Mesh(g, gravelM); m.receiveShadow = true; m.renderOrder = 1; scene.add(m); }
 
 /* =====================================================================
-   SCROLL → WHAT HAPPENS (look test: the station runs and the light goes down; the story beats come next)
+   LET'S TALK: the teleprinter. Clicking "Let's talk" takes the camera into the hut (in by the door when it starts outside) to the
+   desk, where a fresh sheet feeds up out of the teleprinter with the form typed on it: talk/surface.js lays out the words, this
+   types them on the paper character by character, and the live fields sit over them in CSS3D. Send: the camera steps out of the
+   door while the dish tilts up and transmits, then comes back in as the teleprinter types MESSAGE RECEIVED with the time.
+   Escape or ✕ goes back to wherever the scroll left the camera, by the door when it has to.
+   ===================================================================== */
+renderer.localClippingEnabled = true;
+const TELEX = "'Courier Prime', 'Courier New', Courier, ui-monospace, monospace";
+const PAPER_W = 0.42, LEAN = 0.09, CPS = 170;                          // the sheet's width (the platen's), its lean back, characters a second
+const PLATEN = V(TP.x + 0.08, 1.13, TP.z);                              // hut space: where the paper leaves the machine
+const PAPER_TINT = new THREE.Color(0.95, 0.93, 0.88);
+const TX = { az: SUN_AZ + 0.32, el: THREE.MathUtils.degToRad(62) };     // the dish's attitude to transmit
+const SIDE_FAR = [2, 3.4, 15], SIDE_NEAR = [12, 2.6, 16];               // round the mast side of the hut (the scroll's own way in)
+const VANT = { pos: hutPt(5.6, 4.4, HL + 12), look: V(DISH.x, groundY(DISH.x, DISH.z) + 12, DISH.z) };   // outside, watching the dish
+const OUT = 2.6, HOLD = 2.2, BACK = 2.6;                                // the trip out to watch the transmission, and back
+const talk = { mode: 'off', t: 0, dur: 3, curve: null, back: null, ahead: false, L0: V(0, 0, 0), L1: V(0, 0, 0), v: 0, busy: false,
+  surf: null, L: null, shown: 'form', group: null, slide: null, sheet: null, css: null, cssR: null, opener: null, mobile: null,
+  cv: null, bg: null, tex: null, FW: 0, FH: 0, ox: 0, oy: 0, MPP: 0, PW: 0, PH: 0,
+  typed: 0, total: 0, typing: false, hold: false, feedOn: false, feed: 0, curB: 0, cssK: 0, seq: -1, swapped: false, tx: 0, rx: 0, when: new Date(), sentVals: null };
+const talkPose = { pos: V(0, 0, 0), look: V(0, 0, 0) }, _tl = V(0, 0, 0), _ta = V(0, 0, 0);
+const clipY = new THREE.Plane(V(0, 1, 0), -(hut.position.y + PLATEN.y));   // nothing of the sheet shows below the platen
+teleP.material.transparent = true;                                       // the story's paper gives way to the fresh sheet
+
+// the transmission: rings leaving the feed along the boresight, a glow at the feed
+const pulses = [];
+for (let i = 0; i < 4; i++) {
+  const g = new THREE.RingGeometry(0.86, 1, 96); g.rotateX(-Math.PI / 2);
+  const r = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: 0xc8ffe2, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+  r.visible = false; r.frustumCulled = false; r.renderOrder = 6; dish.bowl.add(r); pulses.push(r);
+}
+const feedGlow = new THREE.PointLight(0xbfffe0, 0, 26, 1.6); feedGlow.position.y = dish.F + 0.2; dish.bowl.add(feedGlow);
+
+/* ---- the paper ---- */
+const hash = n => { const s = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return s - Math.floor(s); };
+const INK = { title: '#15181c', intro: '#2a2e33', label: '#3b3832', msg: '#b02f1f', note: '#6a6257' }, TYPED = '#1b2a44', RED = '#b02f1f';
+const two = n => String(n).padStart(2, '0'), MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const hhmm = d => two(d.getHours()) + ':' + two(d.getMinutes());
+function paperBg() {   // painted once per build: the paper, its grain, the perforation it was torn along
+  const c = document.createElement('canvas'); c.width = talk.cv.width; c.height = talk.cv.height; const x = c.getContext('2d'), w = c.width, h = c.height, k = w / talk.FW;
+  const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#eee6d1'); g.addColorStop(0.45, '#f3ecda'); g.addColorStop(1, '#ebe2cb'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  let sd = 11; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 9000; i++) { x.fillStyle = `rgba(${r() > 0.5 ? '120,100,70' : '255,255,245'},${r() * 0.06})`; const z = (0.6 + r() * 1.4) * k; x.fillRect(r() * w, r() * h, z, z); }
+  for (let i = 0; i < 14; i++) { x.fillStyle = `rgba(130,105,70,${0.012 + r() * 0.018})`; x.fillRect(0, r() * h, w, (1 + r() * 2) * k); }   // faint feed marks
+  x.fillStyle = 'rgba(60,50,35,.32)'; for (let xx = 4 * k; xx < w; xx += 9 * k) x.fillRect(xx, 9 * k, 4.5 * k, 1.2 * k);           // the perforation along the top
+  const v = x.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.hypot(w, h) * 0.62); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(70,50,20,.1)'); x.fillStyle = v; x.fillRect(0, 0, w, h);
+  return c;
+}
+const countChars = L => L.texts.reduce((n, t) => n + t.words.reduce((m, wd) => m + wd.w.length + 1, 0), 0);
+function typeChars(x, str, X, Y, adv, k, seed) {   // typed: each character a touch off its line and its ink a touch uneven
+  for (let i = 0; i < str.length; i++) { const hs = hash(seed + i); x.globalAlpha = 0.8 + 0.2 * hs; x.fillText(str[i], X + i * adv + (hash(seed + i + 0.5) - 0.5) * 0.5 * k, Y + (hs - 0.5) * 0.7 * k); }
+  x.globalAlpha = 1;
+}
+function drawField(x, f, k, tall) {   // a ruled box: faint sides, ticks at the corners, a dotted line to type on
+  x.strokeStyle = 'rgba(31,35,40,.22)'; x.lineWidth = 1 * k; x.strokeRect(f.x * k, f.y * k, f.w * k, f.h * k);
+  x.fillStyle = 'rgba(31,35,40,.72)'; const t = 9 * k, b = 1.8 * k;
+  for (const [px, py, sx, sy] of [[f.x, f.y, 1, 1], [f.x + f.w, f.y, -1, 1], [f.x, f.y + f.h, 1, -1], [f.x + f.w, f.y + f.h, -1, -1]]) { x.fillRect(px * k, py * k, sx * t, sy * b); x.fillRect(px * k, py * k, sx * b, sy * t); }
+  x.fillStyle = 'rgba(31,35,40,.5)'; const base = tall ? [] : [f.y + f.h - 9];
+  if (tall) for (let yy = f.y + 13 + 24.6; yy < f.y + f.h - 6; yy += 24.6) base.push(yy);
+  for (const yy of base) for (let xx = f.x + 12; xx < f.x + f.w - 12; xx += 6) x.fillRect(xx * k, yy * k, 2.6 * k, 1.2 * k);
+}
+function drawValue(x, f, v, k, tall, seed) {   // the visitor's words, typed in at Send so they stay on the paper as the live fields go
+  if (!v) return; x.font = `400 ${17 * k}px ${TELEX}`; x.fillStyle = TYPED; x.textBaseline = 'middle'; const adv = x.measureText('M').width;
+  if (!tall) { const n = Math.max(1, Math.floor((f.w - 32) * k / adv)); typeChars(x, v.length > n ? v.slice(0, n - 1) + '…' : v, (f.x + 16) * k, (f.y + f.h / 2) * k, adv, k, seed); return; }
+  const n = Math.max(1, Math.floor((f.w - 32) * k / adv)), lines = []; let line = '';
+  for (const wd of v.replace(/\s+/g, ' ').trim().split(' ')) { const t = line ? line + ' ' + wd : wd; if (t.length > n && line) { lines.push(line); line = wd; } else line = t; }
+  if (line) lines.push(line);
+  lines.slice(0, Math.floor((f.h - 20) / 24.6)).forEach((l, i) => typeChars(x, l.slice(0, n), (f.x + 16) * k, (f.y + 13 + 12.3 + i * 24.6) * k, adv, k, seed + i * 97));
+}
+function stamp(x, sl, k, time) {   // RECEIVED and the time in red ink: a rubber stamp
+  x.save(); x.translate((sl.x + 70) * k, (sl.y + sl.h / 2) * k); x.rotate(-0.1);
+  x.strokeStyle = RED; x.fillStyle = RED; x.globalAlpha = 0.86;
+  x.lineWidth = 3 * k; x.beginPath(); x.roundRect ? x.roundRect(-66 * k, -32 * k, 132 * k, 64 * k, 7 * k) : x.rect(-66 * k, -32 * k, 132 * k, 64 * k); x.stroke();
+  x.lineWidth = 1.1 * k; x.strokeRect(-60 * k, -26 * k, 120 * k, 52 * k);
+  x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = `700 ${12.5 * k}px ${TELEX}`; try { x.letterSpacing = (2.4 * k) + 'px'; } catch (_) {}
+  x.fillText('RECEIVED', 1.2 * k, -12 * k); try { x.letterSpacing = '0px'; } catch (_) {}
+  x.font = `700 ${30 * k}px ${TELEX}`; x.fillText(time, 0, 10 * k);
+  x.globalAlpha = 1; x.fillStyle = '#f1e9d6'; let s = 5; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 260; i++) { const z = (0.6 + r() * 1.6) * k; x.globalAlpha = 0.35 + r() * 0.5; x.fillRect((r() - 0.5) * 136 * k, (r() - 0.5) * 68 * k, z, z); }   // the ink doesn't take everywhere
+  x.restore();
+}
+function paintSheet(vals) {
+  const cv = talk.cv, x = cv.getContext('2d'), w = cv.width, k = w / talk.FW, L = talk.L, st = talk.shown;
+  x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.drawImage(talk.bg, 0, 0);
+  try { x.letterSpacing = '0px'; } catch (_) {}
+  const d = talk.when, head = `${st === 'sent' ? 'RECEIVED' : st === 'error' ? 'NOT SENT' : 'INCOMING'}  ·  ${two(d.getDate())} ${MON[d.getMonth()]} ${d.getFullYear()}  ·  ${hhmm(d)}`;
+  x.font = `700 ${11.5 * k}px ${TELEX}`; x.fillStyle = INK.note; x.textBaseline = 'middle';
+  typeChars(x, head, talk.ox * k, talk.oy * 0.56 * k, x.measureText('M').width + 1.4 * k, k, 7);
+  x.translate(talk.ox * k, talk.oy * k);
+  let left = talk.typed, cur = null, lab = 0, seed = 100; const shown = [];
+  outer: for (const t of L.texts) {
+    x.font = t.font(k); x.textBaseline = 'middle'; x.fillStyle = INK[t.kind] || INK.intro;
+    for (const wd of t.words) {
+      const n = wd.w.length, adv = wd.wd / n, m = Math.min(n, Math.floor(left));
+      if (m < 1) break outer;
+      const y = (wd.y + wd.h / 2) * k; typeChars(x, wd.w.slice(0, m), wd.x * k, y, adv * k, k, seed);
+      if (t.kind === 'title') { x.globalAlpha = 0.5; typeChars(x, wd.w.slice(0, m), wd.x * k + 0.8 * k, y, adv * k, k, seed); }   // struck twice
+      seed += n; left -= n + 1; cur = wd;
+      if (m < n) break outer;
+    }
+    if (t.kind === 'label') shown.push(lab++);
+  }
+  x.globalAlpha = 1;
+  L.fields.forEach((f, i) => { if (!shown.includes(i)) return; const tall = f.h > 70; drawField(x, f, k, tall); if (vals) drawValue(x, f, vals[['name', 'phone', 'email', 'message'][i]], k, tall, 3000 + i * 500); });
+  const done = talk.typed >= talk.total;
+  if (done) for (const sl of L.seals) stamp(x, sl, k, hhmm(talk.when));
+  talk.curB = done ? talk.FH : cur ? talk.oy + cur.y + cur.h + 10 : talk.oy;
+  talk.tex.needsUpdate = true;
+}
+function startTyping(feed) { talk.feedOn = feed; talk.typed = reduce ? talk.total : 0; talk.typing = !reduce; if (!feed) talk.feed = 0; paintSheet(); }
+function sheetChanged(reason) {
+  if (!talk.cv) return;
+  const s = talk.surf;
+  if (reason === 'state' && s.state === 'sent' && talk.mode !== 'off') {
+    talk.when = new Date(); talk.css.element.style.opacity = '0'; talk.cssK = 0;
+    if (!reduce) { paintSheet(talk.sentVals); return; }   // the sent form stays on the paper until the camera is out of the door
+  }
+  talk.L = s.layout(); talk.total = countChars(talk.L); talk.shown = s.state;
+  if (reason === 'state') { if (talk.hold) { talk.typed = 0; talk.typing = false; paintSheet(); } else startTyping(false); }
+  else { if (!talk.typing) talk.typed = talk.total; paintSheet(); }
+}
+
+/* ---- building it ---- */
+async function buildTalk(config, send) {
+  const mobile = W / H < 0.85;
+  if (talk.group && talk.mobile === mobile) { fitTalk(); return; }
+  if (talk.group) { talk.group.parent.remove(talk.group); talk.surf.destroy(); talk.tex.dispose(); talk.group = null; talk.cv = null; }
+  const { createSurface } = await import('../talk/surface.js');
+  if (document.fonts) await Promise.all([`700 50px 'Courier Prime'`, `400 17px 'Courier Prime'`, `700 13px 'Courier Prime'`].map(f => document.fonts.load(f))).catch(() => {});
+  talk.mobile = mobile;
+  const s = talk.surf = createSurface({ config, send, width: mobile ? 344 : 560, mobile, look: 'tb-look-telex', pad: mobile ? ['30px', '20px', '24px'] : ['36px', '40px', '30px'],
+    copy: { sentTitle: 'Message received', sentText: "Thanks. I'll get back to you soon, on WhatsApp or by email." },
+    onChange: r => sheetChanged(r), onClose: () => closeTalk(), onSent: () => transmit() });
+  s.el.addEventListener('submit', e => { const f = e.target; talk.sentVals = Object.fromEntries(['name', 'phone', 'email', 'message'].map(n => [n, (f.elements[n] && f.elements[n].value) || ''])); }, true);
+  // the sheet: the face with a margin; the top margin carries the line the teleprinter heads every message with
+  const mt = mobile ? 46 : 54, mb = mobile ? 34 : 44, mx = mobile ? 20 : 46;
+  talk.FW = s.fw + 2 * mx; talk.FH = s.fh + mt + mb; talk.ox = mx; talk.oy = mt;
+  talk.MPP = PAPER_W / talk.FW; talk.PW = PAPER_W; talk.PH = talk.FH * talk.MPP;
+  const kk = Math.min(2048 / Math.max(talk.FW, talk.FH), 2.8);
+  talk.cv = document.createElement('canvas'); talk.cv.width = Math.round(talk.FW * kk); talk.cv.height = Math.round(talk.FH * kk);
+  talk.bg = paperBg();
+  talk.tex = new THREE.CanvasTexture(talk.cv); talk.tex.colorSpace = THREE.SRGBColorSpace; talk.tex.anisotropy = ANISO;
+  const g = new THREE.Group(); g.position.copy(PLATEN); g.rotation.set(-LEAN, -Math.PI / 2, 0, 'YXZ'); hut.add(g);   // faces the chair, leaning back a little
+  const slide = new THREE.Group(); g.add(slide);
+  talk.sheet = new THREE.Mesh(new THREE.PlaneGeometry(talk.PW, talk.PH), new THREE.MeshBasicMaterial({ map: talk.tex, color: PAPER_TINT, transparent: true, opacity: 0, clippingPlanes: [clipY] }));
+  slide.add(talk.sheet);
+  talk.css = new CSS3DObject(s.el); talk.css.scale.setScalar(talk.MPP);
+  talk.css.position.set((talk.ox + s.fw / 2 - talk.FW / 2) * talk.MPP, -(talk.oy + s.fh / 2 - talk.FH / 2) * talk.MPP, 0.0006); talk.css.visible = false; slide.add(talk.css);
+  talk.group = g; talk.slide = slide;
+  talk.L = s.layout(); talk.total = countChars(talk.L); fitTalk();
+}
+function fitTalk() {   // square on to the sheet, far enough back to see all of it
+  const g = talk.group; g.updateWorldMatrix(true, false);
+  const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), m = talk.mobile;
+  const d = Math.max(talk.PH / ((m ? 0.82 : 0.8) * 2 * tn), talk.PW / ((m ? 0.9 : 0.84) * 2 * tn * camera.aspect));
+  const c = g.localToWorld(V(0, talk.PH / 2, 0)), n = V(0, 0, 1).transformDirection(g.matrixWorld);
+  talkPose.look.copy(c); talkPose.pos.copy(c).addScaledVector(n, d);
+  if (m) { const up = V(0, 1, 0).transformDirection(g.matrixWorld).multiplyScalar(talk.PH * 0.05); talkPose.look.add(up); talkPose.pos.add(up); }   // phone: the sheet sits a little lower, clear of the top bar
+}
+
+/* ---- the camera's way: never through a wall. In and out by the door; outside, across the front or round the mast side ---- */
+function inHut(p) { const q = hut.worldToLocal(p.clone()); return Math.abs(q.x) < HW - 0.05 && Math.abs(q.z) < HL - 0.05 && q.y < WALLH + HW; }
+function isFront(p) { const q = hut.worldToLocal(p.clone()); return q.z >= HL + 1.5 || (q.z > HL - 0.3 && Math.abs(q.x - 0.82) < 1.3); }
+function aside(O, B) {
+  const fo = isFront(O), fb = isFront(B), zo = hut.worldToLocal(O.clone()).z, zb = hut.worldToLocal(B.clone()).z, far = V(...SIDE_FAR), near = V(...SIDE_NEAR);
+  if (fo && fb) return [B];
+  if (fo) return [near, ...(zb < 0 ? [far] : []), B];
+  if (fb) return [...(zo < 0 ? [far] : []), near, B];
+  return [B];
+}
+function route(A, B) {
+  const a = inHut(A), b = inHut(B), D = [V(...DOOR_IN), V(...DOOR_MID), V(...DOOR_OUT)];
+  if (a && b) return [A, B];
+  if (!a && b) return route(B, A).reverse();
+  if (a) return [A, ...D, ...aside(D[2], B)];
+  return [A, ...aside(A, B)];
+}
+function curveOf(pts) {
+  const q = [pts[0]]; for (const p of pts.slice(1)) if (p.distanceTo(q[q.length - 1]) > 0.08) q.push(p);
+  if (q.length < 2) q.push(q[0].clone().add(V(0, 0.01, 0)));
+  if (q.length === 2) q.splice(1, 0, q[0].clone().lerp(q[1], 0.5));
+  return new THREE.CatmullRomCurve3(q, false, 'centripetal');
+}
+function fly(curve, e, L0, L1, ahead) {   // long ways look where they're going, then turn to what they came for
+  camera.position.copy(curve.getPointAt(e));
+  if (ahead) { _ta.copy(curve.getPointAt(Math.min(1, e + 0.1))); _tl.copy(L0).lerp(_ta, sstep(0.03, 0.3, e)).lerp(L1, sstep(0.7, 1, e)); }
+  else _tl.copy(L0).lerp(L1, sstep(0, 0.6, e));
+  camera.lookAt(_tl);
+}
+
+/* ---- open, send, close ---- */
+async function openTalk({ config, send, opener, fallback }) {
+  if (talk.mode === 'in' || talk.mode === 'on' || talk.mode === 'away' || talk.busy) return;
+  talk.opener = opener; talk.busy = true;
+  if (!talk.cssR) { talk.cssR = new CSS3DRenderer(); document.getElementById('talk3d').appendChild(talk.cssR.domElement); talk.cssR.setSize(W, H); }
+  document.documentElement.classList.add('talking'); document.documentElement.style.overflow = 'hidden';
+  try { await buildTalk(config, send); } catch (err) {
+    console.warn('[contact] the teleprinter is unavailable:', err && err.message); talk.busy = false;
+    document.documentElement.classList.remove('talking'); document.documentElement.style.removeProperty('overflow'); talk.group = null; if (fallback) fallback(); return; }
+  talk.busy = false;
+  talk.when = new Date(); talk.swapped = false; talk.seq = -1; talk.rx = 0; talk.hold = true; talk.feedOn = true;
+  talk.surf.reset();   // → a blank sheet; it's typed as the camera arrives
+  talk.feed = Math.max(0, talk.FH - talk.oy) * talk.MPP; talk.slide.position.y = talk.PH / 2 - talk.feed;
+  const P0 = camera.position.clone();
+  talk.L0.copy(talk.mode === 'out' ? _tl : camLook); talk.L1.copy(talkPose.look);
+  if (P0.distanceTo(talkPose.pos) < 0.05) { talk.mode = 'on'; talk.hold = false; startTyping(true); talk.surf.focusFirst(); return; }
+  talk.curve = curveOf(route(P0, talkPose.pos.clone())); const len = talk.curve.getLength(); talk.ahead = len > 4;
+  talk.dur = reduce ? 0.001 : Math.min(4.2, 1.9 + len * 0.07); talk.mode = 'in'; talk.t = 0;
+}
+function transmit() {   // Send went through: out of the door to watch the dish send it, then back in for the reply
+  if (reduce) { talk.rx = 1; return; }
+  talk.seq = 0; talk.mode = 'away'; talk.swapped = false;
+  talk.curve = curveOf(route(talkPose.pos.clone(), VANT.pos.clone()));
+}
+function swapToReply() {   // a fresh sheet for the reply, typed as the camera comes back to the desk
+  talk.swapped = true; talk.L = talk.surf.layout(); talk.total = countChars(talk.L); talk.shown = talk.surf.state;
+  talk.typed = 0; talk.typing = false; talk.hold = true; talk.feedOn = true; talk.feed = Math.max(0, talk.FH - talk.oy) * talk.MPP; paintSheet();
+  talk.back = curveOf(route(camera.position.clone(), talkPose.pos.clone()));
+}
+function closeTalk() {
+  if (talk.mode === 'off' || talk.mode === 'out') return;
+  cameraAt(stage.prog);
+  talk.curve = curveOf(route(camera.position.clone(), tgtPos.clone())); const len = talk.curve.getLength(); talk.ahead = len > 4;
+  talk.L0.copy(_tl); talk.L1.copy(tgtLook);
+  talk.dur = reduce ? 0.001 : Math.min(3.8, 1.8 + len * 0.06); talk.mode = 'out'; talk.t = 0; talk.seq = -1; talk.hold = false; talk.rx = 0;
+  document.documentElement.classList.remove('talking');
+}
+function talkFrame(dt) {
+  if (talk.mode === 'off') return false;
+  if (talk.mode === 'on') { camera.position.copy(talkPose.pos); _tl.copy(talkPose.look); camera.lookAt(_tl); return true; }   // (kept square on through a resize)
+  if (talk.mode === 'away') {
+    talk.seq = talk.freeze != null ? talk.freeze : talk.seq + dt; const s = talk.seq;   // (freeze: QA hook)
+    if (s < OUT) fly(talk.curve, easeIO(s / OUT), talkPose.look, VANT.look, true);
+    else if (s < OUT + HOLD) { camera.position.copy(VANT.pos).add(_ta.set(0, (s - OUT) / HOLD * 0.18, 0)); _tl.copy(VANT.look); camera.lookAt(_tl); }
+    else {
+      if (!talk.swapped) swapToReply();
+      const u = Math.min(1, (s - OUT - HOLD) / BACK); fly(talk.back, easeIO(u), VANT.look, talkPose.look, true);
+      if (talk.hold && (1 - u) * BACK < 0.95) { talk.hold = false; startTyping(true); }
+      if (u >= 1) { talk.mode = 'on'; talk.seq = -1; if (talk.hold) { talk.hold = false; startTyping(true); } talk.surf.focusFirst(); }
+    }
+    return true;
+  }
+  talk.t = Math.min(talk.dur, talk.t + dt); fly(talk.curve, easeIO(talk.t / talk.dur), talk.L0, talk.L1, talk.ahead);
+  if (talk.mode === 'in' && talk.hold && talk.dur - talk.t < 0.95) { talk.hold = false; startTyping(true); }
+  if (talk.mode === 'in' && talk.t >= talk.dur) { talk.mode = 'on'; if (talk.hold) { talk.hold = false; startTyping(true); } talk.surf.focusFirst(); }
+  if (talk.mode === 'out' && talk.t >= talk.dur) { talk.mode = 'off'; camPos.copy(camera.position); camLook.copy(_tl); document.documentElement.style.removeProperty('overflow'); if (talk.opener && talk.opener.focus) talk.opener.focus({ preventScroll: true }); }
+  return true;
+}
+function talkUpdate(t, dt) {   // after the story's own update: the sheet, the typing, the dish and the lamps
+  const want = talk.mode === 'in' || talk.mode === 'on' || talk.mode === 'away' ? 1 : 0;
+  talk.v = reduce ? want : lerp(talk.v, want, 1 - Math.exp(-dt * (want ? 2.4 : 1.2)));
+  const a = clamp(talk.v * 1.5, 0, 1);
+  teleP.material.opacity = 1 - a; teleP.visible = a < 0.999;
+  if (talk.group) {
+    talk.group.visible = a > 0.001; talk.sheet.material.opacity = a;
+    if (talk.typing) { talk.typed = Math.min(talk.total, talk.typed + dt * CPS); if (talk.typed >= talk.total) talk.typing = false; paintSheet(); }
+    const tgt = talk.feedOn ? Math.max(0, talk.FH - talk.curB) * talk.MPP : 0;
+    talk.feed = reduce ? tgt : lerp(talk.feed, tgt, 1 - Math.exp(-dt * 14)); talk.slide.position.y = talk.PH / 2 - talk.feed;
+    tele.position.y = 0.8 + (talk.typing ? Math.sin(t * 95) * 0.0007 : 0);   // the machine shakes as it types
+    const show = talk.mode === 'on' && !talk.typing && talk.typed >= talk.total;   // the live fields once the sheet is typed and the camera is at it
+    talk.cssK = show ? (reduce ? 1 : lerp(talk.cssK, 1, 1 - Math.exp(-dt * 9))) : 0;
+    talk.css.visible = talk.cssK > 0.01; talk.css.element.style.opacity = talk.cssK.toFixed(3);
+  }
+  // the dish tilts up and transmits; the beacon flashes with it; the message lamp lights when the reply comes in
+  const s = talk.mode === 'away' ? talk.seq : -1, up = s > 0.4 && s < OUT + HOLD - 0.2 ? 1 : 0;
+  talk.tx = reduce ? 0 : lerp(talk.tx, up, 1 - Math.exp(-dt * 1.8));
+  if (talk.tx > 0.001) { const e = smooth(clamp(talk.tx, 0, 1)); dish.point(lerp(dish.aim.az, TX.az, e), lerp(dish.aim.el, TX.el, e)); }
+  const bt = s >= 0 ? s - (OUT - 0.15) : -1, burst = bt > 0 && bt < HOLD + 0.5 ? 1 : 0;
+  pulses.forEach((r, i) => { const u = (bt - i * 0.45) / 1.6, on = bt > 0 && u > 0 && u < 1; r.visible = on; if (!on) return;
+    const R = 1.4 + u * 15; r.scale.set(R, 1, R); r.position.y = dish.F + 0.8 + u * 28; r.material.opacity = 0.85 * Math.pow(1 - u, 1.6) * sstep(0, 0.06, u); });
+  feedGlow.intensity = burst * (7 + 3 * Math.sin(t * 11));
+  if (burst) { dish.warnM.emissiveIntensity = Math.max(dish.warnM.emissiveIntensity, 5);
+    const bl = Math.sin(t * 6.5) > 0 ? 1 : 0.05; beaconM.emissiveIntensity = Math.max(beaconM.emissiveIntensity, 0.15 + 4.5 * bl); beaconLight.intensity = Math.max(beaconLight.intensity, 9 * bl); }
+  if (s > OUT + HOLD - 0.3) talk.rx = 1;
+  if (talk.rx) msgLampM.emissiveIntensity = Math.max(msgLampM.emissiveIntensity, 2.2 + 1.2 * (Math.sin(t * 5) > 0 ? 1 : 0.3));
+}
+addEventListener('keydown', e => { if (talk.mode !== 'on' && talk.mode !== 'in' && talk.mode !== 'away') return; if (e.key === 'Escape') { e.preventDefault(); closeTalk(); } else talk.surf && talk.surf.trap(e); });
+window.__talkScene = { open: o => { openTalk(o); } };
+
+/* =====================================================================
+   SCROLL → WHAT HAPPENS (the station runs and the light goes down; the story beats come next)
    ===================================================================== */
 const LOCK = { az: SUN_AZ + 0.32, el: THREE.MathUtils.degToRad(27) }, PARK = { az: SUN_AZ + 0.55, el: THREE.MathUtils.degToRad(84) };
 const scopeVoice = (t, u) => { // a voice on the scope: syllables under an envelope
@@ -1082,6 +1374,7 @@ function update(t, dt, p) {
   msgLampM.emissiveIntensity = ping * (2.2 + 1.2 * (Math.sin(t * 5) > 0 ? 1 : 0.3));
   const bl = ping * (Math.sin(t * 3.4) > 0.2 ? 1 : 0.05); beaconM.emissiveIntensity = 0.15 + 4.5 * bl; beaconLight.intensity = 9 * bl;
   winGlowM.emissiveIntensity = 0.35 + 1.6 * dark;
+  talkUpdate(t, dt);   // Let's talk: the sheet, the dish transmitting, the lamps
 }
 
 /* ---- camera stations: outside at the dish, in through the door, round the hut, out again ---- */
@@ -1137,6 +1430,8 @@ addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty 
 function resize() {
   W = innerWidth; H = innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); bloom.resolution.set(W / 2, H / 2);
   camera.aspect = W / H; camera.fov = W / H < 0.85 ? 62 : 42; camera.updateProjectionMatrix(); viaCurves.clear();
+  if (talk.cssR) talk.cssR.setSize(W, H);
+  if (talk.group) fitTalk();
 }
 addEventListener('resize', resize);
 
@@ -1146,18 +1441,21 @@ function frame(now) {
   const dt = Math.min(SNAP ? 0.5 : 0.05, (now - last) / 1000); last = now; const t = (now - t0) / 1000 * (reduce ? 0.5 : 1);
   progL = SNAP ? stage.prog : lerp(progL, stage.prog, 1 - Math.exp(-dt * 5));
   ptr.x = lerp(ptr.x, ptr.tx, 0.05); ptr.y = lerp(ptr.y, ptr.ty, 0.05);
-  cameraAt(progL);
-  const kc = SNAP ? 1 : 1 - Math.exp(-dt * 3.4); camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc);
-  const pk = hut.worldToLocal(_l.copy(camPos)).lengthSq() < 30 ? 0.02 : 0.08;   // less sway inside the hut
-  camera.position.set(camPos.x + ptr.x * pk, camPos.y - ptr.y * pk * 0.6, camPos.z); camera.lookAt(camLook);
+  if (!talkFrame(dt)) {
+    cameraAt(progL);
+    const kc = SNAP ? 1 : 1 - Math.exp(-dt * 3.4); camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc);
+    const pk = hut.worldToLocal(_l.copy(camPos)).lengthSq() < 30 ? 0.02 : 0.08;   // less sway inside the hut
+    camera.position.set(camPos.x + ptr.x * pk, camPos.y - ptr.y * pk * 0.6, camPos.z); camera.lookAt(camLook);
+  }
   if (window.__camDbg) { camera.position.fromArray(window.__camDbg[0]); camera.lookAt(...window.__camDbg[1]); }   // QA hook
   sky.position.copy(camera.position); skyM.uniforms.uTime.value = t;
   update(t, dt, progL);
   composer.render(dt);
+  if (talk.cssR && talk.mode !== 'off') talk.cssR.render(scene, camera);
   requestAnimationFrame(frame);
 }
 resize(); cameraAt(stage.prog); camPos.copy(tgtPos); camLook.copy(tgtLook); progL = stage.prog;
 requestAnimationFrame(frame);
-window.__station = { scene, camera, renderer, STATIONS, KEY, dish, hut, hutPt, applyTime };
+window.__station = { scene, camera, renderer, STATIONS, KEY, dish, hut, hutPt, applyTime, talk, talkPose, route, VANT };
 </script>
 <script src="../site.js" defer></script>

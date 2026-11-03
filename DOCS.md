@@ -1,6 +1,6 @@
 # Vasant Suraj — portfolio: project documentation
 
-_Status as of 3 Nov 2026, version **v57-voice-to-blog** (docs: v58-docs). Nine pages are live: the home page and eight automation pages (Reddit Keyword Alerts, Notion to Webflow, SEO Pre-Live Checks, Auto Internal Linking, AI Blog Drafts, Webinar to Webflow, Video to Blog, Voice to Blog). Every page has a Let's talk form that sends to WhatsApp; all but Voice to Blog draw it in their own world (Voice to Blog uses the hanging board for now). Eleven automations still use the slide-in panel._
+_Status as of 3 Nov 2026, version **v59-voice-talk** (page and docs). Nine pages are live: the home page and eight automation pages (Reddit Keyword Alerts, Notion to Webflow, SEO Pre-Live Checks, Auto Internal Linking, AI Blog Drafts, Webinar to Webflow, Video to Blog, Voice to Blog). Every page has a Let's talk form that sends to WhatsApp, drawn in that page's own world. Eleven automations still use the slide-in panel._
 
 This file says **what** each part is and what it means. `BUILD.md` says how it is built. `HANDOFF.md` says how to continue the work.
 
@@ -21,7 +21,7 @@ The design goals set at the start:
 The site has no build step and no framework. Each page is one self-contained HTML file with its CSS and JavaScript inline. Shared pieces: `site.js` (Let's talk), `talk/` (the 3D forms), `api/contact.js` (the WhatsApp function).
 
 Runtime dependencies:
-- Google Fonts (Elms Sans + Archivo everywhere; Caveat on the greenhouse and studio pages; Fraunces on the SEO page and the board; Limelight on the Video to Blog title card)
+- Google Fonts (Elms Sans + Archivo everywhere; Caveat on the greenhouse and studio pages; Fraunces on the SEO page and the board; Limelight on the Video to Blog title card; Courier Prime on the Voice to Blog teleprinter sheet)
 - on the home page: three.js 0.169 and Lenis 1.1.13 from jsDelivr
 - on the automation pages: three.js 0.158 from jsDelivr
 
@@ -518,7 +518,11 @@ Poly Haven assets: **Rogland Sunset** (HDRI, for the light; the visible sky is p
 The camera walks into the hut through the open door (01 → 02) and back out the same way (06 → 07); it never passes through a wall.
 
 ### 12.4 Let's talk
-**Not built yet.** The approved plan: the camera goes into the hut to the teleprinter, and the form is typed on its paper; on send the camera steps outside as the dish tilts up and transmits, and the teleprinter prints "MESSAGE RECEIVED" with the time. Until then the page has no `__talkScene`, so `site.js` opens the hanging board.
+**The teleprinter.** "Let's talk" takes the camera into the hut (in by the door when it starts outside, round the mast side when it starts behind the hut) to the desk. A fresh sheet feeds up out of the teleprinter with the form typed on it, line by line, the paper rising as each line is typed: the header line ("INCOMING · date · time"), "LET'S TALK" struck twice, the intro, the labels in small capitals, ruled boxes with corner ticks and a dotted line to type on. Errors are typed in red. The live fields appear once the sheet is typed; what the visitor types shows in blue-black typewriter type.
+
+**Send.** The visitor's words stay typed on the paper as the camera steps out of the door and up beside the hut; the dish tilts up and transmits (rings of light leave the feed, the feed glows, the red warning light and the beacon flash). The camera comes back in to a fresh sheet: the teleprinter types **MESSAGE RECEIVED** and the reply line under a red rubber stamp, RECEIVED and the visitor's own time, and the MESSAGE lamp on the desk lights. The whole trip takes about 7 seconds. ✕ or Escape at any moment goes back to wherever the scroll left the camera, out by the door if it has to.
+
+**Reduced motion:** no trip; the sheet is typed at once and the reply replaces it in place. **Fallback:** if the scene can't be built, the plain card opens.
 
 ### 12.5 The runbook
 Facts: **Trigger** A webhook from a browser recorder · **Runs** On demand, 60 to 90 seconds · **Stack** n8n · Groq · Claude · Notion · Slack · **Output** A Notion draft, 5,000 to 7,000 words.
@@ -527,7 +531,7 @@ Stats: **2–5 min** of talking · **5–7k** words the draft is written to · *
 Note: "Names, the database, the recorder's address and credentials are left out on purpose. The recording, title and keywords in the scene are illustrative." The writing prompt in the workflow names a person and a company: neither appears on the page.
 
 ### 12.6 Versions
-Look test of the station (9c48f06, 47d7d46, `voice-look`) → the black half of the sky on Mac GPUs fixed, runbook and captions matched to the workflow JSON (acfb13a, `voice-look-2`) → home card wired (538eb0d, **`v57-voice-to-blog`**, current). Next: the story animations (the slip arriving, the tape and the teleprinter printing, the card being punched) and the teleprinter Let's talk.
+Look test of the station (9c48f06, 47d7d46, `voice-look`) → the black half of the sky on Mac GPUs fixed, runbook and captions matched to the workflow JSON (acfb13a, `voice-look-2`) → home card wired (538eb0d, `v57-voice-to-blog`) → the teleprinter Let's talk (**`v59-voice-talk`**, current; on GitHub through pull request #2). Next: the story animations (the slip arriving, the tape and the teleprinter printing, the card being punched).
 
 ---
 
@@ -535,7 +539,7 @@ Look test of the station (9c48f06, 47d7d46, `voice-look`) → the black half of 
 - **Real testimonials** to replace the six samples (`sample: false`).
 - **Thumbnails** for the 5 Factors.ai pages and 3 personal projects: `thumbs/benchmarks.jpg, campaign-offer.jpg, microsoft.jpg, prove-roi.jpg, routines.jpg, nike.jpg, ilish.jpg, leaderboard.jpg`. A missing file falls back to the card's tint. There is no `thumbs/` folder in the live repo yet.
 - **Eleven automation pages** still to build, each with its own world: Podcast to CMO Brief, Cluster to Pillar Post, Blog Refresh Engine, Blog to Social and Ads, Organic Social Engine, Slack to Post Idea, LinkedIn ICP Leaderboard, Competitive Intel System, Marketing Ticket Desk, Dev Tasks from Slack, Docs to Notion Sync. Set each entry's `url`.
-- **Voice to Blog:** the teleprinter Let's talk (§12.4) and the story animations; whether the recorder's name (Voxlog) may appear on the page.
+- **Voice to Blog:** the story animations; whether the recorder's name (Voxlog) may appear on the page.
 - **Video to Blog:** the per-station story animations (§11.6).
 - **"Next automation" links** still `#` on seven pages (§4); five could be wired now.
 - Issues found in the two workflow JSON files were reported to Vasant in chat; they are workflow fixes, not site work.
@@ -595,7 +599,7 @@ Every approved state is a git tag in the working repo, usually with copies in `b
 - Webinar to Webflow: `pre-webinar`, `pre-webinar-fix1`, `pre-webinar-home`, **`v54-webinar`**
 - Docs: `pre-docs`, `v55-docs`; `v58-docs` (these)
 - Video to Blog: `pre-video`, `video-look`, `pre-video-talk`, `video-talk-v1`, `pre-video-handover`, `video-handover` = **`v56-video-to-blog`**
-- Voice to Blog: `pre-voice-card`, `pre-voice`, `voice-look`, `voice-look-2`, `pre-voice-home`, **`v57-voice-to-blog` (current)**
+- Voice to Blog: `pre-voice-card`, `pre-voice`, `voice-look`, `voice-look-2`, `pre-voice-home`, `v57-voice-to-blog`, `pre-voice-talk`, **`v59-voice-talk` (current)**
 
 BUILD.md §16 and PORTFOLIO-HANDOFF.md have the full table. The repo with all tags lives in the AI workspace and is handed over as a history zip when asked.
 

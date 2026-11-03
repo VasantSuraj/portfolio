@@ -1,6 +1,6 @@
 # How it is built — technical documentation
 
-_Companion to `DOCS.md`, which says what the site is and what each part means. This file is the engineering view: tools, techniques, data flow, and the reasoning behind each choice. Current as of 3 Nov 2026, version **v57-voice-to-blog** (docs: v58-docs)._
+_Companion to `DOCS.md`, which says what the site is and what each part means. This file is the engineering view: tools, techniques, data flow, and the reasoning behind each choice. Current as of 3 Nov 2026, version **v59-voice-talk** (page and docs)._
 
 Contents:
 0. Stack at a glance
@@ -37,7 +37,7 @@ Contents:
 | Let's talk | `site.js` (classic script, every page) + `talk/surface.js` (ES module, no three.js) + `talk/board.js` (three.js 0.169) | One sending path and one set of settings; every world paints its own form |
 | Contact backend | **Vercel serverless function** `api/contact.js` (Node, CommonJS) → CallMeBot or the WhatsApp Cloud API | Free; secrets stay in Vercel env vars, never in the site |
 | Motion | Hand-rolled scroll→value mapping, `requestAnimationFrame`, time-based easing (`1 − exp(−k·dt)`) | Full control over the scrub; feels the same at any frame rate |
-| Type | Elms Sans (UI) with an Archivo fallback, from Google Fonts; Caveat for handwriting; Fraunces in places; Limelight for the Video to Blog title card | The approved face, loaded once |
+| Type | Elms Sans (UI) with an Archivo fallback, from Google Fonts; Caveat for handwriting; Fraunces in places; Limelight for the Video to Blog title card; Courier Prime for the Voice to Blog teleprinter sheet | The approved face, loaded once |
 | Textures and models | **Poly Haven (CC0)** for everything realistic: forest floor, sand, rock, satin, wood, brass, the city, greenhouse, studio, booth and desert-station sets, four HDRIs; the EZ-Tree texture set for bark and leaves | Free, realistic; downscaled to 512–2048 px; models packed into compact JSON |
 | Asset prep | Python: `bpy` (Blender as a module, run with `python3 -I`), `numpy`, `cv2`, `Pillow`, `scipy`; `onnxruntime` with **u2net_human_seg** and **Depth Anything V2 small** for the portrait | Free and local; converts .blend/.exr to web files |
 | QA | Playwright + headless Chromium (SwiftShader software GL) | Renders every state as an image to review before publishing |
@@ -854,8 +854,17 @@ At the origin. Pad and cable-pit lid (concrete), a tapered `CylinderGeometry` pe
 - **Phones:** `m` poses for `hero`, `brief` and `hints`. Inside close-ups step back along the view but are clamped to the hut's interior, so the camera never ends up outside the tin.
 - `update()`: the dish lock, the signal needle, the level lamps, the RECEIVING lamp from Send, the scope trace, the drum, the clock (still until Send, then 90 seconds by the ping), the message lamp and beacon at the ping, the window glow.
 
-### 10.7 Source
-`/home/claude/assets/station/`: `body.html`, and the module in five parts concatenated in order (`s_core.js`, `s_world.js`, `s_dish.js`, `s_hut.js`, `s_story.js`). `build.py` writes `automations/voice-to-blog.html` and refuses to if the joined module fails `node --check`. Also `conv_tex.py`, `conv_mesh.py` (with an object-name filter to take one LOD of a scan), `conv_hdr.py` (.exr or .hdr, optional `dusk` grade) and `make_tin.py`. Texture sizes: 1K for the sand, gravel, tin, planks and concrete; 512 px for props and scans (the `SMALL` set in `pbr()`).
+### 10.7 Let's talk: the teleprinter (`s_talk.js`)
+- **The sheet:** `createSurface({ look: 'tb-look-telex', width: 560 (phone 344) })` inside a margin (54 px top for the header line, 44 bottom, 46 a side). The paper is 0.42 m wide (the platen's width), so 1 CSS px = 0.42 / sheet width metres. A `Group` at the platen (hut space `TP.x + 0.08, 1.13, TP.z`) faces the chair and leans back 0.09 rad; inside it a `slide` group moves the sheet up and down, and a world clipping plane at the platen's height hides whatever is still inside the machine (`renderer.localClippingEnabled`). The material is an unlit `MeshBasicMaterial` with a slight tint (0.95, 0.93, 0.88), so the paper reads the same in any light and stays under the bloom threshold. The story's curled paper (`teleP`) cross-fades out while the sheet is shown.
+- **Typing:** `paintSheet()` draws a cached paper background (grain, faint feed marks, the perforation, a vignette), the header line, then every character of `layout()` in order up to `typed` (170 a second). Each character sits at its slot in the word (the font is monospaced, so word width ÷ letters), nudged up to 0.35 px and given 80–100 % ink; the title is struck twice. A field's ruled box appears once its label is typed. The feed: the line just typed sits at the platen, so the sheet rises as it's typed (eased, like line feeds). Typing starts 0.95 s before the camera arrives. The live fields (CSS3D) fade in only once the sheet is typed and the camera is at it.
+- **Type:** Courier Prime 400/700 from Google Fonts (added to this page's font link). The `.tb-look-telex` rules in the page's CSS set it on the face, inputs and buttons (`.tb-face.tb-look-telex`, because `surface.js` injects its CSS after the page's); inputs have `transition: none`.
+- **The camera's way** (`route(A, B)`): inside to inside is straight; inside to outside goes `DOOR_IN → DOOR_MID → DOOR_OUT`, then straight across the front if the target is in front of the door, else round the mast side through the scroll's own way points (`[12, 2.6, 16]`, and `[2, 3.4, 15]` when the target is on the dish side). `curveOf()` drops points closer than 8 cm (a repeated point makes a centripetal Catmull-Rom NaN). Long ways look along the path (a point 10 % ahead), then turn to the target over the last 30 %.
+- **Send:** `onSent` → mode `away`: 2.6 s out of the door to `VANT` (hut space `5.6, 4.4, HL + 12`, looking 12 m above the dish), 2.2 s watching, 2.6 s back. `talk.tx` eases the dish from its scroll aim to `TX` (az `SUN_AZ + 0.32`, el 62°); four additive rings in the bowl's group leave the feed along the boresight (radius 1.4 → 16 m, 28 m out, 1.6 s each, 0.45 s apart); a `PointLight` at the feed, the warning light and the beacon flash while it transmits. Before the camera leaves, the visitor's values are typed into the boxes (read from the form on submit), so the paper doesn't go blank under the camera; the reply layout is swapped in when the camera starts back. `talk.rx` lights the MESSAGE lamp until close.
+- **Hooks into the story:** `update()` calls `talkUpdate()` last (it overrides the dish aim and lamps with `max`); the frame loop runs `talkFrame(dt)` before the scroll camera and renders the CSS3D layer after the composer; `resize()` resizes it and refits the pose. Phones: the pose fits the width at 90 % and sits 5 % of the sheet higher, clear of the top bar.
+- **QA:** `qa/stalk.js` (see §14). `window.__station.talk.freeze = seconds` holds the Send trip at a moment.
+
+### 10.8 Source
+`/home/claude/assets/station/`: `body.html`, and the module in six parts concatenated in order (`s_core.js`, `s_world.js`, `s_dish.js`, `s_hut.js`, `s_talk.js`, `s_story.js`). `s_talk.js` comes before `s_story.js` because `resize()` and the frame loop use `talk`; its functions use the story's `DOOR_*`, `camPos` and `cameraAt` only when called. `build.py` writes `automations/voice-to-blog.html` and refuses to if the joined module fails `node --check`. Also `conv_tex.py`, `conv_mesh.py` (with an object-name filter to take one LOD of a scan), `conv_hdr.py` (.exr or .hdr, optional `dusk` grade) and `make_tin.py`. Texture sizes: 1K for the sand, gravel, tin, planks and concrete; 512 px for props and scans (the `SMALL` set in `pbr()`).
 
 ---
 
@@ -876,7 +885,7 @@ No three.js. `createSurface(o)`:
 - **`layout()`:** measures an untransformed copy in an off-screen host and returns, in CSS px from the face's top-left: `texts` (every `[data-paint]` element: `kind` = title / intro / label / msg / note, `glow`, `words: [{ w, x, y, h }]`, `size`, `font(k)`, letter spacing), `fields` (the input boxes), `seals`, `buttons`. The page paints these into its own texture in its own style; the live element (`.tb-live`, whose painted words are transparent) sits exactly over it in a `CSS3DObject`, so typing, focus and caret are real.
 - `drawWords(ctx, t, k, fn)` is a shared helper for painting a text block at scale `k`.
 - Typed values survive closing and reopening (cleared after a successful send). Validation matches the server. `elapsed` is sent for the timing check.
-- **Looks in use:** `tb-look-particles` (hero), `tb-look-letter` (beach), `tb-look-glass` (Reddit), `tb-look-print` (Press), `tb-look-paint` (SEO), `tb-look-kiosk` (city), `tb-look-order` (greenhouse), `tb-look-lyric` (studio), `tb-look-reel` (Video to Blog). The board uses its own markup. Voice to Blog has no scene yet, so it gets the board.
+- **Looks in use:** `tb-look-particles` (hero), `tb-look-letter` (beach), `tb-look-glass` (Reddit), `tb-look-print` (Press), `tb-look-paint` (SEO), `tb-look-kiosk` (city), `tb-look-order` (greenhouse), `tb-look-lyric` (studio), `tb-look-reel` (Video to Blog), `tb-look-telex` (Voice to Blog). The board uses its own markup.
 
 ### 11.3 `talk/board.js` (the hanging board)
 - Its own three.js 0.169 scene in a full-screen overlay (`.tb-root`, z 2147483000): a `WebGLRenderer` canvas, a `CSS3DRenderer` layer for the live form, and a veil that blurs and dims the page (`backdrop-filter: blur(11px) brightness(.74)`) over 1 s.
@@ -958,7 +967,7 @@ The Reddit, Press and SEO pages use no downloaded assets.
 
 No two automation pages share a world.
 
-**Type:** Elms Sans weights 100–900; headings weight 500 with tight tracking (−0.02 to −0.035 em); labels uppercase 12–13 px with 0.08–0.1 em tracking. The footer name is weight 800. Banner text is drawn on canvas at weight 700. Caveat (500/700) for handwriting in the greenhouse and studio. **Limelight** (400) for the headline of the Video to Blog title card only. Monospace for node types and code; Courier for the teleprinter and booking slips drawn on canvas.
+**Type:** Elms Sans weights 100–900; headings weight 500 with tight tracking (−0.02 to −0.035 em); labels uppercase 12–13 px with 0.08–0.1 em tracking. The footer name is weight 800. Banner text is drawn on canvas at weight 700. Caveat (500/700) for handwriting in the greenhouse and studio. **Limelight** (400) for the headline of the Video to Blog title card only. **Courier Prime** (400/700) for the Voice to Blog Let's talk sheet only. Monospace for node types and code; Courier for the teleprinter and booking slips drawn on canvas.
 
 **Motion rules:**
 - scroll scrubs position, time drives idle motion; all per-frame easing is `dt`-based
@@ -985,7 +994,7 @@ Playwright launches headless Chromium with `--use-gl=angle --use-angle=swiftshad
 The sandbox can't reach jsDelivr or Google Fonts, so requests are routed:
 - `three@0.169.*` → `node_modules/three169` (npm `three@0.169.0`), `three@0.158.*` → `node_modules/three` (npm `three@0.158.0`)
 - `lenis@*` → a local `lenis.min.js` from npm `lenis@1.1.13/dist`
-- `fonts.googleapis.com` → a small CSS with `@font-face` rules, and `fonts.gstatic.com` → woff2 files from npm `@fontsource-variable/elms-sans` and `@fontsource/limelight` (since 3 Nov; older scripts still return an empty body)
+- `fonts.googleapis.com` → a small CSS with `@font-face` rules, and `fonts.gstatic.com` → woff2 files from npm `@fontsource-variable/elms-sans`, `@fontsource/limelight` and `@fontsource/courier-prime` (since 3 Nov; older scripts still return an empty body)
 - `/api/contact` → `{"ok":true}` (or a mock that fails, to test the error face)
 
 Screenshots from the newer scripts show the real Elms Sans and Limelight; older ones use fallback fonts. The fps readout (0–3 fps) means nothing: compare triangles and JS ms instead, and ask for real fps on Vasant's machine. **SwiftShader also rounds differently from real GPUs**, so a shader NaN can be invisible in QA and a black block on a Mac (§13).
@@ -996,6 +1005,8 @@ Screenshots from the newer scripts show the real Elms Sans and Limelight; older 
 - `click.js`, `back.js`, `ret.js`: card clicks, the back arrow and the return-to-card.
 - `city.js`, `gh.js`, `st.js` (and the older per-page ones), and `shot.js` for the booth and station (`PAGE=automations/<page>.html`): `V=w,h,tag,mobile` viewport, `P=0,0.1,…` runway progress values to shoot, `WAIT` seconds per shot, `BOOT` seconds to wait first, `EVAL` an expression to print. They load the page with `?snap`. `sheet.py tag p-list cols` tiles the shots into one contact sheet.
 - `talk.js` (booth): opens Let's talk, can freeze the flight at given fractions (`FLY=0.15,0.3`), shows errors, filled, the splice and "Message received", then Escape.
+- `stalk.js` (station): the same for the teleprinter, plus `SEQ=1.6,3.4,…` to hold the Send trip at those seconds (through `talk.freeze`), `ONLY_OPEN=1` to stop after opening and `PRE=1` for a shot before. It clicks with `element.click()` and scrolls with `behavior: 'instant'`: the automation pages have `scroll-behavior: smooth`, and a plain `scrollTo` crawls under SwiftShader.
+- Under SwiftShader, CSS transitions on the live fields can hang at their start values for seconds (a red box that should have faded). That's why the teleprinter's inputs have `transition: none`.
 - `nan.js`: bisects which mesh makes a black (NaN) block at a pixel.
 - `citytalk.js`, `ghtalk.js`, `sttalk.js`, `seotalk.js`, `pagetalk.js`, `herotalk.js`, `hoodtalk.js`, `beachtalk.js`, `board.js`, `form.js`: open Let's talk, fill the fields, send, screenshot each state, close.
 - `intro.js`: the Press intro, frame by frame (`window.__freezeIntro`).
@@ -1017,7 +1028,7 @@ How a page is published as a preview:
 1. Copy the page and strip its first three lines (the artifact wrapper adds its own doctype and head).
 2. Rewrite `../site.js` → `site.js`, `../talk/surface.js` → `./talk/surface.js`, and the back link → `#top`.
 3. Copy `site.js` with `simulate: true` (previews have no `/api/contact` and block outside requests).
-4. Publish with a files map and `root`, so `site.js`, `talk/surface.js` and the page's asset folder (`city/…`) are served next to it. (The booth preview's `site.js` and `talk/surface.js` were copied from the greenhouse preview, since the workspace copy of the repo didn't have them. The station preview has no `site.js` yet, so its Let's talk does nothing there.)
+4. Publish with a files map and `root`, so `site.js`, `talk/surface.js` and the page's asset folder (`city/…`) are served next to it. (The booth preview's `site.js` and `talk/surface.js` were copied from the greenhouse preview, since the workspace copy of the repo didn't have them. The station preview got them on 3 Nov with its Let's talk.)
 5. The preview's Content-Security-Policy is `connect-src 'self'`: never `fetch()` a `data:` URI. Packed models are separate files fetched from the same origin and decoded with `atob`.
 
 | Preview | Link |
@@ -1114,8 +1125,9 @@ How a page is published as a preview:
 | `pre-voice` | b680dd2 | the Voice to Blog card no longer says "founder" |
 | `voice-look` | 9c48f06, 47d7d46 | Voice to Blog: the tracking station look test; three unused files dropped |
 | `voice-look-2`, `pre-voice-home` | acfb13a | the sky's black half on Mac GPUs fixed; runbook and captions from the workflow JSON |
-| **`v57-voice-to-blog`** | 538eb0d | home card opens Voice to Blog. **Current** |
-| `v58-docs` | | these docs |
+| `v57-voice-to-blog` | 538eb0d | home card opens Voice to Blog |
+| `v58-docs`, `pre-voice-talk` | 21f593c | the docs of 3 Nov (on GitHub through pull request #1) |
+| **`v59-voice-talk`** | | the teleprinter Let's talk, and these docs (pull request #2). **Current** |
 
 **Reddit page:** `auto-reddit-v1` → `v2` (CDN fix, early captions) → `v3` (bloom, env, atlas cards, sparks, runbook) → `v3.1` (panel z-fight) → `v4` (ridge, haze, fog) → `v4.1` (stars, shooting stars) → `v5` (water + mist) → `v6` (Slack window, five alerts) → `v6.1` (perf) → `v7` (courier, plain labels) → `v7.1` (seen-gate label) → v45 (doctype, viewport, back link, mailto) → v47 (back to card) → v48 (history back) → v50 (shared form) → talk-reddit-v1.
 
