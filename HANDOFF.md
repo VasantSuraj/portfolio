@@ -1,6 +1,6 @@
 # HANDOFF — read this first if you are continuing the work
 
-_For a new collaborator or a new AI session. Updated 25 Oct 2026, current version **v54-webinar** (`61f1173`), docs **v55-docs**._
+_For a new collaborator or a new AI session. Updated 3 Nov 2026, current version **v57-voice-to-blog**, docs **v58-docs**._
 
 Read in this order:
 1. `HANDOFF.md` (this file)
@@ -20,9 +20,9 @@ Read in this order:
 - **Repo:** `github.com/VasantSuraj/portfolio`, branch `main`, deployed on **Vercel** (`cleanUrls`). Vasant pushes files himself through GitHub's "Add files via upload", so every hand-over is a set of files (and zips for asset folders) with the exact folder each goes in. The repo also shows GitHub Pages deployments; Vercel is the one that runs the contact function.
 - **Live now:**
   - the **home page**: particle portrait → rain → 3D projects forest → cliff and fall → beach with testimonial lanterns → footer under the stars
-  - **six automation pages**: Reddit Keyword Alerts, Notion to Webflow ("The Press"), SEO Pre-Live Checks ("Opening Night"), Auto Internal Linking (night city), AI Blog Drafts (greenhouse at dawn), Webinar to Webflow (recording studio)
-  - **Let's talk** on every page, in each world's own form, sending to WhatsApp through `api/contact.js`
-- **Development** happens in Claude sessions with artifacts as previews; the repo files are the deliverable. The working git repo with every tag lives in the AI workspace (`/home/claude/history/portfolio`, branch `master`); the live repo matched it in code at `61f1173`.
+  - **eight automation pages**: Reddit Keyword Alerts, Notion to Webflow ("The Press"), SEO Pre-Live Checks ("Opening Night"), Auto Internal Linking (night city), AI Blog Drafts (greenhouse at dawn), Webinar to Webflow (recording studio), Video to Blog ("The Projection Booth"), Voice to Blog ("The Tracking Station", a look test with the story's basic motion; its own Let's talk is next)
+  - **Let's talk** on every page, in each world's own form (Voice to Blog: the hanging board for now), sending to WhatsApp through `api/contact.js`
+- **Development** happens in Claude sessions with artifacts as previews; the repo files are the deliverable. The working git repo with every tag lives in the AI workspace (`/home/claude/history/portfolio`, branch `master`). Since 28 Oct it is a fresh copy started from the v54 files Vasant supplied (`284bc58`), so its hashes differ from GitHub's.
 
 ## 2. How Vasant works (follow these)
 
@@ -36,7 +36,7 @@ Read in this order:
 5. **Only the requested change.** "Only these changes", "fix those alone": touch nothing else. Mention other issues instead of fixing them.
 6. **Smoothness is non-negotiable.** "smoothernesss is more important". Smooth camera travel beats a higher frame rate, and a small flicker is more tolerable than heavier scrolling. He wants 60 fps throughout (hero 60; forest about 30–45). Reduce cost before adding anything.
 7. **Lighting:** "brighter" changes were rejected twice (shadows shifted, night too white). Change lighting only on request, in small steps.
-8. **No repeats across pages.** Each automation page has its own world, palette, props and motion language. Type and UI chrome (Elms Sans, pills, captions, runbook layout, butterfly) stay the same so it reads as one portfolio. Worlds used so far: night machine over water · paper studio in daylight · museum gallery · night transit city · dawn greenhouse · night recording studio.
+8. **No repeats across pages.** Each automation page has its own world, palette, props and motion language. Type and UI chrome (Elms Sans, pills, captions, runbook layout, butterfly) stay the same so it reads as one portfolio. Worlds used so far: night machine over water · paper studio in daylight · museum gallery · night transit city · dawn greenhouse · night recording studio · cinema projection booth · desert tracking station at dusk.
 9. **Realistic worlds, like the forest**, not cartoonish like the Press. For each new page, ask him for Poly Haven assets (he downloads them and attaches the zips/EXRs); say exactly which you'd like, and offer a pick when he asks "which one to pick".
 10. **Every page's Let's talk must belong to its world** and appear only when clicked. "lets talk is not related to the world fix it" was a rejection.
 11. **Explain it visually.** He wants the automation's logic readable from the scene (e.g. the city: orange inbound and blue outbound lines, "Inbound linking done" / "Outbound linking done" messages, the sheet's three tabs on a board; the studio: the full YouTube → captions → transcript → Google Doc → Conversation → Webflow CMS journey). Text in the scene must be readable on screen (he asked for the greenhouse ledger to be filmed from straight above, and for darker ink when a sheet was white on white).
@@ -45,6 +45,8 @@ Read in this order:
     - Never include API keys, webhook URLs, credential names, internal IDs, channel names (e.g. a Slack notifications channel), sheet names, workflow names, colleague names, writers' names ("dont mention name <writer names> and all be generic"), real post titles, domains, or the internal Notion link.
     - Competitors are `<competitor>`, authors are `u/author`. The Webflow "Conversations" collection name is fine (he used it himself).
     - No invented metrics: if a number isn't in his doc, leave it out.
+    - **Don't say "founder"** (or name whose voice a writer imitates): "dont mention founder anywhere its a tool any one can use". Say "the house voice". Workflow prompts can name a person and a company: never copy them.
+    - Workflow JSON files can contain secrets or private IDs (tokens, database IDs, Slack user IDs, allowed-origin domains). Never repeat them; mention a problem to Vasant in chat and don't fix his workflow.
 13. **No trademarked characters or logos as artwork.** A particle Reddit logo was requested and declined; use original props (Inky is original).
 14. **No public input on the site.** He removed the feedback form ("what if someone random adds a wrong msging"). He curates the testimonials himself. Let's talk is fine because it goes only to him.
 15. **His WhatsApp number never goes in the site or the docs:** "i dont wanna share my wp contact with anyone". It lives only in Vercel env vars (`CALLMEBOT_PHONE`, `CALLMEBOT_APIKEY`, or the `WA_*` set).
@@ -62,6 +64,7 @@ Read in this order:
     - "ss1, ss2…" = his screenshots, in order
     - "the box" (studio) = the side cabinet the record comes out of
     - "webflow conversation" = the Conversations CMS collection / recap page
+    - "lets tlk" = Let's talk; "assests" = assets; "the docs zip" = the six `.md` files, zipped with their GitHub names
 
 ## 3. Decisions already made (do not reopen)
 
@@ -84,7 +87,7 @@ Read in this order:
 - **Back arrow** on every automation page returns to the forest **at that page's card**, with **no loader**; it's a real browser back when the visitor came from home.
 
 **Let's talk:**
-- One sending path (`site.js` → `api/contact.js` → WhatsApp). Each world draws its own form: hero particles (in the hoodie colour), forest hanging board (weathered grey-brown wood), beach bottle and letter, Reddit glass card, Press drawing board with Inky's RECEIVED stamp, SEO commission painting with a red dot, city ticket machine, greenhouse order pad, studio lyric sheet with ON AIR.
+- One sending path (`site.js` → `api/contact.js` → WhatsApp). Each world draws its own form: hero particles (in the hoodie colour), forest hanging board (weathered grey-brown wood), beach bottle and letter, Reddit glass card, Press drawing board with Inky's RECEIVED stamp, SEO commission painting with a red dot, city ticket machine, greenhouse order pad, studio lyric sheet with ON AIR, booth title card on the auditorium screen ("Message received"). Voice to Blog's is planned on the teleprinter.
 
 **The automation pages** (details in DOCS.md):
 - Reddit: machine + runbook; courier, five looping alerts, plain labels, water and mist, ridges, shooting stars.
@@ -93,6 +96,8 @@ Read in this order:
 - City: inbound orange, outbound blue, Also read dotted; done messages; the board with the sheet's three tabs (all rows illustrative); refreshes left alone.
 - Greenhouse: generic writers ("any writer with a style file"); Claude (not Gemini); ledger filmed from above; pots read left to right; failed run = brief not shared.
 - Studio: the full journey on a strip and a wall sign; transcript written into the Doc on screen; readable printed transcript; the record comes **out of** the cabinet; host's name removed.
+- Video to Blog: the projection booth; video → blog only; the request shot looks **down** at the hatch ledge (sideways was hard to read); Let's talk = a silent-film title card on the auditorium screen of a 1930s picture house.
+- Voice to Blog: the tracking station in the desert at dusk; the light follows the scroll (sunset → first stars); the camera goes into the hut through the door and back out; no "founder"; the draft is 5,000–7,000 words in "the house voice"; the recorder isn't named until he OKs "Voxlog".
 
 **Fonts:** Elms Sans (UI) with an Archivo fallback. Pangram Sans Rounded was wanted but is unavailable unless he supplies the files.
 
@@ -101,37 +106,40 @@ Read in this order:
 | Thing | Location |
 |---|---|
 | Home page | `index.html` (one file: CSS, classic script, three.js module) |
-| Automation pages | `automations/*.html` (six) |
-| Their assets | `automations/city/`, `automations/greenhouse/`, `automations/studio/` (Reddit, Press and SEO are all code) |
+| Automation pages | `automations/*.html` (eight) |
+| Their assets | `automations/city/`, `automations/greenhouse/`, `automations/studio/`, `automations/booth/`, `automations/station/` (Reddit, Press and SEO are all code) |
 | Let's talk | `site.js` (settings at the top), `talk/surface.js`, `talk/board.js` (+ `css3d.js`, `room.js`, wood/brass textures, `chain.json`), `api/contact.js` |
 | Portrait textures | `portrait/` (colour, depth, 3-channel hood mask) |
 | Forest and beach textures | `forest/` (26 files) |
 | Card data | `WORK`, `AUTOMATIONS`, `PERSONAL` arrays near the top of the first script in `index.html` |
-| Automation copy (19 entries) | `AUTOMATIONS`: `name, cat, line, tags, one, trigger, outcome`, plus `url` when a page exists (six so far) |
+| Automation copy (19 entries) | `AUTOMATIONS`: `name, cat, line, tags, one, trigger, outcome`, plus `url` when a page exists (eight so far) |
 | Testimonials | `TESTIMONIALS` (6 **samples**, `sample: true`) |
 | Let's talk router (home) | `window.__talkScene` in the classic script; beach bottle `window.__beachTalk` in the module |
 | Card thumbnails | `thumbs/` (names in README; none in the live repo yet) |
 | Versions | git tags + `backups/` in the working repo (AI workspace) |
-| Build sources of the newest pages | `/home/claude/assets/{city,green,studio}/` in the AI workspace (`part1.html`, `shared.css`, `part2.js` or `head/body/tail.js`, `build.py`, `conv_*.py`) |
-| QA harness | Playwright scripts in the AI workspace scratchpad `qa/` (BUILD.md §12) |
+| Build sources of the newest pages | `/home/claude/assets/{city,green,studio,booth,station}/` in the AI workspace (`part1.html`, `shared.css`, `part2.js` or `head/body/tail.js`; the booth `body.html` + `part2.js`; the station `body.html` + `s_*.js`; each with `build.py` and `conv_*.py`) |
+| QA harness | Playwright scripts in the AI workspace scratchpad `qa/` (BUILD.md §14) |
 | Portrait tooling | `tools/portrait.py` in the old working repo; u2net_human_seg and Depth Anything V2 small (ONNX) |
-| Hand-over folders | `/home/claude/out/{linking,drafts,webinar}/` (page, asset zip, `index.html`) |
+| Hand-over folders | `/home/claude/out/{linking,drafts,webinar,video,voice,docs}/` (page, asset zip, `index.html`; the docs zip) |
 
 The content source for each automation is a runbook Vasant pastes (or his Google Doc of all automations: problem, trigger, steps, nodes, outcome). Ask for it when building a new page; strip everything in §2 rule 12.
 
 ## 5. Next up
 
-The remaining **13 automations** need pages, each with its own world (concepts first, then his Poly Haven assets):
-Video to Blog · Voice to Blog · Podcast to CMO Brief · Cluster to Pillar Post · Blog Refresh Engine · Blog to Social and Ads · Organic Social Engine · Slack to Post Idea · LinkedIn ICP Leaderboard · Competitive Intel System · Marketing Ticket Desk · Dev Tasks from Slack · Docs to Notion Sync.
+**Finish Voice to Blog first** if Vasant wants: its teleprinter Let's talk (the form typed on the paper; the dish transmits on send; "MESSAGE RECEIVED" prints) and the story animations (DOCS.md §12). Video to Blog's per-station animations are also open (DOCS.md §11.6).
 
-The natural next one is **Video to Blog** (the Webinar page's "Next automation" points to it) or **Competitive Intel System** (Reddit's points to it). Worlds already used are listed in §2 rule 8. Process: BUILD.md §15.
+The remaining **11 automations** need pages, each with its own world (concepts first, then his Poly Haven assets and the workflow JSON):
+Podcast to CMO Brief · Cluster to Pillar Post · Blog Refresh Engine · Blog to Social and Ads · Organic Social Engine · Slack to Post Idea · LinkedIn ICP Leaderboard · Competitive Intel System · Marketing Ticket Desk · Dev Tasks from Slack · Docs to Notion Sync.
+
+The natural next one is **Podcast to CMO Brief** (Voice to Blog's "Next automation" points to it) or **Competitive Intel System** (Reddit's points to it). Worlds already used are listed in §2 rule 8. Process: BUILD.md §17.
 
 ## 6. Open items, in order
 
-1. **"Next automation" links still `#`** on five pages: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog. The middle three targets exist now; offer to wire them (don't do it unasked). The Press → SEO is wired.
+1. **"Next automation" links still `#`** on seven pages: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog, Video to Blog → Voice to Blog, Voice to Blog → Podcast to CMO Brief. Five of these targets exist now; offer to wire them (don't do it unasked). The Press → SEO is wired.
 2. **Real testimonials:** Vasant will send them. Replace the 6 samples and set `sample: false`.
 3. **Thumbnails** for the 5 Factors.ai pages and the 3 personal projects (`thumbs/`); none in the live repo.
 4. **Mic and cassette models** were never sent; the studio uses procedural ones. Offer to swap if he sends Poly Haven models.
+4a. **Voice to Blog:** Let's talk and story animations; may the recorder's name (Voxlog) appear? Workflow issues were reported to him in chat (a missing node reference and a wrong credential on the second Notion step; unescaped quotes in the Notion request), as were the Video to Blog ones (credential handling, a batch that can exceed Notion's 100-block limit, a filler regex that removes real words). They are his to fix in n8n.
 5. **Contact setup:** confirm the Vercel env vars are set and a live test message arrived (CONTACT-SETUP.md). Previews can't send.
 6. **Ideas raised earlier, not built** (suggest only): a stronger particle-portrait → forest hand-over; more forest → footer connection (the beach and sky largely cover this now).
 7. **Small known issue** (offered, not requested): while reading a later testimonial, earlier gathered cards can peek briefly at the top edge.
@@ -140,8 +148,8 @@ The natural next one is **Video to Blog** (the Webinar page's "Next automation" 
 
 ## 7. Known constraints of the sandbox used so far
 
-- **Network:** the AI workspace can't reach jsDelivr, Google Fonts, factors.ai or most websites from the shell. Tests use local copies of three.js (0.158 and 0.169) and Lenis and fallback fonts, so **screenshots don't show Elms Sans**. Poly Haven files come from Vasant as attachments. The browser-side CDN loads work fine on the live site.
-- **Rendering:** the sandbox renders on the CPU (SwiftShader), so it can't measure real fps; ask Vasant to open the page with `?fps`. Captions can lag a frame in screenshots.
+- **Network:** the AI workspace can't reach jsDelivr, Google Fonts, factors.ai, Poly Haven or most websites from the shell. Tests use local copies of three.js (0.158 and 0.169) and Lenis; fonts now come from npm (`@fontsource`), so newer screenshots show Elms Sans. Poly Haven files come from Vasant as attachments; the web-fetch tool can still read `api.polyhaven.com` to check names. Allowing `api.polyhaven.com` and `dl.polyhaven.org` in claude.ai → Settings (or Organization settings) → Capabilities would let a session download them itself. The browser-side CDN loads work fine on the live site.
+- **Rendering:** the sandbox renders on the CPU (SwiftShader), so it can't measure real fps; ask Vasant to open the page with `?fps`. Captions can lag in screenshots. SwiftShader also rounds differently: a shader NaN that blacks out half the screen on a Mac can be invisible here (BUILD.md §13). Ask him for a screenshot when a page first ships.
 - **The local server** (`python3 -m http.server 8765`) dies when background commands time out; restart it.
 - **Blender:** `bpy` must be run with `python3 -I`.
 - **Artifacts** block outside requests (`connect-src 'self'`) and have no `/api/contact`, so preview copies use `simulate: true`.
@@ -149,6 +157,8 @@ The natural next one is **Video to Blog** (the Webinar page's "Next automation" 
 
 ## 8. Artifact links (Claude, private previews)
 
+- Voice to Blog: `claude.ai/artifact/6kcvmuwi1y1TP5MoHbDGV8`
+- Video to Blog: `claude.ai/artifact/8KA5G2aVZ7Gf7Sj9YQ5c5o`
 - Webinar to Webflow: `claude.ai/artifact/HG9oAuutrDeNuMnJfKzZsp`
 - AI Blog Drafts: `claude.ai/artifact/GJVspZR6XrdBRRXKzVrfxW`
 - Auto Internal Linking: `claude.ai/artifact/M2JRL5Yem1Jstm1e7n9kv3`

@@ -1,6 +1,6 @@
 # Vasant Suraj — portfolio: project documentation
 
-_Status as of 25 Oct 2026, version **v54-webinar** (docs: v55-docs). Seven pages are live: the home page and six automation pages (Reddit Keyword Alerts, Notion to Webflow, SEO Pre-Live Checks, Auto Internal Linking, AI Blog Drafts, Webinar to Webflow). Every page has a Let's talk form in its own world that sends to WhatsApp. Thirteen automations still use the slide-in panel._
+_Status as of 3 Nov 2026, version **v57-voice-to-blog** (docs: v58-docs). Nine pages are live: the home page and eight automation pages (Reddit Keyword Alerts, Notion to Webflow, SEO Pre-Live Checks, Auto Internal Linking, AI Blog Drafts, Webinar to Webflow, Video to Blog, Voice to Blog). Every page has a Let's talk form that sends to WhatsApp; all but Voice to Blog draw it in their own world (Voice to Blog uses the hanging board for now). Eleven automations still use the slide-in panel._
 
 This file says **what** each part is and what it means. `BUILD.md` says how it is built. `HANDOFF.md` says how to continue the work.
 
@@ -21,7 +21,7 @@ The design goals set at the start:
 The site has no build step and no framework. Each page is one self-contained HTML file with its CSS and JavaScript inline. Shared pieces: `site.js` (Let's talk), `talk/` (the 3D forms), `api/contact.js` (the WhatsApp function).
 
 Runtime dependencies:
-- Google Fonts (Elms Sans + Archivo everywhere; Caveat on the greenhouse and studio pages; Fraunces on the SEO page and the board)
+- Google Fonts (Elms Sans + Archivo everywhere; Caveat on the greenhouse and studio pages; Fraunces on the SEO page and the board; Limelight on the Video to Blog title card)
 - on the home page: three.js 0.169 and Lenis 1.1.13 from jsDelivr
 - on the automation pages: three.js 0.158 from jsDelivr
 
@@ -49,9 +49,13 @@ Runtime dependencies:
 │   ├── auto-internal-linking.html           page 4: transit city at night
 │   ├── ai-blog-drafts.html                  page 5: greenhouse at dawn
 │   ├── webinar-to-webflow.html              page 6: recording studio at night
+│   ├── video-to-blog.html                   page 7: The Projection Booth (old cinema booth before the show)
+│   ├── voice-to-blog.html                   page 8: The Tracking Station (desert at dusk)
 │   ├── city/                                45 files: textures + packed models (page 4)
 │   ├── greenhouse/                          23 files: textures, packed models, dawn HDRI (page 5)
-│   └── studio/                              34 files: textures, packed models, studio HDRI (page 6)
+│   ├── studio/                              34 files: textures, packed models, studio HDRI (page 6)
+│   ├── booth/                               35 files, 6.0 MB: textures, packed models, booth light (page 7)
+│   └── station/                             52 files, 7.1 MB: textures, packed models and scans, dusk light (page 8)
 ├── portrait/
 │   ├── portrait-color.webp                  hero portrait, cut out, real photo colours
 │   ├── portrait-depth.png                   depth map (bright = near) for the particles' 3D relief
@@ -62,7 +66,7 @@ Runtime dependencies:
 └── backups/                                 (working repo only, not deployed) copies of every version
 ```
 
-Relative paths matter. `index.html` loads `portrait/…`, `forest/…`, `thumbs/…`, `talk/…` and `site.js`; each automation page loads `../site.js`, `../talk/surface.js` and its own folder (`city/`, `greenhouse/`, `studio/`).
+Relative paths matter. `index.html` loads `portrait/…`, `forest/…`, `thumbs/…`, `talk/…` and `site.js`; each automation page loads `../site.js`, `../talk/surface.js` and its own folder (`city/`, `greenhouse/`, `studio/`, `booth/`, `station/`).
 
 ---
 
@@ -184,8 +188,10 @@ Every automation page follows one pattern, so they feel like one portfolio while
 | 4 | Auto Internal Linking | a transit city at night just after rain | wet asphalt, sodium orange, inbound orange / outbound blue lines; bloom | 1300svh | 7 |
 | 5 | AI Blog Drafts | a greenhouse at dawn | real dawn sky (HDRI), low gold sun, misted glass, greens; shadows | 1300svh | 6 |
 | 6 | Webinar to Webflow | a recording studio control room at night | warm practical lamps, screen glow, booth light; shadows, light bloom | 1300svh | 7 |
+| 7 | Video to Blog ("The Projection Booth") | an old cinema projection booth before the first show | late-afternoon sun through one window, warm shade, a pendant lamp; amber, green-grey steel; shadows, light bloom | 1300svh | 7 |
+| 8 | Voice to Blog ("The Tracking Station") | a radio tracking station in the desert at dusk | a painted dusk sky going from sunset to first stars with the scroll, low orange sun, the hut lit from inside; signal amber, scope green; shadows, bloom | 1300svh | 7 |
 
-"Next automation" links: The Press → SEO Pre-Live Checks (**wired**). All others are still `#`: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog. (The first three of these targets exist now and could be wired; ask first.)
+"Next automation" links: The Press → SEO Pre-Live Checks (**wired**). All others are still `#`: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog, Video to Blog → Voice to Blog, Voice to Blog → Podcast to CMO Brief. (Five of these targets exist now and could be wired; ask first.)
 
 ---
 
@@ -428,16 +434,116 @@ Look test of the studio (6e0a548) → journey strip and wall sign, transcript wr
 
 ---
 
-## 11. Pending items
+## 11. Page 7: Video to Blog, "The Projection Booth" (`automations/video-to-blog.html`)
+
+### 11.1 Concept
+**An old cinema projection booth before the first show.** A long, narrow booth with plaster walls, a painted dado and a worn plank floor. Late-afternoon sun comes in through one high window and lands on the floor between the desk and the projector; the rest is warm shade under a pendant lamp. Two ports in the front wall look down into the dark auditorium and its screen.
+
+The workflow is the booth's work: the YouTube link comes in through the booking hatch as a slip, the soundtrack is read off the reel, the fillers are cut at the splicing bench, the draft is typed in the house voice and canned as reels for Notion, and the intercom tells the lobby it's ready.
+
+The page covers the **video → blog** half of the workflow only (the same n8n workflow also has a blog → video branch, which isn't shown).
+
+### 11.2 What is in the booth
+- **The projector** on its pedestal: the lamphouse with glowing vents and a chimney to the roof, the mechanism head, the lens at the port, a reel above and one below with film ribbons between them, the sound head with its exciter lamp, and the reader the transcript spools out of. A **transcript tape** runs from the reader into a bin.
+- **The splicing bench** (Poly Haven wooden table): rewinds, the splicer, a trim bin with paragraph-length strips.
+- **The typewriter** on the desk (Poly Haven painted wooden table): the typed page is readable, a stack of finished pages beside it, and a word counter at 7,420 (illustrative).
+- **The vault**: steel shelves of film cans; three new cans marked **DRAFT**, labelled **REEL 1/3, 2/3, 3/3**, the batches the post goes into Notion in.
+- **The left wall**: the door with a PROJECTION ROOM sign; the **booking hatch** with its ledge and a spike of booking slips (the request); the **intercom** to the lobby, with a printed slip "NEW BLOG DRAFT / READY FOR REVIEW" (the Slack summary).
+- **The right wall**: the **running order** chart (one reel at a time), and a "silent print" can on the tool chest: no captions, nothing to read.
+- Poly Haven assets: **Vestibule** (HDRI, for reflections), wood_floor_worn, plastered_wall, damaged_plaster, rusty_metal_03 (repainted green-grey), wood_cabinet_worn_long, WoodenTable_03, painted_wooden_table, folding_wooden_stool, metal_tool_chest. The solitude_interior HDRI was sent but isn't used. The projector, reels, typewriter, intercom, cans and the auditorium are built in code.
+
+### 11.3 The stations
+| # | Caption | What you see |
+|---|---|---|
+| 1 | **01 · The request** — "One command, one link." `/video-to-blog` and a YouTube link in the team's Slack channel; the workflow answers straight away | Looking **down** onto the hatch ledge: the slip on the spike and the one that has just come through, stamped GOT IT · ON IT. (Vasant: the sideways view was hard to read, so it's filmed from above.) |
+| 2 | **02 · The soundtrack** — "The video's words, read off the reel." Supadata fetches the transcript; the workflow waits thirty seconds, then reads it | The lamp strikes, the reels turn, the sound head and the transcript tape |
+| 3 | **03 · The cut** — "Fillers out, paragraphs in." Ums, uhs and you-knows removed; paragraphs every five sentences | The splicing bench and the trim bin |
+| 4 | **04 · The draft** — "A full article, in the house voice." SEO details, TL;DR, hook, sections, "In a nutshell", FAQs; 6,500 to 8,500 words | The typewriter, the typed page and the counter |
+| 5 | **05 · Into Notion** — "Filed as a draft, never published." Slug, meta description, primary keyword, status draft; up to three batches of a hundred blocks | The three DRAFT cans on the vault shelf |
+| 6 | **06 · The ping** — "The channel hears it's ready." Title, slug, keyword, word count, FAQ count and the Notion link | The intercom, its lamp blinking, and its printed slip |
+| 7 | **07 · One reel at a time** — "Wait for the link before the next one." One conversion at a time; a video needs captions | The running order and the silent print on the chest |
+| 8 | End | "A YouTube link in. A full blog draft in Notion." · "One command, one reel at a time. Every draft waits for a person to review it." |
+
+### 11.4 Let's talk
+**The feature presentation.** The camera goes out through the viewing port and down the auditorium to the screen: an Academy-ratio (1.37 : 1) screen in a proscenium, velvet curtains drawn back, a valance, footlights along the stage lip and raked rows of seats. The form is projected as a **silent-film title card** (`tb-look-reel`): the headline in Limelight, the rest in Elms Sans, cream on black inside a deco border, with film grain. Sending splices in the next card: a flash, two cue marks, then **"Message received"**. Escape or ✕ pulls the camera back out through the port to where the scroll left it.
+
+### 11.5 The runbook
+Facts: **Trigger** A Slack slash command with a YouTube link · **Runs** One video at a time · **Stack** n8n · Slack · Supadata · Claude · Notion · **Output** A Notion draft, 6,500 to 8,500 words.
+Sections: 01 Problem · 02 Running it (the command, an illustrative Slack summary) · 03 Flow (8 steps with node types) · 04 The draft (its six parts) · 05 Guardrails · 06 Outcome · 07 Operating it.
+Stats: **1** Slack command per video · **6.5–8.5k** words the draft is written to · **100** blocks per batch into Notion.
+Note: "Channel names, database names, the writer's name and credentials are left out on purpose. The video, title and keywords in the scene are illustrative."
+
+### 11.6 Versions
+Look test of the booth (5653a1f, `video-look`) → the request filmed from above and the Let's talk title card (9e8f563, `video-talk-v1`) → home card wired (6648167, `video-handover` = **`v56-video-to-blog`**). The per-station story animations (the slip dropping through the hatch, the tape running, pages typing out, cans being shelved) are not built yet: the reels, lamp, screen and intercom lamp run.
+
+---
+
+## 12. Page 8: Voice to Blog, "The Tracking Station" (`automations/voice-to-blog.html`)
+
+### 12.1 Concept
+**A radio tracking station in the desert at dusk.** A 12 m dish stands on a concrete pad; beside it, a corrugated tin hut with a round roof, timber end walls and a lit window, whose far end looks out at the dish. Sand and gravel run out to low ridges; boulders, scrub and quiver trees come from Poly Haven's Namaqualand scans. It is the site's first open-sky world. The light follows the scroll: the sun is on the horizon at the top of the page and the first stars are out at the end.
+
+The story: the dish locks on to a spoken brief; inside the hut the voice becomes words (the scope, the drum recorder, the transcript tape), the words are rewritten on the teleprinter, the draft is filed in the binder, and one message lamp lights for the direct message.
+
+The tool is for anyone: **no "founder" anywhere** (Vasant: "dont mention founder anywhere its a tool any one can use"). The voice is "the house voice". The recorder isn't named on the page; its name (Voxlog) goes on only if Vasant says so.
+
+### 12.2 What is at the station
+**Outside:**
+- **The dish**: a concrete pad and cable-pit lid, a tapered pedestal with a door and a ladder, the turntable, the alidade with two cheek plates carrying the elevation axle, a counterweight, the reflector (a paraboloid with 24 panel sectors and three seam rings), its back truss, a quadripod holding the feed at the focus, and a red warning light.
+- **The hut**: galvanised tin with rust running down from the laps (made from rust_coarse_01), plank end walls, a concrete plinth and step, the door standing open, glowing windows.
+- A mast with an amber **beacon** and a whip aerial, guy wires, blue fuel drums, a generator housing, the cable lying on the sand from the hut to the dish, and the worn gravel path between them.
+
+**Inside the hut** (two pendant bulbs):
+- **Three racks**: RECORDER (the drum turning under its pen, and the slot the transcript tape runs out of), SCOPE (the voice as a green trace), RECEIVER (the SIGNAL meter, the RECEIVING lamp, a row of level lamps).
+- **The console shelf** with the **transmission slip**: "RECORDING 3:42 · PLAYED BACK", the title hint pencilled in, the two keyword boxes stamped **AUTO**.
+- **The desk** (Poly Haven wooden_table_02) with the **teleprinter**: its paper rises from the platen and curls over the back (readable from the chair); the finished **printout** laid flat with its header block (title, keywords, word count, meta) and the start of the post; a desk lamp; the **MESSAGE** lamp. The chair is Poly Haven painted_wooden_chair_01.
+- **The far wall**: the **STATION TIME** clock (its sweep hand stands still until Send and runs about 90 seconds by the ping), the time clock with a punched card, and the **binder rack**, the newest binder lying on top with an index card listing the seven Notion properties.
+
+All titles and numbers in the scene are illustrative: "What a good weekly pipeline review looks like", pipeline review / sales forecasting, 6,140 words, recorded 17:42.
+
+Poly Haven assets: **Rogland Sunset** (HDRI, for the light; the visible sky is painted to match its sun), gravelly_sand, sandy_gravel_02, rust_coarse_01 (turned into the hut's tin), concrete_floor_03, raw_plank_wall, namaqualand_boulder_02 and _04, namaqualand_rocks_01, quiver_tree_02, wild_rooibos_bush, wooden_table_02, painted_wooden_chair_01, barrel_03. Goegap Road and Quarry 02 were sent but aren't used. The dish, racks, teleprinter, clocks, binders, beacon and cables are built in code.
+
+### 12.3 The stations
+| # | Caption | What you see |
+|---|---|---|
+| 1 | **01 · The brief** — "Just talk." Open the recorder in its own browser tab, tap the mic, talk for two to five minutes; messy is fine | The dish swings off its park position and locks on, seen from in front of the bowl with the sunset behind the camera |
+| 2 | **02 · The hints** — "Three boxes, all optional." The recording plays back; title hint and two keywords; anything blank is worked out | Inside, from above: the transmission slip, the title pencilled in, two AUTO stamps |
+| 3 | **03 · Send** — "One button sends it all." The audio, the hints and the time it was recorded | The racks: the RECEIVING lamp, the level lamps, the drum turning; the clock starts |
+| 4 | **04 · The words** — "Voice to text in seconds." Groq transcribes the whole recording | The scope trace and the transcript tape |
+| 5 | **05 · The voice** — "Rewritten in the house voice." A full post of 5,000 to 7,000 words: direct, data-led, written like an operator; blank hints filled | The teleprinter and the printout on the desk |
+| 6 | **06 · Into Notion** — "Filed as a draft." Title, primary and secondary keyword, 160-character meta description, word count, the time recorded, status Draft | The binder and its index card, the time clock |
+| 7 | **07 · The ping** — "A direct message with the link." 60 to 90 seconds after Send: a Slack DM with the title, keyword, word count and link; Draft → Review by hand | Outside at the door: the hut against the afterglow, the window lit, the beacon flashing, the first stars |
+| 8 | End | "Talk it through. Get a draft in Notion." · "A few minutes of talking becomes a full post in the house voice, about 90 seconds after Send. A person always reviews it." A high pull-back over the station |
+
+The camera walks into the hut through the open door (01 → 02) and back out the same way (06 → 07); it never passes through a wall.
+
+### 12.4 Let's talk
+**Not built yet.** The approved plan: the camera goes into the hut to the teleprinter, and the form is typed on its paper; on send the camera steps outside as the dish tilts up and transmits, and the teleprinter prints "MESSAGE RECEIVED" with the time. Until then the page has no `__talkScene`, so `site.js` opens the hanging board.
+
+### 12.5 The runbook
+Facts: **Trigger** A webhook from a browser recorder · **Runs** On demand, 60 to 90 seconds · **Stack** n8n · Groq · Claude · Notion · Slack · **Output** A Notion draft, 5,000 to 7,000 words.
+Sections: 01 Problem · 02 Running it (seven steps and an illustrative "before Send" card) · 03 Flow (seven steps: Webhook · HTTP Request to Groq, Whisper large-v3 Turbo · Set · Claude · Code × 2 · If and HTTP Request × 2 · Merge and Slack) · 04 The draft (its fixed order and the seven Notion properties) · 05 If something fails (Executions tab, the mic blocked inside a Notion embed, Groq 401, Notion 401) · 06 Outcome · 07 Operating it.
+Stats: **2–5 min** of talking · **5–7k** words the draft is written to · **60–90 s** from Send to the link.
+Note: "Names, the database, the recorder's address and credentials are left out on purpose. The recording, title and keywords in the scene are illustrative." The writing prompt in the workflow names a person and a company: neither appears on the page.
+
+### 12.6 Versions
+Look test of the station (9c48f06, 47d7d46, `voice-look`) → the black half of the sky on Mac GPUs fixed, runbook and captions matched to the workflow JSON (acfb13a, `voice-look-2`) → home card wired (538eb0d, **`v57-voice-to-blog`**, current). Next: the story animations (the slip arriving, the tape and the teleprinter printing, the card being punched) and the teleprinter Let's talk.
+
+---
+
+## 13. Pending items
 - **Real testimonials** to replace the six samples (`sample: false`).
 - **Thumbnails** for the 5 Factors.ai pages and 3 personal projects: `thumbs/benchmarks.jpg, campaign-offer.jpg, microsoft.jpg, prove-roi.jpg, routines.jpg, nike.jpg, ilish.jpg, leaderboard.jpg`. A missing file falls back to the card's tint. There is no `thumbs/` folder in the live repo yet.
-- **Thirteen automation pages** still to build, each with its own world: Video to Blog, Voice to Blog, Podcast to CMO Brief, Cluster to Pillar Post, Blog Refresh Engine, Blog to Social and Ads, Organic Social Engine, Slack to Post Idea, LinkedIn ICP Leaderboard, Competitive Intel System, Marketing Ticket Desk, Dev Tasks from Slack, Docs to Notion Sync. Set each entry's `url`.
-- **"Next automation" links** still `#` on five pages (§4); three could be wired now.
+- **Eleven automation pages** still to build, each with its own world: Podcast to CMO Brief, Cluster to Pillar Post, Blog Refresh Engine, Blog to Social and Ads, Organic Social Engine, Slack to Post Idea, LinkedIn ICP Leaderboard, Competitive Intel System, Marketing Ticket Desk, Dev Tasks from Slack, Docs to Notion Sync. Set each entry's `url`.
+- **Voice to Blog:** the teleprinter Let's talk (§12.4) and the story animations; whether the recorder's name (Voxlog) may appear on the page.
+- **Video to Blog:** the per-station story animations (§11.6).
+- **"Next automation" links** still `#` on seven pages (§4); five could be wired now.
+- Issues found in the two workflow JSON files were reported to Vasant in chat; they are workflow fixes, not site work.
 - **Mic and cassette models** were never supplied; the studio uses procedural ones.
 - Replace the slide-in panel once every automation has a page.
 - Optional: Pangram Sans Rounded, if the font files are supplied (Elms Sans is the current UI face).
 
-## 12. Decisions log (what was tried and dropped)
+## 14. Decisions log (what was tried and dropped)
 
 **Hero:**
 - Rejected name reveals: falling letters, an outline name with hover fill, particles morphing into the name, letter-by-letter over a long scroll, a bubble font, a glass "Projects" title, a liquid "pour" into the name. The name moved to the footer, and the hero stays portrait → dissolve → rain.
@@ -462,12 +568,14 @@ Look test of the studio (6e0a548) → journey strip and wall sign, transcript wr
 - City: the first look had over-bright windows and bloom (toned down); linking needed explaining visually (orange inbound, blue outbound, done messages, the sheet's three tabs on a board); the Let's talk had to belong to the world (ticket machine).
 - Greenhouse: pots were mirrored to read left to right; the ledger is filmed from straight above; the order-pad text was invisible (white on white) and got dark ink; writers' names removed; Claude, not Gemini.
 - Studio: the camera used to move off the screen before its content appeared; the transcript generation needed more detail; the record must come out of the cabinet, not from outside it; the YouTube → transcript → Doc → Conversation → Webflow CMS journey needed to be explicit.
+- Video to Blog: three concepts were offered and Vasant said "go with your pick" (the booth). Only the video → blog half of the workflow is shown. The request shot first looked at the hatch from the side: "camera angle this showing sideways is not understandable so show this scene from top angle", so it now looks down. A black rectangle in early renders was a NaN pixel smeared by the bloom (fixed with a guard). The Let's talk had to belong to the booth: the form is projected on the auditorium screen as a title card. The first auditorium (wide screen, flat curtains, box seats) read as a dark modal and was rebuilt as a 1930s picture house.
+- Voice to Blog: three concepts (a tracking station in the desert, a ship's wireless room, a monastery scriptorium); the station was picked because nothing else on the site is outdoors with open sky. "Founder" was taken off the home card and kept off the page: the tool is for anyone. The 1K HDRI is used for light only; the dusk sky is painted. On Vasant's Mac half the sky rendered black (a NaN from `pow()`), fixed on 3 Nov.
 
 **Let's talk:**
 - v50 started with one shared dialog on every page; talk-* made each world its own form; the forest got the hanging board, the hero the particles, the beach the bottle. "Lets talk is not related to the world" is a rejection reason: each new page needs a form that belongs to it and only appears on click.
 - **The WhatsApp number must never be in the site**: "i dont wanna share my wp contact with anyone". It lives only in Vercel env vars.
 
-## 13. Versioning
+## 15. Versioning
 Every approved state is a git tag in the working repo, usually with copies in `backups/`.
 
 **Home page:**
@@ -484,11 +592,14 @@ Every approved state is a git tag in the working repo, usually with copies in `b
 - Let's talk worlds: `talk-hero-v1`, `talk-beach-v1`, `talk-all-v1`
 - Auto Internal Linking: `pre-linking`, `pre-linking-home`, **`v52-linking`**
 - AI Blog Drafts: `pre-drafts`, `pre-drafts-fix1`, `pre-drafts-home`, **`v53-drafts`**
-- Webinar to Webflow: `pre-webinar`, `pre-webinar-fix1`, `pre-webinar-home`, **`v54-webinar` (current)**
+- Webinar to Webflow: `pre-webinar`, `pre-webinar-fix1`, `pre-webinar-home`, **`v54-webinar`**
+- Docs: `pre-docs`, `v55-docs`; `v58-docs` (these)
+- Video to Blog: `pre-video`, `video-look`, `pre-video-talk`, `video-talk-v1`, `pre-video-handover`, `video-handover` = **`v56-video-to-blog`**
+- Voice to Blog: `pre-voice-card`, `pre-voice`, `voice-look`, `voice-look-2`, `pre-voice-home`, **`v57-voice-to-blog` (current)**
 
-BUILD.md §9 and PORTFOLIO-HANDOFF.md have the full table. The repo with all tags lives in the AI workspace and is handed over as a history zip when asked.
+BUILD.md §16 and PORTFOLIO-HANDOFF.md have the full table. The repo with all tags lives in the AI workspace and is handed over as a history zip when asked.
 
-## 14. Running locally
+## 16. Running locally
 ```
 npx serve .          # or: python3 -m http.server 8765
 ```

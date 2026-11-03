@@ -1,6 +1,6 @@
 # Vasant Suraj — portfolio
 
-_Updated 25 Oct 2026. Current version: **v54-webinar** (commit `61f1173`), with these docs on top as **v55-docs**._
+_Updated 3 Nov 2026. Current version: **v57-voice-to-blog**, with these docs on top as **v58-docs**._
 
 A scroll-driven 3D portfolio. It is a static site with no build step and no framework: every page is one HTML file with its CSS and JavaScript inline, plus shared scripts and texture folders. Host it on any static host (it runs on Vercel), or locally with `npx serve .` or `python3 -m http.server`.
 
@@ -17,8 +17,10 @@ Pages must be served over **http**, not opened as `file://`. WebGL loads texture
 | `automations/auto-internal-linking.html` | Auto Internal Linking: a transit city at night, just after rain |
 | `automations/ai-blog-drafts.html` | AI Blog Drafts: a greenhouse at dawn |
 | `automations/webinar-to-webflow.html` | Webinar to Webflow: a recording studio at night |
+| `automations/video-to-blog.html` | Video to Blog: "The Projection Booth", an old cinema booth before the first show |
+| `automations/voice-to-blog.html` | Voice to Blog: "The Tracking Station", a radio dish and a tin hut in the desert at dusk |
 
-Every page has a **Let's talk** button. It opens a contact form that belongs to that page's world (the particles, a hanging board, a bottle, a sheet of paper, a painting…). The message goes to WhatsApp through a Vercel function. The WhatsApp number and keys are never in the code: see `CONTACT-SETUP.md`.
+Every page has a **Let's talk** button. It opens a contact form that belongs to that page's world (the particles, a hanging board, a bottle, a sheet of paper, a painting, a title card on a cinema screen…); Voice to Blog uses the hanging board until its own is built. The message goes to WhatsApp through a Vercel function. The WhatsApp number and keys are never in the code: see `CONTACT-SETUP.md`.
 
 ## Files
 
@@ -38,9 +40,13 @@ automations/                  one page per automation, each with its own world
   auto-internal-linking.html  (124 KB)
   ai-blog-drafts.html         (97 KB)
   webinar-to-webflow.html     (112 KB)
+  video-to-blog.html          (124 KB)
+  voice-to-blog.html          (108 KB)
   city/                       45 files, 8.4 MB: textures + packed models for Auto Internal Linking
   greenhouse/                 23 files, 3.6 MB: textures, packed models, dawn sky for AI Blog Drafts
   studio/                     34 files, 3.6 MB: textures, packed models, studio light for Webinar to Webflow
+  booth/                      35 files, 6.0 MB: textures, packed models, booth light for Video to Blog
+  station/                    52 files, 7.1 MB: textures, packed models and scans, dusk light for Voice to Blog
 portrait/                     3 files: the hero portrait's colour, depth and hoodie mask
 forest/                       26 textures for the forest and beach (bark, leaves, mud, sand, rock, satin)
 thumbs/                       project-card thumbnails (optional; see below)
@@ -59,7 +65,7 @@ The Reddit, Press and SEO pages have no asset folder: everything on them is draw
 
 ## External dependencies (loaded from CDNs at runtime)
 
-- Google Fonts: **Elms Sans** (the site face) and Archivo (fallback) on every page. Also: **Caveat** (handwriting on tags, the ledger and sticky notes) on the AI Blog Drafts and Webinar pages; **Fraunces** on the SEO page and in `talk/board.js`
+- Google Fonts: **Elms Sans** (the site face) and Archivo (fallback) on every page. Also: **Caveat** (handwriting on tags, the ledger and sticky notes) on the AI Blog Drafts and Webinar pages; **Fraunces** on the SEO page and in `talk/board.js`; **Limelight** on the Video to Blog title card
 - **three.js 0.169** (jsDelivr) on the home page and in `talk/board.js`, `talk/css3d.js`, `talk/room.js`
 - **Lenis 1.1.13** (jsDelivr) on the home page; if it fails to load, the page uses native scrolling
 - **three.js 0.158** (jsDelivr, via an import map) on every automation page, with its addons: `EffectComposer`, `RenderPass`, `UnrealBloomPass`, `OutputPass`, `RoomEnvironment`, `RoundedBoxGeometry`, `Reflector`, `CSS3DRenderer`, `BufferGeometryUtils`

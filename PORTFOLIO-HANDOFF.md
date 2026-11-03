@@ -1,6 +1,6 @@
 # Vasant Suraj Portfolio — Complete Handoff
 
-_Last updated: 25 Oct 2026. Current version: **v54-webinar** (`61f1173`); docs **v55-docs**. This single document contains everything in HANDOFF.md, DOCS.md, BUILD.md and CONTACT-SETUP.md, plus the deploy checklist and the full timeline of Vasant's requests. Read all of it before you change anything. The code is the source of truth; this document explains the code, the history and how Vasant likes to work._
+_Last updated: 3 Nov 2026. Current version: **v57-voice-to-blog**; docs **v58-docs**. This single document contains everything in HANDOFF.md, DOCS.md, BUILD.md and CONTACT-SETUP.md, plus the deploy checklist and the full timeline of Vasant's requests. Read all of it before you change anything. The code is the source of truth; this document explains the code, the history and how Vasant likes to work._
 
 Contents:
 - Part 0. Read this first
@@ -21,16 +21,16 @@ Cross-references such as "BUILD.md §9" or "DOCS.md §4" point to the same secti
 1. **What you need from Vasant to continue.** Ask him to attach these, or to connect the GitHub repo `VasantSuraj/portfolio`:
    - `index.html`, `site.js`, `vercel.json`, `api/contact.js`
    - the `talk/` folder
-   - the `automations/` folder (six pages, plus `city/`, `greenhouse/`, `studio/`)
+   - the `automations/` folder (eight pages, plus `city/`, `greenhouse/`, `studio/`, `booth/`, `station/`)
    - the `forest/` (26 textures) and `portrait/` (3 files) folders
    - the history zip with the git tags and `backups/`, if he has one, so "revert to …" requests work. Without it you only have the current files (GitHub's own history still has every push).
 2. **Do not build anything until he says so.** When he asks for ideas, give 2–3 options with a recommendation and wait. He says "go", picks a number, or says "build". If he says "go with your pick", explain the scene first and build after he approves.
 3. **Back up before every change.** Tag `pre-<name>` before, tag the approved state after. He expects an instant revert.
 4. **Smoothness beats everything.** In his words: "smoothernesss is more important".
-5. **"Revert to main version" means the git tag `main-version`, now v45** (`f329252`). The first main is `main-version-v40`. Everything since v45 was approved too: **confirm whether he means v45 or the current state.**
+5. **"Revert to main version" means the git tag `main-version`, now v45** (`f329252`). The first main is `main-version-v40`. Everything since v45 was approved too: **confirm whether he means v45 or the current state.** (Tags made since 28 Oct live in a fresh working copy; see Part C §16.)
 6. **Only the requested change.** Change nothing else; mention other issues instead of fixing them.
 7. **Each automation page gets its own realistic world and its own Let's talk**, built from Poly Haven assets he supplies.
-8. **Never put his WhatsApp number in the site or docs**, and never include internal identifiers, names or channel names (Part A §2 rules 12–15).
+8. **Never put his WhatsApp number in the site or docs**, and never include internal identifiers, names or channel names (Part A §2 rules 12–15). Don't say "founder": the tools are for anyone. Workflow JSON can hold secrets and private IDs: never repeat them.
 9. Show results as screenshots (desktop 1440×900 and phone 390×844), publish the preview artifact after each change, and hand over files with where they go.
 
 ---
@@ -55,9 +55,9 @@ Read in this order:
 - **Repo:** `github.com/VasantSuraj/portfolio`, branch `main`, deployed on **Vercel** (`cleanUrls`). Vasant pushes files himself through GitHub's "Add files via upload", so every hand-over is a set of files (and zips for asset folders) with the exact folder each goes in. The repo also shows GitHub Pages deployments; Vercel is the one that runs the contact function.
 - **Live now:**
   - the **home page**: particle portrait → rain → 3D projects forest → cliff and fall → beach with testimonial lanterns → footer under the stars
-  - **six automation pages**: Reddit Keyword Alerts, Notion to Webflow ("The Press"), SEO Pre-Live Checks ("Opening Night"), Auto Internal Linking (night city), AI Blog Drafts (greenhouse at dawn), Webinar to Webflow (recording studio)
-  - **Let's talk** on every page, in each world's own form, sending to WhatsApp through `api/contact.js`
-- **Development** happens in Claude sessions with artifacts as previews; the repo files are the deliverable. The working git repo with every tag lives in the AI workspace (`/home/claude/history/portfolio`, branch `master`); the live repo matched it in code at `61f1173`.
+  - **eight automation pages**: Reddit Keyword Alerts, Notion to Webflow ("The Press"), SEO Pre-Live Checks ("Opening Night"), Auto Internal Linking (night city), AI Blog Drafts (greenhouse at dawn), Webinar to Webflow (recording studio), Video to Blog ("The Projection Booth"), Voice to Blog ("The Tracking Station", a look test with the story's basic motion; its own Let's talk is next)
+  - **Let's talk** on every page, in each world's own form (Voice to Blog: the hanging board for now), sending to WhatsApp through `api/contact.js`
+- **Development** happens in Claude sessions with artifacts as previews; the repo files are the deliverable. The working git repo with every tag lives in the AI workspace (`/home/claude/history/portfolio`, branch `master`). Since 28 Oct it is a fresh copy started from the v54 files Vasant supplied (`284bc58`), so its hashes differ from GitHub's.
 
 ## 2. How Vasant works (follow these)
 
@@ -71,7 +71,7 @@ Read in this order:
 5. **Only the requested change.** "Only these changes", "fix those alone": touch nothing else. Mention other issues instead of fixing them.
 6. **Smoothness is non-negotiable.** "smoothernesss is more important". Smooth camera travel beats a higher frame rate, and a small flicker is more tolerable than heavier scrolling. He wants 60 fps throughout (hero 60; forest about 30–45). Reduce cost before adding anything.
 7. **Lighting:** "brighter" changes were rejected twice (shadows shifted, night too white). Change lighting only on request, in small steps.
-8. **No repeats across pages.** Each automation page has its own world, palette, props and motion language. Type and UI chrome (Elms Sans, pills, captions, runbook layout, butterfly) stay the same so it reads as one portfolio. Worlds used so far: night machine over water · paper studio in daylight · museum gallery · night transit city · dawn greenhouse · night recording studio.
+8. **No repeats across pages.** Each automation page has its own world, palette, props and motion language. Type and UI chrome (Elms Sans, pills, captions, runbook layout, butterfly) stay the same so it reads as one portfolio. Worlds used so far: night machine over water · paper studio in daylight · museum gallery · night transit city · dawn greenhouse · night recording studio · cinema projection booth · desert tracking station at dusk.
 9. **Realistic worlds, like the forest**, not cartoonish like the Press. For each new page, ask him for Poly Haven assets (he downloads them and attaches the zips/EXRs); say exactly which you'd like, and offer a pick when he asks "which one to pick".
 10. **Every page's Let's talk must belong to its world** and appear only when clicked. "lets talk is not related to the world fix it" was a rejection.
 11. **Explain it visually.** He wants the automation's logic readable from the scene (e.g. the city: orange inbound and blue outbound lines, "Inbound linking done" / "Outbound linking done" messages, the sheet's three tabs on a board; the studio: the full YouTube → captions → transcript → Google Doc → Conversation → Webflow CMS journey). Text in the scene must be readable on screen (he asked for the greenhouse ledger to be filmed from straight above, and for darker ink when a sheet was white on white).
@@ -80,6 +80,8 @@ Read in this order:
     - Never include API keys, webhook URLs, credential names, internal IDs, channel names (e.g. a Slack notifications channel), sheet names, workflow names, colleague names, writers' names ("dont mention name <writer names> and all be generic"), real post titles, domains, or the internal Notion link.
     - Competitors are `<competitor>`, authors are `u/author`. The Webflow "Conversations" collection name is fine (he used it himself).
     - No invented metrics: if a number isn't in his doc, leave it out.
+    - **Don't say "founder"** (or name whose voice a writer imitates): "dont mention founder anywhere its a tool any one can use". Say "the house voice". Workflow prompts can name a person and a company: never copy them.
+    - Workflow JSON files can contain secrets or private IDs (tokens, database IDs, Slack user IDs, allowed-origin domains). Never repeat them; mention a problem to Vasant in chat and don't fix his workflow.
 13. **No trademarked characters or logos as artwork.** A particle Reddit logo was requested and declined; use original props (Inky is original).
 14. **No public input on the site.** He removed the feedback form ("what if someone random adds a wrong msging"). He curates the testimonials himself. Let's talk is fine because it goes only to him.
 15. **His WhatsApp number never goes in the site or the docs:** "i dont wanna share my wp contact with anyone". It lives only in Vercel env vars (`CALLMEBOT_PHONE`, `CALLMEBOT_APIKEY`, or the `WA_*` set).
@@ -97,6 +99,7 @@ Read in this order:
     - "ss1, ss2…" = his screenshots, in order
     - "the box" (studio) = the side cabinet the record comes out of
     - "webflow conversation" = the Conversations CMS collection / recap page
+    - "lets tlk" = Let's talk; "assests" = assets; "the docs zip" = the six `.md` files, zipped with their GitHub names
 
 ## 3. Decisions already made (do not reopen)
 
@@ -119,7 +122,7 @@ Read in this order:
 - **Back arrow** on every automation page returns to the forest **at that page's card**, with **no loader**; it's a real browser back when the visitor came from home.
 
 **Let's talk:**
-- One sending path (`site.js` → `api/contact.js` → WhatsApp). Each world draws its own form: hero particles (in the hoodie colour), forest hanging board (weathered grey-brown wood), beach bottle and letter, Reddit glass card, Press drawing board with Inky's RECEIVED stamp, SEO commission painting with a red dot, city ticket machine, greenhouse order pad, studio lyric sheet with ON AIR.
+- One sending path (`site.js` → `api/contact.js` → WhatsApp). Each world draws its own form: hero particles (in the hoodie colour), forest hanging board (weathered grey-brown wood), beach bottle and letter, Reddit glass card, Press drawing board with Inky's RECEIVED stamp, SEO commission painting with a red dot, city ticket machine, greenhouse order pad, studio lyric sheet with ON AIR, booth title card on the auditorium screen ("Message received"). Voice to Blog's is planned on the teleprinter.
 
 **The automation pages** (details in DOCS.md):
 - Reddit: machine + runbook; courier, five looping alerts, plain labels, water and mist, ridges, shooting stars.
@@ -128,6 +131,8 @@ Read in this order:
 - City: inbound orange, outbound blue, Also read dotted; done messages; the board with the sheet's three tabs (all rows illustrative); refreshes left alone.
 - Greenhouse: generic writers ("any writer with a style file"); Claude (not Gemini); ledger filmed from above; pots read left to right; failed run = brief not shared.
 - Studio: the full journey on a strip and a wall sign; transcript written into the Doc on screen; readable printed transcript; the record comes **out of** the cabinet; host's name removed.
+- Video to Blog: the projection booth; video → blog only; the request shot looks **down** at the hatch ledge (sideways was hard to read); Let's talk = a silent-film title card on the auditorium screen of a 1930s picture house.
+- Voice to Blog: the tracking station in the desert at dusk; the light follows the scroll (sunset → first stars); the camera goes into the hut through the door and back out; no "founder"; the draft is 5,000–7,000 words in "the house voice"; the recorder isn't named until he OKs "Voxlog".
 
 **Fonts:** Elms Sans (UI) with an Archivo fallback. Pangram Sans Rounded was wanted but is unavailable unless he supplies the files.
 
@@ -136,37 +141,40 @@ Read in this order:
 | Thing | Location |
 |---|---|
 | Home page | `index.html` (one file: CSS, classic script, three.js module) |
-| Automation pages | `automations/*.html` (six) |
-| Their assets | `automations/city/`, `automations/greenhouse/`, `automations/studio/` (Reddit, Press and SEO are all code) |
+| Automation pages | `automations/*.html` (eight) |
+| Their assets | `automations/city/`, `automations/greenhouse/`, `automations/studio/`, `automations/booth/`, `automations/station/` (Reddit, Press and SEO are all code) |
 | Let's talk | `site.js` (settings at the top), `talk/surface.js`, `talk/board.js` (+ `css3d.js`, `room.js`, wood/brass textures, `chain.json`), `api/contact.js` |
 | Portrait textures | `portrait/` (colour, depth, 3-channel hood mask) |
 | Forest and beach textures | `forest/` (26 files) |
 | Card data | `WORK`, `AUTOMATIONS`, `PERSONAL` arrays near the top of the first script in `index.html` |
-| Automation copy (19 entries) | `AUTOMATIONS`: `name, cat, line, tags, one, trigger, outcome`, plus `url` when a page exists (six so far) |
+| Automation copy (19 entries) | `AUTOMATIONS`: `name, cat, line, tags, one, trigger, outcome`, plus `url` when a page exists (eight so far) |
 | Testimonials | `TESTIMONIALS` (6 **samples**, `sample: true`) |
 | Let's talk router (home) | `window.__talkScene` in the classic script; beach bottle `window.__beachTalk` in the module |
 | Card thumbnails | `thumbs/` (names in README; none in the live repo yet) |
 | Versions | git tags + `backups/` in the working repo (AI workspace) |
-| Build sources of the newest pages | `/home/claude/assets/{city,green,studio}/` in the AI workspace (`part1.html`, `shared.css`, `part2.js` or `head/body/tail.js`, `build.py`, `conv_*.py`) |
-| QA harness | Playwright scripts in the AI workspace scratchpad `qa/` (BUILD.md §12) |
+| Build sources of the newest pages | `/home/claude/assets/{city,green,studio,booth,station}/` in the AI workspace (`part1.html`, `shared.css`, `part2.js` or `head/body/tail.js`; the booth `body.html` + `part2.js`; the station `body.html` + `s_*.js`; each with `build.py` and `conv_*.py`) |
+| QA harness | Playwright scripts in the AI workspace scratchpad `qa/` (BUILD.md §14) |
 | Portrait tooling | `tools/portrait.py` in the old working repo; u2net_human_seg and Depth Anything V2 small (ONNX) |
-| Hand-over folders | `/home/claude/out/{linking,drafts,webinar}/` (page, asset zip, `index.html`) |
+| Hand-over folders | `/home/claude/out/{linking,drafts,webinar,video,voice,docs}/` (page, asset zip, `index.html`; the docs zip) |
 
 The content source for each automation is a runbook Vasant pastes (or his Google Doc of all automations: problem, trigger, steps, nodes, outcome). Ask for it when building a new page; strip everything in §2 rule 12.
 
 ## 5. Next up
 
-The remaining **13 automations** need pages, each with its own world (concepts first, then his Poly Haven assets):
-Video to Blog · Voice to Blog · Podcast to CMO Brief · Cluster to Pillar Post · Blog Refresh Engine · Blog to Social and Ads · Organic Social Engine · Slack to Post Idea · LinkedIn ICP Leaderboard · Competitive Intel System · Marketing Ticket Desk · Dev Tasks from Slack · Docs to Notion Sync.
+**Finish Voice to Blog first** if Vasant wants: its teleprinter Let's talk (the form typed on the paper; the dish transmits on send; "MESSAGE RECEIVED" prints) and the story animations (DOCS.md §12). Video to Blog's per-station animations are also open (DOCS.md §11.6).
 
-The natural next one is **Video to Blog** (the Webinar page's "Next automation" points to it) or **Competitive Intel System** (Reddit's points to it). Worlds already used are listed in §2 rule 8. Process: BUILD.md §15.
+The remaining **11 automations** need pages, each with its own world (concepts first, then his Poly Haven assets and the workflow JSON):
+Podcast to CMO Brief · Cluster to Pillar Post · Blog Refresh Engine · Blog to Social and Ads · Organic Social Engine · Slack to Post Idea · LinkedIn ICP Leaderboard · Competitive Intel System · Marketing Ticket Desk · Dev Tasks from Slack · Docs to Notion Sync.
+
+The natural next one is **Podcast to CMO Brief** (Voice to Blog's "Next automation" points to it) or **Competitive Intel System** (Reddit's points to it). Worlds already used are listed in §2 rule 8. Process: BUILD.md §17.
 
 ## 6. Open items, in order
 
-1. **"Next automation" links still `#`** on five pages: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog. The middle three targets exist now; offer to wire them (don't do it unasked). The Press → SEO is wired.
+1. **"Next automation" links still `#`** on seven pages: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog, Video to Blog → Voice to Blog, Voice to Blog → Podcast to CMO Brief. Five of these targets exist now; offer to wire them (don't do it unasked). The Press → SEO is wired.
 2. **Real testimonials:** Vasant will send them. Replace the 6 samples and set `sample: false`.
 3. **Thumbnails** for the 5 Factors.ai pages and the 3 personal projects (`thumbs/`); none in the live repo.
 4. **Mic and cassette models** were never sent; the studio uses procedural ones. Offer to swap if he sends Poly Haven models.
+4a. **Voice to Blog:** Let's talk and story animations; may the recorder's name (Voxlog) appear? Workflow issues were reported to him in chat (a missing node reference and a wrong credential on the second Notion step; unescaped quotes in the Notion request), as were the Video to Blog ones (credential handling, a batch that can exceed Notion's 100-block limit, a filler regex that removes real words). They are his to fix in n8n.
 5. **Contact setup:** confirm the Vercel env vars are set and a live test message arrived (CONTACT-SETUP.md). Previews can't send.
 6. **Ideas raised earlier, not built** (suggest only): a stronger particle-portrait → forest hand-over; more forest → footer connection (the beach and sky largely cover this now).
 7. **Small known issue** (offered, not requested): while reading a later testimonial, earlier gathered cards can peek briefly at the top edge.
@@ -175,8 +183,8 @@ The natural next one is **Video to Blog** (the Webinar page's "Next automation" 
 
 ## 7. Known constraints of the sandbox used so far
 
-- **Network:** the AI workspace can't reach jsDelivr, Google Fonts, factors.ai or most websites from the shell. Tests use local copies of three.js (0.158 and 0.169) and Lenis and fallback fonts, so **screenshots don't show Elms Sans**. Poly Haven files come from Vasant as attachments. The browser-side CDN loads work fine on the live site.
-- **Rendering:** the sandbox renders on the CPU (SwiftShader), so it can't measure real fps; ask Vasant to open the page with `?fps`. Captions can lag a frame in screenshots.
+- **Network:** the AI workspace can't reach jsDelivr, Google Fonts, factors.ai, Poly Haven or most websites from the shell. Tests use local copies of three.js (0.158 and 0.169) and Lenis; fonts now come from npm (`@fontsource`), so newer screenshots show Elms Sans. Poly Haven files come from Vasant as attachments; the web-fetch tool can still read `api.polyhaven.com` to check names. Allowing `api.polyhaven.com` and `dl.polyhaven.org` in claude.ai → Settings (or Organization settings) → Capabilities would let a session download them itself. The browser-side CDN loads work fine on the live site.
+- **Rendering:** the sandbox renders on the CPU (SwiftShader), so it can't measure real fps; ask Vasant to open the page with `?fps`. Captions can lag in screenshots. SwiftShader also rounds differently: a shader NaN that blacks out half the screen on a Mac can be invisible here (BUILD.md §13). Ask him for a screenshot when a page first ships.
 - **The local server** (`python3 -m http.server 8765`) dies when background commands time out; restart it.
 - **Blender:** `bpy` must be run with `python3 -I`.
 - **Artifacts** block outside requests (`connect-src 'self'`) and have no `/api/contact`, so preview copies use `simulate: true`.
@@ -184,6 +192,8 @@ The natural next one is **Video to Blog** (the Webinar page's "Next automation" 
 
 ## 8. Artifact links (Claude, private previews)
 
+- Voice to Blog: `claude.ai/artifact/6kcvmuwi1y1TP5MoHbDGV8`
+- Video to Blog: `claude.ai/artifact/8KA5G2aVZ7Gf7Sj9YQ5c5o`
 - Webinar to Webflow: `claude.ai/artifact/HG9oAuutrDeNuMnJfKzZsp`
 - AI Blog Drafts: `claude.ai/artifact/GJVspZR6XrdBRRXKzVrfxW`
 - Auto Internal Linking: `claude.ai/artifact/M2JRL5Yem1Jstm1e7n9kv3`
@@ -217,7 +227,7 @@ The design goals set at the start:
 The site has no build step and no framework. Each page is one self-contained HTML file with its CSS and JavaScript inline. Shared pieces: `site.js` (Let's talk), `talk/` (the 3D forms), `api/contact.js` (the WhatsApp function).
 
 Runtime dependencies:
-- Google Fonts (Elms Sans + Archivo everywhere; Caveat on the greenhouse and studio pages; Fraunces on the SEO page and the board)
+- Google Fonts (Elms Sans + Archivo everywhere; Caveat on the greenhouse and studio pages; Fraunces on the SEO page and the board; Limelight on the Video to Blog title card)
 - on the home page: three.js 0.169 and Lenis 1.1.13 from jsDelivr
 - on the automation pages: three.js 0.158 from jsDelivr
 
@@ -245,9 +255,13 @@ Runtime dependencies:
 │   ├── auto-internal-linking.html           page 4: transit city at night
 │   ├── ai-blog-drafts.html                  page 5: greenhouse at dawn
 │   ├── webinar-to-webflow.html              page 6: recording studio at night
+│   ├── video-to-blog.html                   page 7: The Projection Booth (old cinema booth before the show)
+│   ├── voice-to-blog.html                   page 8: The Tracking Station (desert at dusk)
 │   ├── city/                                45 files: textures + packed models (page 4)
 │   ├── greenhouse/                          23 files: textures, packed models, dawn HDRI (page 5)
-│   └── studio/                              34 files: textures, packed models, studio HDRI (page 6)
+│   ├── studio/                              34 files: textures, packed models, studio HDRI (page 6)
+│   ├── booth/                               35 files, 6.0 MB: textures, packed models, booth light (page 7)
+│   └── station/                             52 files, 7.1 MB: textures, packed models and scans, dusk light (page 8)
 ├── portrait/
 │   ├── portrait-color.webp                  hero portrait, cut out, real photo colours
 │   ├── portrait-depth.png                   depth map (bright = near) for the particles' 3D relief
@@ -258,7 +272,7 @@ Runtime dependencies:
 └── backups/                                 (working repo only, not deployed) copies of every version
 ```
 
-Relative paths matter. `index.html` loads `portrait/…`, `forest/…`, `thumbs/…`, `talk/…` and `site.js`; each automation page loads `../site.js`, `../talk/surface.js` and its own folder (`city/`, `greenhouse/`, `studio/`).
+Relative paths matter. `index.html` loads `portrait/…`, `forest/…`, `thumbs/…`, `talk/…` and `site.js`; each automation page loads `../site.js`, `../talk/surface.js` and its own folder (`city/`, `greenhouse/`, `studio/`, `booth/`, `station/`).
 
 ---
 
@@ -380,8 +394,10 @@ Every automation page follows one pattern, so they feel like one portfolio while
 | 4 | Auto Internal Linking | a transit city at night just after rain | wet asphalt, sodium orange, inbound orange / outbound blue lines; bloom | 1300svh | 7 |
 | 5 | AI Blog Drafts | a greenhouse at dawn | real dawn sky (HDRI), low gold sun, misted glass, greens; shadows | 1300svh | 6 |
 | 6 | Webinar to Webflow | a recording studio control room at night | warm practical lamps, screen glow, booth light; shadows, light bloom | 1300svh | 7 |
+| 7 | Video to Blog ("The Projection Booth") | an old cinema projection booth before the first show | late-afternoon sun through one window, warm shade, a pendant lamp; amber, green-grey steel; shadows, light bloom | 1300svh | 7 |
+| 8 | Voice to Blog ("The Tracking Station") | a radio tracking station in the desert at dusk | a painted dusk sky going from sunset to first stars with the scroll, low orange sun, the hut lit from inside; signal amber, scope green; shadows, bloom | 1300svh | 7 |
 
-"Next automation" links: The Press → SEO Pre-Live Checks (**wired**). All others are still `#`: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog. (The first three of these targets exist now and could be wired; ask first.)
+"Next automation" links: The Press → SEO Pre-Live Checks (**wired**). All others are still `#`: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog, Video to Blog → Voice to Blog, Voice to Blog → Podcast to CMO Brief. (Five of these targets exist now and could be wired; ask first.)
 
 ---
 
@@ -624,16 +640,116 @@ Look test of the studio (6e0a548) → journey strip and wall sign, transcript wr
 
 ---
 
-## 11. Pending items
+## 11. Page 7: Video to Blog, "The Projection Booth" (`automations/video-to-blog.html`)
+
+### 11.1 Concept
+**An old cinema projection booth before the first show.** A long, narrow booth with plaster walls, a painted dado and a worn plank floor. Late-afternoon sun comes in through one high window and lands on the floor between the desk and the projector; the rest is warm shade under a pendant lamp. Two ports in the front wall look down into the dark auditorium and its screen.
+
+The workflow is the booth's work: the YouTube link comes in through the booking hatch as a slip, the soundtrack is read off the reel, the fillers are cut at the splicing bench, the draft is typed in the house voice and canned as reels for Notion, and the intercom tells the lobby it's ready.
+
+The page covers the **video → blog** half of the workflow only (the same n8n workflow also has a blog → video branch, which isn't shown).
+
+### 11.2 What is in the booth
+- **The projector** on its pedestal: the lamphouse with glowing vents and a chimney to the roof, the mechanism head, the lens at the port, a reel above and one below with film ribbons between them, the sound head with its exciter lamp, and the reader the transcript spools out of. A **transcript tape** runs from the reader into a bin.
+- **The splicing bench** (Poly Haven wooden table): rewinds, the splicer, a trim bin with paragraph-length strips.
+- **The typewriter** on the desk (Poly Haven painted wooden table): the typed page is readable, a stack of finished pages beside it, and a word counter at 7,420 (illustrative).
+- **The vault**: steel shelves of film cans; three new cans marked **DRAFT**, labelled **REEL 1/3, 2/3, 3/3**, the batches the post goes into Notion in.
+- **The left wall**: the door with a PROJECTION ROOM sign; the **booking hatch** with its ledge and a spike of booking slips (the request); the **intercom** to the lobby, with a printed slip "NEW BLOG DRAFT / READY FOR REVIEW" (the Slack summary).
+- **The right wall**: the **running order** chart (one reel at a time), and a "silent print" can on the tool chest: no captions, nothing to read.
+- Poly Haven assets: **Vestibule** (HDRI, for reflections), wood_floor_worn, plastered_wall, damaged_plaster, rusty_metal_03 (repainted green-grey), wood_cabinet_worn_long, WoodenTable_03, painted_wooden_table, folding_wooden_stool, metal_tool_chest. The solitude_interior HDRI was sent but isn't used. The projector, reels, typewriter, intercom, cans and the auditorium are built in code.
+
+### 11.3 The stations
+| # | Caption | What you see |
+|---|---|---|
+| 1 | **01 · The request** — "One command, one link." `/video-to-blog` and a YouTube link in the team's Slack channel; the workflow answers straight away | Looking **down** onto the hatch ledge: the slip on the spike and the one that has just come through, stamped GOT IT · ON IT. (Vasant: the sideways view was hard to read, so it's filmed from above.) |
+| 2 | **02 · The soundtrack** — "The video's words, read off the reel." Supadata fetches the transcript; the workflow waits thirty seconds, then reads it | The lamp strikes, the reels turn, the sound head and the transcript tape |
+| 3 | **03 · The cut** — "Fillers out, paragraphs in." Ums, uhs and you-knows removed; paragraphs every five sentences | The splicing bench and the trim bin |
+| 4 | **04 · The draft** — "A full article, in the house voice." SEO details, TL;DR, hook, sections, "In a nutshell", FAQs; 6,500 to 8,500 words | The typewriter, the typed page and the counter |
+| 5 | **05 · Into Notion** — "Filed as a draft, never published." Slug, meta description, primary keyword, status draft; up to three batches of a hundred blocks | The three DRAFT cans on the vault shelf |
+| 6 | **06 · The ping** — "The channel hears it's ready." Title, slug, keyword, word count, FAQ count and the Notion link | The intercom, its lamp blinking, and its printed slip |
+| 7 | **07 · One reel at a time** — "Wait for the link before the next one." One conversion at a time; a video needs captions | The running order and the silent print on the chest |
+| 8 | End | "A YouTube link in. A full blog draft in Notion." · "One command, one reel at a time. Every draft waits for a person to review it." |
+
+### 11.4 Let's talk
+**The feature presentation.** The camera goes out through the viewing port and down the auditorium to the screen: an Academy-ratio (1.37 : 1) screen in a proscenium, velvet curtains drawn back, a valance, footlights along the stage lip and raked rows of seats. The form is projected as a **silent-film title card** (`tb-look-reel`): the headline in Limelight, the rest in Elms Sans, cream on black inside a deco border, with film grain. Sending splices in the next card: a flash, two cue marks, then **"Message received"**. Escape or ✕ pulls the camera back out through the port to where the scroll left it.
+
+### 11.5 The runbook
+Facts: **Trigger** A Slack slash command with a YouTube link · **Runs** One video at a time · **Stack** n8n · Slack · Supadata · Claude · Notion · **Output** A Notion draft, 6,500 to 8,500 words.
+Sections: 01 Problem · 02 Running it (the command, an illustrative Slack summary) · 03 Flow (8 steps with node types) · 04 The draft (its six parts) · 05 Guardrails · 06 Outcome · 07 Operating it.
+Stats: **1** Slack command per video · **6.5–8.5k** words the draft is written to · **100** blocks per batch into Notion.
+Note: "Channel names, database names, the writer's name and credentials are left out on purpose. The video, title and keywords in the scene are illustrative."
+
+### 11.6 Versions
+Look test of the booth (5653a1f, `video-look`) → the request filmed from above and the Let's talk title card (9e8f563, `video-talk-v1`) → home card wired (6648167, `video-handover` = **`v56-video-to-blog`**). The per-station story animations (the slip dropping through the hatch, the tape running, pages typing out, cans being shelved) are not built yet: the reels, lamp, screen and intercom lamp run.
+
+---
+
+## 12. Page 8: Voice to Blog, "The Tracking Station" (`automations/voice-to-blog.html`)
+
+### 12.1 Concept
+**A radio tracking station in the desert at dusk.** A 12 m dish stands on a concrete pad; beside it, a corrugated tin hut with a round roof, timber end walls and a lit window, whose far end looks out at the dish. Sand and gravel run out to low ridges; boulders, scrub and quiver trees come from Poly Haven's Namaqualand scans. It is the site's first open-sky world. The light follows the scroll: the sun is on the horizon at the top of the page and the first stars are out at the end.
+
+The story: the dish locks on to a spoken brief; inside the hut the voice becomes words (the scope, the drum recorder, the transcript tape), the words are rewritten on the teleprinter, the draft is filed in the binder, and one message lamp lights for the direct message.
+
+The tool is for anyone: **no "founder" anywhere** (Vasant: "dont mention founder anywhere its a tool any one can use"). The voice is "the house voice". The recorder isn't named on the page; its name (Voxlog) goes on only if Vasant says so.
+
+### 12.2 What is at the station
+**Outside:**
+- **The dish**: a concrete pad and cable-pit lid, a tapered pedestal with a door and a ladder, the turntable, the alidade with two cheek plates carrying the elevation axle, a counterweight, the reflector (a paraboloid with 24 panel sectors and three seam rings), its back truss, a quadripod holding the feed at the focus, and a red warning light.
+- **The hut**: galvanised tin with rust running down from the laps (made from rust_coarse_01), plank end walls, a concrete plinth and step, the door standing open, glowing windows.
+- A mast with an amber **beacon** and a whip aerial, guy wires, blue fuel drums, a generator housing, the cable lying on the sand from the hut to the dish, and the worn gravel path between them.
+
+**Inside the hut** (two pendant bulbs):
+- **Three racks**: RECORDER (the drum turning under its pen, and the slot the transcript tape runs out of), SCOPE (the voice as a green trace), RECEIVER (the SIGNAL meter, the RECEIVING lamp, a row of level lamps).
+- **The console shelf** with the **transmission slip**: "RECORDING 3:42 · PLAYED BACK", the title hint pencilled in, the two keyword boxes stamped **AUTO**.
+- **The desk** (Poly Haven wooden_table_02) with the **teleprinter**: its paper rises from the platen and curls over the back (readable from the chair); the finished **printout** laid flat with its header block (title, keywords, word count, meta) and the start of the post; a desk lamp; the **MESSAGE** lamp. The chair is Poly Haven painted_wooden_chair_01.
+- **The far wall**: the **STATION TIME** clock (its sweep hand stands still until Send and runs about 90 seconds by the ping), the time clock with a punched card, and the **binder rack**, the newest binder lying on top with an index card listing the seven Notion properties.
+
+All titles and numbers in the scene are illustrative: "What a good weekly pipeline review looks like", pipeline review / sales forecasting, 6,140 words, recorded 17:42.
+
+Poly Haven assets: **Rogland Sunset** (HDRI, for the light; the visible sky is painted to match its sun), gravelly_sand, sandy_gravel_02, rust_coarse_01 (turned into the hut's tin), concrete_floor_03, raw_plank_wall, namaqualand_boulder_02 and _04, namaqualand_rocks_01, quiver_tree_02, wild_rooibos_bush, wooden_table_02, painted_wooden_chair_01, barrel_03. Goegap Road and Quarry 02 were sent but aren't used. The dish, racks, teleprinter, clocks, binders, beacon and cables are built in code.
+
+### 12.3 The stations
+| # | Caption | What you see |
+|---|---|---|
+| 1 | **01 · The brief** — "Just talk." Open the recorder in its own browser tab, tap the mic, talk for two to five minutes; messy is fine | The dish swings off its park position and locks on, seen from in front of the bowl with the sunset behind the camera |
+| 2 | **02 · The hints** — "Three boxes, all optional." The recording plays back; title hint and two keywords; anything blank is worked out | Inside, from above: the transmission slip, the title pencilled in, two AUTO stamps |
+| 3 | **03 · Send** — "One button sends it all." The audio, the hints and the time it was recorded | The racks: the RECEIVING lamp, the level lamps, the drum turning; the clock starts |
+| 4 | **04 · The words** — "Voice to text in seconds." Groq transcribes the whole recording | The scope trace and the transcript tape |
+| 5 | **05 · The voice** — "Rewritten in the house voice." A full post of 5,000 to 7,000 words: direct, data-led, written like an operator; blank hints filled | The teleprinter and the printout on the desk |
+| 6 | **06 · Into Notion** — "Filed as a draft." Title, primary and secondary keyword, 160-character meta description, word count, the time recorded, status Draft | The binder and its index card, the time clock |
+| 7 | **07 · The ping** — "A direct message with the link." 60 to 90 seconds after Send: a Slack DM with the title, keyword, word count and link; Draft → Review by hand | Outside at the door: the hut against the afterglow, the window lit, the beacon flashing, the first stars |
+| 8 | End | "Talk it through. Get a draft in Notion." · "A few minutes of talking becomes a full post in the house voice, about 90 seconds after Send. A person always reviews it." A high pull-back over the station |
+
+The camera walks into the hut through the open door (01 → 02) and back out the same way (06 → 07); it never passes through a wall.
+
+### 12.4 Let's talk
+**Not built yet.** The approved plan: the camera goes into the hut to the teleprinter, and the form is typed on its paper; on send the camera steps outside as the dish tilts up and transmits, and the teleprinter prints "MESSAGE RECEIVED" with the time. Until then the page has no `__talkScene`, so `site.js` opens the hanging board.
+
+### 12.5 The runbook
+Facts: **Trigger** A webhook from a browser recorder · **Runs** On demand, 60 to 90 seconds · **Stack** n8n · Groq · Claude · Notion · Slack · **Output** A Notion draft, 5,000 to 7,000 words.
+Sections: 01 Problem · 02 Running it (seven steps and an illustrative "before Send" card) · 03 Flow (seven steps: Webhook · HTTP Request to Groq, Whisper large-v3 Turbo · Set · Claude · Code × 2 · If and HTTP Request × 2 · Merge and Slack) · 04 The draft (its fixed order and the seven Notion properties) · 05 If something fails (Executions tab, the mic blocked inside a Notion embed, Groq 401, Notion 401) · 06 Outcome · 07 Operating it.
+Stats: **2–5 min** of talking · **5–7k** words the draft is written to · **60–90 s** from Send to the link.
+Note: "Names, the database, the recorder's address and credentials are left out on purpose. The recording, title and keywords in the scene are illustrative." The writing prompt in the workflow names a person and a company: neither appears on the page.
+
+### 12.6 Versions
+Look test of the station (9c48f06, 47d7d46, `voice-look`) → the black half of the sky on Mac GPUs fixed, runbook and captions matched to the workflow JSON (acfb13a, `voice-look-2`) → home card wired (538eb0d, **`v57-voice-to-blog`**, current). Next: the story animations (the slip arriving, the tape and the teleprinter printing, the card being punched) and the teleprinter Let's talk.
+
+---
+
+## 13. Pending items
 - **Real testimonials** to replace the six samples (`sample: false`).
 - **Thumbnails** for the 5 Factors.ai pages and 3 personal projects: `thumbs/benchmarks.jpg, campaign-offer.jpg, microsoft.jpg, prove-roi.jpg, routines.jpg, nike.jpg, ilish.jpg, leaderboard.jpg`. A missing file falls back to the card's tint. There is no `thumbs/` folder in the live repo yet.
-- **Thirteen automation pages** still to build, each with its own world: Video to Blog, Voice to Blog, Podcast to CMO Brief, Cluster to Pillar Post, Blog Refresh Engine, Blog to Social and Ads, Organic Social Engine, Slack to Post Idea, LinkedIn ICP Leaderboard, Competitive Intel System, Marketing Ticket Desk, Dev Tasks from Slack, Docs to Notion Sync. Set each entry's `url`.
-- **"Next automation" links** still `#` on five pages (§4); three could be wired now.
+- **Eleven automation pages** still to build, each with its own world: Podcast to CMO Brief, Cluster to Pillar Post, Blog Refresh Engine, Blog to Social and Ads, Organic Social Engine, Slack to Post Idea, LinkedIn ICP Leaderboard, Competitive Intel System, Marketing Ticket Desk, Dev Tasks from Slack, Docs to Notion Sync. Set each entry's `url`.
+- **Voice to Blog:** the teleprinter Let's talk (§12.4) and the story animations; whether the recorder's name (Voxlog) may appear on the page.
+- **Video to Blog:** the per-station story animations (§11.6).
+- **"Next automation" links** still `#` on seven pages (§4); five could be wired now.
+- Issues found in the two workflow JSON files were reported to Vasant in chat; they are workflow fixes, not site work.
 - **Mic and cassette models** were never supplied; the studio uses procedural ones.
 - Replace the slide-in panel once every automation has a page.
 - Optional: Pangram Sans Rounded, if the font files are supplied (Elms Sans is the current UI face).
 
-## 12. Decisions log (what was tried and dropped)
+## 14. Decisions log (what was tried and dropped)
 
 **Hero:**
 - Rejected name reveals: falling letters, an outline name with hover fill, particles morphing into the name, letter-by-letter over a long scroll, a bubble font, a glass "Projects" title, a liquid "pour" into the name. The name moved to the footer, and the hero stays portrait → dissolve → rain.
@@ -658,12 +774,14 @@ Look test of the studio (6e0a548) → journey strip and wall sign, transcript wr
 - City: the first look had over-bright windows and bloom (toned down); linking needed explaining visually (orange inbound, blue outbound, done messages, the sheet's three tabs on a board); the Let's talk had to belong to the world (ticket machine).
 - Greenhouse: pots were mirrored to read left to right; the ledger is filmed from straight above; the order-pad text was invisible (white on white) and got dark ink; writers' names removed; Claude, not Gemini.
 - Studio: the camera used to move off the screen before its content appeared; the transcript generation needed more detail; the record must come out of the cabinet, not from outside it; the YouTube → transcript → Doc → Conversation → Webflow CMS journey needed to be explicit.
+- Video to Blog: three concepts were offered and Vasant said "go with your pick" (the booth). Only the video → blog half of the workflow is shown. The request shot first looked at the hatch from the side: "camera angle this showing sideways is not understandable so show this scene from top angle", so it now looks down. A black rectangle in early renders was a NaN pixel smeared by the bloom (fixed with a guard). The Let's talk had to belong to the booth: the form is projected on the auditorium screen as a title card. The first auditorium (wide screen, flat curtains, box seats) read as a dark modal and was rebuilt as a 1930s picture house.
+- Voice to Blog: three concepts (a tracking station in the desert, a ship's wireless room, a monastery scriptorium); the station was picked because nothing else on the site is outdoors with open sky. "Founder" was taken off the home card and kept off the page: the tool is for anyone. The 1K HDRI is used for light only; the dusk sky is painted. On Vasant's Mac half the sky rendered black (a NaN from `pow()`), fixed on 3 Nov.
 
 **Let's talk:**
 - v50 started with one shared dialog on every page; talk-* made each world its own form; the forest got the hanging board, the hero the particles, the beach the bottle. "Lets talk is not related to the world" is a rejection reason: each new page needs a form that belongs to it and only appears on click.
 - **The WhatsApp number must never be in the site**: "i dont wanna share my wp contact with anyone". It lives only in Vercel env vars.
 
-## 13. Versioning
+## 15. Versioning
 Every approved state is a git tag in the working repo, usually with copies in `backups/`.
 
 **Home page:**
@@ -680,11 +798,14 @@ Every approved state is a git tag in the working repo, usually with copies in `b
 - Let's talk worlds: `talk-hero-v1`, `talk-beach-v1`, `talk-all-v1`
 - Auto Internal Linking: `pre-linking`, `pre-linking-home`, **`v52-linking`**
 - AI Blog Drafts: `pre-drafts`, `pre-drafts-fix1`, `pre-drafts-home`, **`v53-drafts`**
-- Webinar to Webflow: `pre-webinar`, `pre-webinar-fix1`, `pre-webinar-home`, **`v54-webinar` (current)**
+- Webinar to Webflow: `pre-webinar`, `pre-webinar-fix1`, `pre-webinar-home`, **`v54-webinar`**
+- Docs: `pre-docs`, `v55-docs`; `v58-docs` (these)
+- Video to Blog: `pre-video`, `video-look`, `pre-video-talk`, `video-talk-v1`, `pre-video-handover`, `video-handover` = **`v56-video-to-blog`**
+- Voice to Blog: `pre-voice-card`, `pre-voice`, `voice-look`, `voice-look-2`, `pre-voice-home`, **`v57-voice-to-blog` (current)**
 
-BUILD.md §9 and PORTFOLIO-HANDOFF.md have the full table. The repo with all tags lives in the AI workspace and is handed over as a history zip when asked.
+BUILD.md §16 and PORTFOLIO-HANDOFF.md have the full table. The repo with all tags lives in the AI workspace and is handed over as a history zip when asked.
 
-## 14. Running locally
+## 16. Running locally
 ```
 npx serve .          # or: python3 -m http.server 8765
 ```
@@ -704,13 +825,15 @@ Contents:
 6. Auto Internal Linking (the city)
 7. AI Blog Drafts (the greenhouse)
 8. Webinar to Webflow (the studio)
-9. Let's talk: `site.js`, `talk/surface.js`, `talk/board.js`, `api/contact.js`
-10. Asset pipeline (Poly Haven → web textures, packed models, HDRIs)
-11. Shared conventions
-12. QA harness
-13. Claude artifact previews
-14. Version history
-15. Adding the next automation page
+9. Video to Blog (the projection booth)
+10. Voice to Blog (the tracking station)
+11. Let's talk: `site.js`, `talk/surface.js`, `talk/board.js`, `api/contact.js`
+12. Asset pipeline (Poly Haven → web textures, packed models, HDRIs)
+13. Shared conventions
+14. QA harness
+15. Claude artifact previews
+16. Version history
+17. Adding the next automation page
 
 ---
 
@@ -727,8 +850,8 @@ Contents:
 | Let's talk | `site.js` (classic script, every page) + `talk/surface.js` (ES module, no three.js) + `talk/board.js` (three.js 0.169) | One sending path and one set of settings; every world paints its own form |
 | Contact backend | **Vercel serverless function** `api/contact.js` (Node, CommonJS) → CallMeBot or the WhatsApp Cloud API | Free; secrets stay in Vercel env vars, never in the site |
 | Motion | Hand-rolled scroll→value mapping, `requestAnimationFrame`, time-based easing (`1 − exp(−k·dt)`) | Full control over the scrub; feels the same at any frame rate |
-| Type | Elms Sans (UI) with an Archivo fallback, from Google Fonts; Caveat for handwriting; Fraunces in places | The approved face, loaded once |
-| Textures and models | **Poly Haven (CC0)** for everything realistic: forest floor, sand, rock, satin, wood, brass, city, greenhouse and studio sets, two HDRIs; the EZ-Tree texture set for bark and leaves | Free, realistic; downscaled to 512–2048 px; models packed into compact JSON |
+| Type | Elms Sans (UI) with an Archivo fallback, from Google Fonts; Caveat for handwriting; Fraunces in places; Limelight for the Video to Blog title card | The approved face, loaded once |
+| Textures and models | **Poly Haven (CC0)** for everything realistic: forest floor, sand, rock, satin, wood, brass, the city, greenhouse, studio, booth and desert-station sets, four HDRIs; the EZ-Tree texture set for bark and leaves | Free, realistic; downscaled to 512–2048 px; models packed into compact JSON |
 | Asset prep | Python: `bpy` (Blender as a module, run with `python3 -I`), `numpy`, `cv2`, `Pillow`, `scipy`; `onnxruntime` with **u2net_human_seg** and **Depth Anything V2 small** for the portrait | Free and local; converts .blend/.exr to web files |
 | QA | Playwright + headless Chromium (SwiftShader software GL) | Renders every state as an image to review before publishing |
 | Versioning | git tags + `backups/` copies | One-command revert to any approved state |
@@ -763,7 +886,7 @@ All tools are free. No paid services or licensed assets are used.
 <script module>     (≈967–3294) EZ-Tree (vendored) → renderer/moods/fog/sky → ground → trees + billboards + LOD → ferns, light, shafts,
                     fireflies, falling leaves → beach (sand, rock, waterfall, spray, sea) → lanterns + banners → CSS3D
                     → fit() (sizes + camera poses) → camera path → applyMood() → the beach bottle Let's talk → tick()
-<script src="site.js" defer>   Let's talk on every page (§9)
+<script src="site.js" defer>   Let's talk on every page (§11)
 ```
 
 **Layers:** forest 1 < particles 2 < cards and `main` 3 < UI 4 < loader 6 < butterfly 9 < panel 20 < fps readout 30. The hanging board and the plain card sit above everything (z 2147483000 / a modal `<dialog>`).
@@ -1153,7 +1276,7 @@ window.__talkScene = { open: o => {
   return false;                                                                                      // forest: site.js → board
 } };
 ```
-`site.js` calls this first; `false` makes it open the hanging board (§9.3).
+`site.js` calls this first; `false` makes it open the hanging board (§11.3).
 
 ### 1.22 Returning from an automation page (v47, v48)
 - At the top of the classic script: `RETURN_SLUG` from `location.hash` `#from-<slug>`, or from `sessionStorage.returnTo` (read once, then removed; also cleared on a `pageshow` from the back-forward cache). If set, `html.returning` is added.
@@ -1189,9 +1312,9 @@ Every page in `automations/` has the same skeleton. Copy it for a new page; chan
 - **Portrait screens** (`W/H < 0.85`): fov 58° instead of 40° (Reddit 54°/40°, The Press 50°/36°, SEO 56°/38°); close-ups (`close: 1`) step straight back along the view by `pb` (default 1.4), wide shots step back 25 %, clamped to stay inside the room; a key can carry its own phone framing `m: { pos, look }`, which then replaces it.
 - **Pointer parallax:** a small offset from the pointer, eased.
 - **Renderer:** `WebGLRenderer`, ACES filmic, sRGB output, DPR `min(1.5, dpr)` (1.25 on coarse pointers), pixel-ratio-aware composer, `resize()` sets fov per aspect.
-- **Loading:** a `THREE.LoadingManager`; the scene shows when everything has arrived. Textures go through a `tex(name, srgb, repeat)` helper with anisotropy; models through `loadPacked(file)` (§10.2).
+- **Loading:** a `THREE.LoadingManager`; the scene shows when everything has arrived. Textures go through a `tex(name, srgb, repeat)` helper with anisotropy; models through `loadPacked(file)` (§12.2).
 - **Canvas textures** (`canvasTex(w, h, draw)`) for anything with words: labels, screens, sheets, boards. They redraw once when the web fonts arrive.
-- **Let's talk:** a `talk` object with `mode` (`off` / `in` / `on` / `out`), its own camera path (`talk.P`, eased over ~1.8 s) that takes over from the scroll camera while it is in charge (the scroll stays where it was), a `CSS3DRenderer` (`talk.cssR`) for the live form over the painted texture, and `window.__talkScene = { open }`. Escape closes. The surface comes from `../talk/surface.js` (§9.2).
+- **Let's talk:** a `talk` object with `mode` (`off` / `in` / `on` / `out`), its own camera path (`talk.P`, eased over ~1.8 s) that takes over from the scroll camera while it is in charge (the scroll stays where it was), a `CSS3DRenderer` (`talk.cssR`) for the live form over the painted texture, and `window.__talkScene = { open }`. Escape closes. The surface comes from `../talk/surface.js` (§11.2).
 - **The butterfly cursor**, the same code as the home page.
 
 ---
@@ -1397,7 +1520,7 @@ Camera keys (v2: each item close up, then pull back): `hero, arrive, label, post
 - **Buildings:** brick (brick_wall_10) and glass; every window decided in the shader (`onBeforeCompile`): lit or dark, warm or cool, blinds, shops at street level. Per building a vector carries a seed, a style (0 brick, 1 glass, 2 old brick), the share of lit windows and a shop colour.
 - **Sky:** a dome of low cloud lit orange from below by the city.
 - **Street lamps:** instanced poles and heads (Poly Haven street_lamp_02 textures) with instanced **light pools** on the ground. **Traffic:** headlight and tail-light points moving along every road. Red aviation lights blink on the tallest roofs.
-- **Models** (packed JSON, §10.2): wall lantern (`lamp_p.json`), street seating (`seating_p.json`), fire escape (`fire_p.json`).
+- **Models** (packed JSON, §12.2): wall lantern (`lamp_p.json`), street seating (`seating_p.json`), fire escape (`fire_p.json`).
 
 ### 6.3 The network and the lines
 - Stations: a fixed scatter of junctions (seed 4242), denser in the middle of town (`rnd() < (r < 5 ? 0.42 : 0.2)`), about 70. Junction totems (instanced poles and signs with a link glyph); the **top-100 posts are interchanges** (instanced rings).
@@ -1474,16 +1597,91 @@ In the vocal booth: the camera goes through the window to the music stand, where
 
 ---
 
-## 9. Let's talk: how it works
+## 9. Video to Blog, the projection booth (`automations/video-to-blog.html`)
 
-### 9.1 `site.js` (every page)
+### 9.1 Renderer and light
+- Shadows (PCF soft), ACES, exposure **1.12**, fov 42° (portrait 62°), near 0.03, far 80. Bloom at half resolution `(0.3, 0.5, 1.0)`.
+- **Environment:** Poly Haven **Vestibule** (EXR) → `booth_env.json` (RGBE, warmed and desaturated in the conversion). It is a bright daylight interior, so the page decodes it at `ENVK = 0.4` and clamps each pixel at `ENVMAX = 3`; without that, papers and cans blew out.
+- Lights: a hemisphere light (0.55), the pendant lamp (`PointLight 0xffb36b, 2.4, 8, 1.6`), and the **sun**: a `DirectionalLight` through the window hole along `SUNDIR = (−0.62, −0.5, −0.6)`, its shadow camera ±4 m (call `updateProjectionMatrix()` after setting it). The window's light shaft is an additive prism `ShaderMaterial` (`beamM`), with dust points drifting in it.
+- **NaN guard:** `THREE.ShaderChunk.dithering_fragment` gets one extra line that turns any NaN or infinite pixel into 0 (`?nan` paints it magenta to find the source). A single NaN pixel (one face of the desk model; `pow()` of a negative in the beam shader) was being smeared by the bloom into a big black rectangle. The desk model's normals are also recomputed on load.
+
+### 9.2 The room
+`R = { x0: −3.6, x1: 3.6, z0: −1.8, z1: 1.8, h: 2.75, t: 0.14 }`. The front wall (z0) has the projection port `PORT` and the viewing port `VIEW`; the back wall (z1) the window `WIN`; the left end wall the door and the booking hatch. Walls are `ExtrudeGeometry` shapes with holes (`wallWithHoles`). UVs are in metres (`metresUV`), textures repeat `1/tile`. The dado, rails and skirting are merged into two meshes.
+
+### 9.3 Props
+- **Projector** at `PJ = (0, −1.06)`: pedestal, mechanism head, lens at the port, lamphouse with vents (`ventM`, emissive) and chimney. Reels (`reel()`), film ribbons (`ribbon(points, width, side, mat, vScale, tension)`: a Catmull-Rom curve with explicit normals), the sound head and its exciter lamp, the reader and the transcript tape into a bin.
+- **Bench** at `BENCH (2.35, 1.5)`, trim bin at `TRIM (3.25, 0.85)`, **desk** at `DESK (−2.05, 1.33)` scaled 0.78, **vault** shelves at `VAULT (−2.6, −1.6)`, the tool chest at `CHEST (3.2, −1.38)`.
+- Typewriter keys are one `InstancedMesh`; the typed page is rotated `(0.22, π, 0)` so it reads the right way round. Can labels rotate about their centre by `π/2`.
+- The hatch slips are turned so their text reads upright from above (the request shot looks down), on a 512 × 720 canvas.
+- Poly Haven models are placed with their fronts toward +z and rotated π; model materials use `envMapIntensity 0.55`; the table has no metal map (its zinc top read as foil).
+
+### 9.4 Scroll
+Runway 1300svh, 7 captions, `CUT = [0.05, 0.17, 0.29, 0.41, 0.53, 0.65, 0.76, 0.88]`. Keys: `hero, request, sound, cut, draft, vault, ping, queue, end`, each held across its caption. `request` looks down at the ledge (`m` phone pose higher); `queue` has a phone pose that stacks the chart above the silent print. The lamp strikes at 02 and stays lit; the reels spin from there; the intercom lamp blinks from 06.
+
+### 9.5 Let's talk: the title card
+- **The hall:** the auditorium box (`BackSide`) is extended so its back wall meets the booth's front wall, so the camera can pass straight through the port. An **Academy-ratio screen** `AUD = { x: 0.3, y: −1.6, z: −24, w: 6.03, h: 4.4 }` in a proscenium (`ShapeGeometry` with a hole, a gilt bead), pleated velvet curtains (a `PlaneGeometry` displaced into uneven folds, gathered at a tie-back, `MeshPhysicalMaterial` with sheen), a valance, footlights (emissive lamps plus two `PointLight`s), a stage lip and raked rows of seats (one `InstancedMesh` of a merged chair).
+- **Out of the sun:** three.js lights don't stop at walls, so the booth's sun was lighting the hall. Hall materials go through `noSun()`: an `onBeforeCompile` that zeroes the directional light's contribution in `lights_fragment_begin`, with `envMapIntensity 0.12`. A `hallLight` and the footlights brighten with `talk.v`.
+- **The flight:** `viaPort(P0, P2)` builds one centripetal Catmull-Rom path: round the projector if starting on the left, square up 0.42 m behind the viewing port, through it, down the hall to a pose square on to the screen (`fitTalk()`). Duration about 2.2–3.8 s by length; closing runs the same path in reverse to the scroll's pose. The view-port glass hides during the flight. The CSS3D fields fade in only once the camera is past the wall (they have no walls to hide behind).
+- **The card:** `createSurface({ look: 'tb-look-reel', width: 600 (phone 344) })`. The picture keeps the Academy ratio on desktop; `paintCard()` paints projected black with a warm hot spot, a deco double border with stepped corners and diamonds, field frames with corner ticks, the words (Limelight title, cream text, amber labels) and a countdown-leader circle for the seal. The card is a `MeshBasicMaterial` at colour 1.25 with a slow flicker; over it, a grain/dust/scratch `ShaderMaterial` that changes every projected frame (static with reduced motion), and the projector beam as an additive pyramid. Sending: a white flash fades over 0.4 s and a cue mark shows twice.
+- Escape closes; the focus trap comes from the surface.
+
+### 9.6 Source
+`/home/claude/assets/booth/`: `body.html` (UI, captions, runbook), `part2.js` (the 3D booth, Let's talk included), `build.py` (takes the greenhouse page's head and UI script, retints the tokens, adds the booth CSS, writes `automations/video-to-blog.html`), `conv_tex.py`, `conv_hdr.py`, `conv_mesh.py`.
+
+---
+
+## 10. Voice to Blog, the tracking station (`automations/voice-to-blog.html`)
+
+### 10.1 Renderer, sky and time of day
+- Shadows (PCF soft, 2048², 1024² on touch devices), ACES, fov 42° (portrait 62°), near 0.04, far 2400. Bloom `(0.32, 0.55, 1.0)`.
+- **The sky is painted**, not the HDRI: the 1K Rogland Sunset was too soft to show and still afternoon blue. A `BackSide` sphere (r 1800, `fog: false`, drawn first) follows the camera. Its shader blends a zenith colour and a horizon colour that is warm toward the sun and violet away from it, adds the earth's shadow and the pink band opposite the sun, a broad warm spill and the glow and disc of the sun, and hashed stars once it's dark (`uDark`).
+- **Time follows the scroll:** `applyTime(k)` with `k = p^1.15` sets the sun's elevation from 5.2° to −4.8°, the `DirectionalLight`'s intensity (3.8 at sunset) and colour (deep orange), the hemisphere light, the `FogExp2` colour (density 0.0019) and the exposure (0.95 → 1.2).
+- **Environment:** `rogland_sunset_1k.hdr` → `station_env.json` (RGBE) with a dusk grade (`conv_hdr.py … dusk`: the sun's glow pushed to deep amber, the rest a little cooler); decoded at `ENVK 0.55`, clamped at `ENVMAX 4`.
+- **NaN:** the sky clamps `toward = 0.5 + 0.5·dot(…)` to 0…1 before `pow()`, and replaces any NaN in its output. Straight away from the sun, rounding put it a hair below 0; `pow()` of that is NaN on Apple GPUs and the bloom smeared it over half the screen (3 Nov). The software renderer used for QA doesn't show it. The `dithering_fragment` guard covers built-in materials only, not a `ShaderMaterial`.
+
+### 10.2 The ground
+- One `PlaneGeometry(1400, 1400, 300, 300)`. Its grid is pulled toward the station (`r' = 990·(r/990)^1.7`), so the vertices are where the camera is.
+- `groundY(x, z)`: flat to 30 m round the station centre `C (6.5, 3)`, gentle swells out to 95 m, ridges from 170 to 460 m up to about 60–80 m high, kept low in the sun's direction so it sets over open ground.
+- UVs in metres; the sand repeats every 2.4 m. **Anti-tiling:** an `onBeforeCompile` on `map_fragment` samples the same sand again at about 1/12 and 1/59 the scale and uses it as a brightness drift. Vertex colours add a broad tone variation.
+- **Gravel path:** a ribbon from the hut door to the dish pad with the gravel texture on `uv` (metres) and a soft-edged `alphaMap` on `uv1` (`alphaMap.channel = 1`), transparent with a polygon offset.
+
+### 10.3 Scans
+Boulders (`namaqualand_boulder_02` LOD3, `_04` LOD2), stones (`namaqualand_rocks_01` LOD3, four parts, `InstancedMesh` × 46 each), wild rooibos (LOD3, five bushes, stems and leaves instanced, `alphaTest 0.45`, double-sided) and quiver trees (`quiver_tree_02` LOD3, four, scaled 3.3–4.4). `footTo0()` centres a scanned part on its footprint; `near()` keeps the pad and the hut clear.
+
+### 10.4 The dish
+At the origin. Pad and cable-pit lid (concrete), a tapered `CylinderGeometry` pedestal with a door and a ladder, then two groups:
+- `az` (turntable, deck, two `ExtrudeGeometry` cheek plates, bearings, drive box)
+- `el` (axle, counterweight) → `bowl`: a `LatheGeometry` paraboloid (D 12 m, focal length 4.8 m, 96 segments) with a canvas of panel seams and rim dust, the rim torus, the hub, a back truss of merged rods (24 ribs, two ring girders, struts), the quadripod (four merged cylinders) to the feed at the focus, and the warning light.
+
+`dish.point(az, el)` sets `az.rotation.y = az` and `el.rotation.x = π/2 − el`. Parked at 84°; locks at `SUN_AZ + 0.32`, 27°, between 0.035 and 0.155 of the scroll.
+
+### 10.5 The hut
+- A `Group` at `HUT (13, 6.5)` raised by the plinth, rotated so its far end (local −z) faces the dish. `hutPt(x, y, z)` turns hut space into world space; `HP()` does the same for camera keys.
+- **Shell:** the profile (1.5 m straight sides, a 2.4 m half-round roof) extruded along 7.2 m. u runs along the hut, v from the ridge down, so the rust runs downhill. Outside: `tin_{diff,nor,rough,metal}_1k.jpg`, made by `make_tin.py` from rust_coarse_01 (zinc grey, rust runs and the laps, 13 corrugation ribs a metre baked into the normal map, so the shell stays a plain mesh). Inside: the same mesh with a `BackSide` cream material and the corrugation at `normalScale 0.35`.
+- **End walls:** `ExtrudeGeometry` with holes for the door and windows; plank textures rotated π/2 so the boards stand upright. Window glass glows warmer as it gets dark.
+- **Interior:** canvas-textured rack fronts and meter face, a `Line` for the scope trace (160 points, rebuilt each frame from a voice-like envelope), a drum cylinder with a trace texture and a pen, a paper-tape ribbon, the clipboard slip, the teleprinter (rounded boxes and instanced keys) and its paper ribbon (v grows with length, so the newest line sits at the platen with the letters upright, readable from the chair), the printout plane, clocks with hand groups, the binder rack, two pendant `PointLight`s and a desk-lamp light.
+
+### 10.6 Scroll and camera
+- Runway 1300svh, 7 captions, the same `CUT`. Keys: `hero, brief, hints, send, words, voice, notion, ping, end`; the inside keys are given in hut space.
+- **Through the door:** a station can carry `via: [points…]`. Its transit then follows one centripetal Catmull-Rom curve from the previous pose through those points (cached per screen shape), with a single ease, and the look follows a little behind. 01 → 02 goes round the hut and in at the door; 06 → 07 goes back out.
+- **Phones:** `m` poses for `hero`, `brief` and `hints`. Inside close-ups step back along the view but are clamped to the hut's interior, so the camera never ends up outside the tin.
+- `update()`: the dish lock, the signal needle, the level lamps, the RECEIVING lamp from Send, the scope trace, the drum, the clock (still until Send, then 90 seconds by the ping), the message lamp and beacon at the ping, the window glow.
+
+### 10.7 Source
+`/home/claude/assets/station/`: `body.html`, and the module in five parts concatenated in order (`s_core.js`, `s_world.js`, `s_dish.js`, `s_hut.js`, `s_story.js`). `build.py` writes `automations/voice-to-blog.html` and refuses to if the joined module fails `node --check`. Also `conv_tex.py`, `conv_mesh.py` (with an object-name filter to take one LOD of a scan), `conv_hdr.py` (.exr or .hdr, optional `dusk` grade) and `make_tin.py`. Texture sizes: 1K for the sand, gravel, tin, planks and concrete; 512 px for props and scans (the `SMALL` set in `pbr()`).
+
+---
+
+## 11. Let's talk: how it works
+
+### 11.1 `site.js` (every page)
 - An IIFE, guarded by `window.__contactReady`. `CONTACT = { endpoint, email, title, intro, board, simulate }` (CONTACT-SETUP.md §1). `BASE` is the folder of `site.js` itself, so `talk/board.js` resolves from any page depth.
 - **`send(data)`** adds `data.page = location.pathname` and posts JSON to the endpoint. It returns `{ kind: 'ok' }`, `{ kind: 'field', field, error }` (400 with a field), or `{ kind: 'fail', detail }` (429 → wait a minute; other → "Something went wrong on my side."; network → "could not be sent from this connection"). With `simulate: true` it waits 0.9 s and returns ok.
 - **The plain card:** a modal `<dialog class="ct-dialog">` built on first use, with name, contact number, email, message, a honeypot (`company`, hidden, `tabindex=-1`), a note "Your details are only used to reply to you." and "Send message". Blur-first validation, errors clear on input, focus returns to the opener, Lenis stopped and page scroll locked while open, backdrop click closes. Success: a tick and close; failure: "That didn't go through" with the email, **Copy** and **Try again**.
 - **`openAny(e)`:** `window.__talkScene.open({ config, send, opener, fallback })` if the page has a scene and WebGL works, unless it returns `false`; else `import(BASE + 'talk/board.js').then(m => m.open(CONTACT, { opener, send }))`; else (no WebGL, `board: false`, or the import fails) the plain card.
 - A delegated click listener catches every `[data-contact]` (including ones added later); `window.openContact()` opens it from code.
 
-### 9.2 `talk/surface.js` (the form for any surface)
+### 11.2 `talk/surface.js` (the form for any surface)
 No three.js. `createSurface(o)`:
 - **Options:** `config` (CONTACT), `send`, `width` (CSS px), `mobile`, `look` (a `tb-look-*` class), `pad` (`[top, x, bottom]`), `copy` (`sentTitle`, `sentText`, optional `knob` markup for the close button), `minHeight`, `onChange(reason)` (`'state'` | `'messages'`), `onClose`, `onSent`.
 - **Faces:** `form` (title, intro, name, contact number + email in a row, message with "What are you building, and where can I help?", honeypot, note, Send message, a round ✕), `sent` (a seal, `sentTitle`, `sentText`, Close), `error` ("That didn't go through", the detail, "Try again, or email me directly:", the email as a tag, Copy email, Try again). The face height is fixed to the form's measured height, so the surface never resizes between states.
@@ -1491,15 +1689,15 @@ No three.js. `createSurface(o)`:
 - **`layout()`:** measures an untransformed copy in an off-screen host and returns, in CSS px from the face's top-left: `texts` (every `[data-paint]` element: `kind` = title / intro / label / msg / note, `glow`, `words: [{ w, x, y, h }]`, `size`, `font(k)`, letter spacing), `fields` (the input boxes), `seals`, `buttons`. The page paints these into its own texture in its own style; the live element (`.tb-live`, whose painted words are transparent) sits exactly over it in a `CSS3DObject`, so typing, focus and caret are real.
 - `drawWords(ctx, t, k, fn)` is a shared helper for painting a text block at scale `k`.
 - Typed values survive closing and reopening (cleared after a successful send). Validation matches the server. `elapsed` is sent for the timing check.
-- **Looks in use:** `tb-look-particles` (hero), `tb-look-letter` (beach), `tb-look-glass` (Reddit), `tb-look-print` (Press), `tb-look-paint` (SEO), `tb-look-kiosk` (city), `tb-look-order` (greenhouse), `tb-look-lyric` (studio). The board uses its own markup.
+- **Looks in use:** `tb-look-particles` (hero), `tb-look-letter` (beach), `tb-look-glass` (Reddit), `tb-look-print` (Press), `tb-look-paint` (SEO), `tb-look-kiosk` (city), `tb-look-order` (greenhouse), `tb-look-lyric` (studio), `tb-look-reel` (Video to Blog). The board uses its own markup. Voice to Blog has no scene yet, so it gets the board.
 
-### 9.3 `talk/board.js` (the hanging board)
+### 11.3 `talk/board.js` (the hanging board)
 - Its own three.js 0.169 scene in a full-screen overlay (`.tb-root`, z 2147483000): a `WebGLRenderer` canvas, a `CSS3DRenderer` layer for the live form, and a veil that blurs and dims the page (`backdrop-filter: blur(11px) brightness(.74)`) over 1 s.
 - A weathered plank board (Poly Haven **wood_shutter**, 2k colour and normal, 1k roughness; weathered grey-brown tint) hanging on **brass chains** (chain links from **brass_diya_lantern**, `chain.json` + brass textures), lit by a `RoomEnvironment`. It drops in and swings to rest.
 - The form is baked into the wood: words burned into the grain, fields carved in, brass buttons; "Message sent" (`data-bake data-glow`) glows.
 - `open(config, { opener, send })` / `close()`. Loaded only on the first click. If it fails, site.js uses the plain card from then on.
 
-### 9.4 `api/contact.js` (the function)
+### 11.4 `api/contact.js` (the function)
 CommonJS `module.exports = async (req, res)`, `Cache-Control: no-store`.
 1. `POST` only (405 otherwise); origin check (`ALLOWED_ORIGINS` list, or same host; 403).
 2. Parse JSON. **Honeypot** (`company`) filled or `elapsed < 1500` → 200 `{ ok: true }` and nothing sent.
@@ -1510,16 +1708,16 @@ CommonJS `module.exports = async (req, res)`, `Cache-Control: no-store`.
 
 ---
 
-## 10. Asset pipeline (Poly Haven → the web)
+## 12. Asset pipeline (Poly Haven → the web)
 
 All source assets are Poly Haven CC0, downloaded by Vasant and attached to the chat (Blender `.blend` zips and `.exr` HDRIs). The conversion scripts live in the AI workspace (`/home/claude/assets/{city,green,studio}/`), not in the repo; this section is enough to recreate them.
 
-### 10.1 Textures (`conv_tex.py`)
+### 12.1 Textures (`conv_tex.py`)
 - Run Blender as a Python module: **`python3 -I conv_tex.py`** (the `-I` flag stops Python importing stray files from the working folder).
 - For each job `(source, out name, size, colour?)`: load the image with `bpy`, read the pixels, resize, and write JPEG (PNG for an opacity map). Colour maps are sRGB; **normal maps come from the `nor_gl` EXR** (OpenGL convention, matching three.js), roughness and metal maps are linear.
 - Sizes: 1k for nearly everything, 2k for big surfaces seen up close (the city's aerial asphalt, the board's wood). File names: `<short>_{diff,nor,rough,metal}_<1k|2k>.jpg`.
 
-### 10.2 Models (`conv_mesh.py` → `pack_mesh.py`)
+### 12.2 Models (`conv_mesh.py` → `pack_mesh.py`)
 1. `conv_mesh.py src dst prefix` (bpy): open the `.blend`, take each mesh object's evaluated mesh, apply its world matrix, triangulate (bmesh), and export per object and per material the positions, split normals and UVs, **converted from Blender's Z-up to Y-up** (`x, z, −y`).
 2. `pack_mesh.py src dst [keep]`: de-duplicates vertices (key: position ×2000, normal ×100, UV ×4000, rounded) and writes compact JSON:
    ```
@@ -1530,15 +1728,17 @@ All source assets are Poly Haven CC0, downloaded by Vasant and attached to the c
        "i":  base64 uint16 indices (uint32 when n > 65535, flagged "i32": true) } ] } }
    ```
 3. In the page, `loadPacked(file)` fetches it, decodes with `atob` (`b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer`) and builds one `BufferGeometry` per part; materials come from the matching textures (`mm(key, base, { metal })`).
-- Files: `city/lamp_p.json`, `seating_p.json`, `fire_p.json`; `greenhouse/potted_plant_04_p.json`, `wooden_picnic_table_p.json`, `watering_can_metal_01_p.json`; `studio/metal_office_desk_p.json`, `modern_arm_chair_01_p.json`, `Television_01_p.json`, `boombox_p.json`; `talk/chain.json`.
+- Files: `city/lamp_p.json`, `seating_p.json`, `fire_p.json`; `greenhouse/potted_plant_04_p.json`, `wooden_picnic_table_p.json`, `watering_can_metal_01_p.json`; `studio/metal_office_desk_p.json`, `modern_arm_chair_01_p.json`, `Television_01_p.json`, `boombox_p.json`; `booth/table_p.json`, `desk_p.json`, `stool_p.json`, `chest_p.json`; `station/boulder2_p.json`, `boulder4_p.json`, `rocks_p.json`, `quiver_p.json`, `rooibos_p.json`, `table_p.json`, `chair_p.json`, `barrel_p.json`; `talk/chain.json`.
+- **Scans come with LODs** (the Namaqualand rocks and trees have four detail levels as separate objects, up to 98k triangles): `conv_mesh.py SRC OUT PREFIX '<regex>'` keeps only the objects whose names match (e.g. `_LOD3$`). The normal map carries the detail.
 
-### 10.3 HDRIs (`conv_hdr.py`)
+### 12.3 HDRIs (`conv_hdr.py`)
 - Load the EXR with bpy, flip to top-row-first, find the sun as the brightest point of a blurred luminance map (stored as `sun: [u, v]`).
-- **Lighting copy:** resize to 512×256 and pack as **RGBE** (shared exponent per pixel) → `{ w, h, sun, d: base64 }` JSON (`sky_env.json`, `studio_env.json`). Decoded in JS to a `HalfFloatType` `DataTexture`, then `pmrem.fromEquirectangular`.
+- **Lighting copy:** resize to 512×256 and pack as **RGBE** (shared exponent per pixel) → `{ w, h, sun, d: base64 }` JSON (`sky_env.json`, `studio_env.json`, `booth_env.json`, `station_env.json`). Decoded in JS to a `HalfFloatType` `DataTexture`, then `pmrem.fromEquirectangular`. The booth and station scale it (`ENVK`) and clamp each pixel (`ENVMAX`) while decoding.
+- The station's script also reads Radiance `.hdr` (via `cv2`) and has a `dusk` grade; its visible sky is painted in a shader instead (BUILD §10.1).
 - **Visible backdrop** (greenhouse only, `conv_sky2.py`): 2048×1024, scaled by `k = 1/98th-percentile`, clipped, sRGB, JPEG q88 (`sky_2k.jpg`); the shader undoes `k` (`SKYK`).
 - Studio: the colour was desaturated and warmed in the conversion (§8.1).
 
-### 10.4 Sources used
+### 12.4 Sources used
 | Page | Poly Haven assets |
 |---|---|
 | Home | mud_forest, aerial_beach_01, damp_beach_sand_02, aerial_rocks_02, crepe_satin (rocky_terrain_03 sent, unused); bark/leaves from EZ-Tree |
@@ -1546,12 +1746,14 @@ All source assets are Poly Haven CC0, downloaded by Vasant and attached to the c
 | City | aerial_asphalt_01, asphalt_02, brick_pavement_02, anti_slip_concrete, brick_wall_10, street_lamp_02, modular_street_seating, modular_fire_escape |
 | Greenhouse | spruit_dawn (HDRI, chosen by Vasant from two options), wood_planks, potted_plant_04, wooden_picnic_table, watering_can_metal_01 |
 | Studio | ferndale_studio_05 (HDRI), metal_office_desk, modern_arm_chair_01, plastered_wall_04, floor_tiles_06, Television_01, boombox |
+| Booth (Video to Blog) | vestibule (HDRI), wood_floor_worn, plastered_wall, damaged_plaster, rusty_metal_03, wood_cabinet_worn_long, WoodenTable_03, painted_wooden_table, folding_wooden_stool, metal_tool_chest (solitude_interior sent, unused) |
+| Station (Voice to Blog) | rogland_sunset (HDRI), gravelly_sand, sandy_gravel_02, rust_coarse_01 (→ the tin), concrete_floor_03, raw_plank_wall, namaqualand_boulder_02 / _04, namaqualand_rocks_01, quiver_tree_02, wild_rooibos_bush, wooden_table_02, painted_wooden_chair_01, barrel_03 (goegap_road and quarry_02 sent, unused) |
 
 The Reddit, Press and SEO pages use no downloaded assets.
 
 ---
 
-## 11. Shared conventions
+## 13. Shared conventions
 
 **Colour tokens** live in `:root` on every page (`--bg, --ink, --ink-soft, --ink-mid, --pill, --pill-ink, --line, --card`, plus the page's accents, `--font`, `--mono`, `color-scheme`):
 
@@ -1564,10 +1766,12 @@ The Reddit, Press and SEO pages use no downloaded assets.
 | City | `#0b0f15` / `#eef2f6` | amber `#ffb454`, cyan `#5fe0d0`, lilac `#b6a3ff`, red `#ff5a4f`, green `#4ade80`; lines: inbound `#ff8a1f`, outbound `#3d86ff`, also read `#ffcf8a` |
 | Greenhouse | `#110e0b` / `#f4eee6` | amber `#f2b45a`, leaf `#8fc56b`, red `#e8644f`, green `#7fd17a` |
 | Studio | `#0e0c10` / `#f3eee8` | amber/host `#ffb15a`, guest `#5fd4c4`, red `#ff5a4a`, green `#6fd88a` |
+| Booth (Video to Blog) | `#0f0e0c` / `#f2ece2` | amber `#e8913c`, steel `#8fb3a8`, red `#d2553f`, green `#7fbf86`; the title card: cream `#f1e6cf` on projected black |
+| Station (Voice to Blog) | `#0e0c12` / `#f2ede6` | signal amber `#f0a04b`, scope green `#7fe0a8`, red `#e2553f`, green `#79d48a` |
 
 No two automation pages share a world.
 
-**Type:** Elms Sans weights 100–900; headings weight 500 with tight tracking (−0.02 to −0.035 em); labels uppercase 12–13 px with 0.08–0.1 em tracking. The footer name is weight 800. Banner text is drawn on canvas at weight 700. Caveat (500/700) for handwriting in the greenhouse and studio. Monospace for node types and code.
+**Type:** Elms Sans weights 100–900; headings weight 500 with tight tracking (−0.02 to −0.035 em); labels uppercase 12–13 px with 0.08–0.1 em tracking. The footer name is weight 800. Banner text is drawn on canvas at weight 700. Caveat (500/700) for handwriting in the greenhouse and studio. **Limelight** (400) for the headline of the Video to Blog title card only. Monospace for node types and code; Courier for the teleprinter and booking slips drawn on canvas.
 
 **Motion rules:**
 - scroll scrubs position, time drives idle motion; all per-frame easing is `dt`-based
@@ -1579,29 +1783,33 @@ No two automation pages share a world.
 
 **Content rules:** no internal identifiers, credentials, webhook URLs, channel names, sheet names, workflow names, colleague or writer names, real post titles, domains or the internal Notion link; competitors and authors are placeholders. No public input forms on the site (Let's talk is private: it only goes to Vasant's WhatsApp, and no world ever displays what a visitor typed once it is sent). No trademarked logos or characters as artwork. **The WhatsApp number never appears in the code.**
 
-**Coding gotcha (hit three times):** never append a `// comment` in the middle of a line when patching minified-style code. A trailing comment swallows everything after it on that line: it hid the greenhouse order pad's paper (`g.add(paper)`), stood the studio printer's sheet upright (`pg.translate` / `rotateX`) and hid the journey sign (`scene.add(m)`). Put comments on their own line or at the true end.
+**Coding gotcha (hit five times):** never append a `// comment` in the middle of a line when patching minified-style code. A trailing comment swallows everything after it on that line: it hid the greenhouse order pad's paper (`g.add(paper)`), stood the studio printer's sheet upright (`pg.translate` / `rotateX`), hid the journey sign (`scene.add(m)`), hid the booth's auditorium (`scene.add(hall)`) and broke the station's teleprinter loop (a syntax error). Put comments on their own line or at the true end. The station's `build.py` now runs `node --check` on the module and refuses to write a page that doesn't parse.
 
-**Source of truth:** the three newest pages are built from source parts in the workspace (`/home/claude/assets/<city|green|studio>/part1.html` + `shared.css` + `part2.js`, the studio's `part2.js` assembled from `head.js` + `body.js` + `tail.js`) by `build.py`, which writes the final page into `automations/`. Patch the source parts, not only the built page, or the fix is lost on the next build. If the workspace is gone, the built page in the repo **is** the source.
+**Shader gotcha (NaN):** `pow(x, y)` with `x` even a hair below 0 is NaN on Apple GPUs, and the bloom spreads one NaN pixel into a black block. The QA renderer (SwiftShader) doesn't show it. Clamp before every `pow()` in a custom shader, and guard a `ShaderMaterial`'s output yourself: the `dithering_fragment` guard only covers built-in materials. It hit the booth (beam shader, a model normal) and the station's sky (half the screen black on Vasant's Mac).
+
+**Source of truth:** the five newest pages are built from source parts in the workspace by a `build.py` that writes the final page into `automations/`: `/home/claude/assets/<city|green|studio>/part1.html` + `shared.css` + `part2.js` (the studio's `part2.js` assembled from `head.js` + `body.js` + `tail.js`); `/home/claude/assets/booth/` `body.html` + `part2.js`; `/home/claude/assets/station/` `body.html` + `s_core.js … s_story.js`. The booth and station builds take the head CSS and the UI script from `ai-blog-drafts.html` and retint the tokens. Patch the source parts, not only the built page, or the fix is lost on the next build. If the workspace is gone, the built page in the repo **is** the source.
 
 ---
 
-## 12. QA harness (not shipped; lives in the AI workspace scratchpad `qa/`)
+## 14. QA harness (not shipped; lives in the AI workspace scratchpad `qa/`)
 
 Playwright launches headless Chromium with `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist`, usually with `reducedMotion: 'reduce'` so transitions settle quickly. Pages load from a local static server: `cd repo; nohup python3 -m http.server 8765 --bind 127.0.0.1` (it stops when background commands time out; restart it).
 
 The sandbox can't reach jsDelivr or Google Fonts, so requests are routed:
 - `three@0.169.*` → `node_modules/three169` (npm `three@0.169.0`), `three@0.158.*` → `node_modules/three` (npm `three@0.158.0`)
 - `lenis@*` → a local `lenis.min.js` from npm `lenis@1.1.13/dist`
-- `fonts.g*` → an empty body
+- `fonts.googleapis.com` → a small CSS with `@font-face` rules, and `fonts.gstatic.com` → woff2 files from npm `@fontsource-variable/elms-sans` and `@fontsource/limelight` (since 3 Nov; older scripts still return an empty body)
 - `/api/contact` → `{"ok":true}` (or a mock that fails, to test the error face)
 
-**Screenshots therefore use fallback fonts, not Elms Sans**, and the fps readout (0–3 fps) means nothing. Compare triangles and JS ms instead, and ask for real fps on Vasant's machine.
+Screenshots from the newer scripts show the real Elms Sans and Limelight; older ones use fallback fonts. The fps readout (0–3 fps) means nothing: compare triangles and JS ms instead, and ask for real fps on Vasant's machine. **SwiftShader also rounds differently from real GPUs**, so a shader NaN can be invisible in QA and a black block on a Mac (§13).
 
 **Scripts** (environment variables drive them):
 - `shoot.js LABEL W H targets…` (home): targets `key=N`, `s=N`, `card=N`, `title=N`, `y=N`; `night` in the label for night mode; `phone…` for mobile.
 - `keys.js`: prints all runway keys and page errors. Run after every edit to catch syntax errors.
 - `click.js`, `back.js`, `ret.js`: card clicks, the back arrow and the return-to-card.
-- `city.js`, `gh.js`, `st.js` (and the older per-page ones): `V=w,h,tag,mobile` viewport, `P=0,0.1,…` runway progress values to shoot, `WAIT` seconds per shot, `BOOT` seconds to wait first, `EVAL` an expression to print. They load the page with `?snap`.
+- `city.js`, `gh.js`, `st.js` (and the older per-page ones), and `shot.js` for the booth and station (`PAGE=automations/<page>.html`): `V=w,h,tag,mobile` viewport, `P=0,0.1,…` runway progress values to shoot, `WAIT` seconds per shot, `BOOT` seconds to wait first, `EVAL` an expression to print. They load the page with `?snap`. `sheet.py tag p-list cols` tiles the shots into one contact sheet.
+- `talk.js` (booth): opens Let's talk, can freeze the flight at given fractions (`FLY=0.15,0.3`), shows errors, filled, the splice and "Message received", then Escape.
+- `nan.js`: bisects which mesh makes a black (NaN) block at a pixel.
 - `citytalk.js`, `ghtalk.js`, `sttalk.js`, `seotalk.js`, `pagetalk.js`, `herotalk.js`, `hoodtalk.js`, `beachtalk.js`, `board.js`, `form.js`: open Let's talk, fill the fields, send, screenshot each state, close.
 - `intro.js`: the Press intro, frame by frame (`window.__freezeIntro`).
 - `cspserve.py dir port`: a static server that adds the artifact preview's Content-Security-Policy, to test a preview copy before publishing (`citycsp.js`, `b3csp.js`).
@@ -1611,9 +1819,10 @@ The sandbox can't reach jsDelivr or Google Fonts, so requests are routed:
 **Gotchas:**
 - `pkill -f` with a pattern that appears in your own command kills your shell.
 - `page.route` plus a click-navigation can hang; check that the navigation request fired instead.
-- SwiftShader draws the UI captions a frame or two late in screenshots; it's an artefact, not a bug.
+- SwiftShader draws the UI captions a frame or two late in screenshots (sometimes a whole station behind); it's an artefact, not a bug.
+- Poly Haven: the shell can't reach it (the workspace allowlist), but the web-fetch tool can read `api.polyhaven.com/assets?…` (e.g. `type=all&collection=namaqualand`) to check asset names. Allowing `api.polyhaven.com` and `dl.polyhaven.org` in claude.ai's capability settings would let a session download assets itself.
 
-## 13. Claude artifact previews
+## 15. Claude artifact previews
 
 Previews are private Claude artifacts. They are copies; **the repo files are the deliverable.**
 
@@ -1621,11 +1830,13 @@ How a page is published as a preview:
 1. Copy the page and strip its first three lines (the artifact wrapper adds its own doctype and head).
 2. Rewrite `../site.js` → `site.js`, `../talk/surface.js` → `./talk/surface.js`, and the back link → `#top`.
 3. Copy `site.js` with `simulate: true` (previews have no `/api/contact` and block outside requests).
-4. Publish with a files map and `root`, so `site.js`, `talk/surface.js` and the page's asset folder (`city/…`) are served next to it.
+4. Publish with a files map and `root`, so `site.js`, `talk/surface.js` and the page's asset folder (`city/…`) are served next to it. (The booth preview's `site.js` and `talk/surface.js` were copied from the greenhouse preview, since the workspace copy of the repo didn't have them. The station preview has no `site.js` yet, so its Let's talk does nothing there.)
 5. The preview's Content-Security-Policy is `connect-src 'self'`: never `fetch()` a `data:` URI. Packed models are separate files fetched from the same origin and decoded with `atob`.
 
 | Preview | Link |
 |---|---|
+| Voice to Blog (station) | `claude.ai/artifact/6kcvmuwi1y1TP5MoHbDGV8` |
+| Video to Blog (booth) | `claude.ai/artifact/8KA5G2aVZ7Gf7Sj9YQ5c5o` |
 | Webinar to Webflow (studio) | `claude.ai/artifact/HG9oAuutrDeNuMnJfKzZsp` |
 | AI Blog Drafts (greenhouse) | `claude.ai/artifact/GJVspZR6XrdBRRXKzVrfxW` |
 | Auto Internal Linking (city) | `claude.ai/artifact/M2JRL5Yem1Jstm1e7n9kv3` |
@@ -1639,7 +1850,7 @@ How a page is published as a preview:
 
 ---
 
-## 14. Version history (tags)
+## 16. Version history (tags)
 
 **Home, first sessions (old working repo):** `v4-outline-name, v5-morph-name, v6-letter-by-letter, v7-ribbon-pour, v8-thread, v9-stream-slider, v10-deck-showcase, v11-dissolve-rain, v12-glass-title, v13-funnel, v14-simple-rain, v15-persistent-field, v16-hoodie-palette, v17-responsive, v18-content, v31-thread-exit`.
 
@@ -1701,10 +1912,23 @@ How a page is published as a preview:
 | `pre-webinar` | | |
 | — | 6e0a548 | studio look test |
 | `pre-webinar-fix1` | 1572bce | journey strip and sign, Doc writing on screen, readable print, Conversation and CMS screens, record from the cabinet |
-| `pre-webinar-home`, **`v54-webinar`** | 61f1173 | home card opens Webinar to Webflow. **Current** |
-| `pre-docs`, `v55-docs` | | these docs |
+| `pre-webinar-home`, **`v54-webinar`** | 61f1173 | home card opens Webinar to Webflow |
+| `pre-docs`, `v55-docs` | | the docs of 25 Oct |
 
 `v52-linking`, `v53-drafts`, `v54-webinar` and `pre-docs` were added on 25 Oct to mark the approved states that had only `pre-*` tags.
+
+**Since v55 (28 Oct – 3 Nov).** These were made in a fresh working copy whose first commit, `284bc58`, holds the v54 files Vasant supplied (`index.html`, `ai-blog-drafts.html`, the docs). The hashes below belong to that copy, not to the GitHub history.
+| Tag | Commit | What |
+|---|---|---|
+| `pre-video` | 284bc58 | the v54 files as supplied |
+| `video-look`, `pre-video-talk` | 5653a1f | Video to Blog: the projection booth look test (room, props, captions, runbook) |
+| `video-talk-v1`, `pre-video-handover` | 9e8f563 | the request filmed from above; Let's talk as a title card on the auditorium screen |
+| `video-handover`, `pre-voice-card`, **`v56-video-to-blog`** | 6648167 | home card opens Video to Blog |
+| `pre-voice` | b680dd2 | the Voice to Blog card no longer says "founder" |
+| `voice-look` | 9c48f06, 47d7d46 | Voice to Blog: the tracking station look test; three unused files dropped |
+| `voice-look-2`, `pre-voice-home` | acfb13a | the sky's black half on Mac GPUs fixed; runbook and captions from the workflow JSON |
+| **`v57-voice-to-blog`** | 538eb0d | home card opens Voice to Blog. **Current** |
+| `v58-docs` | | these docs |
 
 **Reddit page:** `auto-reddit-v1` → `v2` (CDN fix, early captions) → `v3` (bloom, env, atlas cards, sparks, runbook) → `v3.1` (panel z-fight) → `v4` (ridge, haze, fog) → `v4.1` (stars, shooting stars) → `v5` (water + mist) → `v6` (Slack window, five alerts) → `v6.1` (perf) → `v7` (courier, plain labels) → `v7.1` (seen-gate label) → v45 (doctype, viewport, back link, mailto) → v47 (back to card) → v48 (history back) → v50 (shared form) → talk-reddit-v1.
 
@@ -1712,15 +1936,15 @@ How a page is published as a preview:
 
 ---
 
-## 15. Adding the next automation page
+## 17. Adding the next automation page
 
-1. **Concept first.** Offer 2–3 worlds with a recommendation and wait (or, if Vasant says "go with your pick", explain the chosen scene and wait for approval). It must not repeat any existing world (the table in DOCS.md §4), should be realistic like the forest, and needs a Let's talk that belongs to it.
-2. **Assets.** List the Poly Haven assets you'd like (textures, models, an HDRI) and ask Vasant to send them; convert with §10. If something isn't sent (like the mic and cassette for the studio), build it in code and say so.
+1. **Concept first.** Offer 2–3 worlds with a recommendation and wait (or, if Vasant says "go with your pick", explain the chosen scene and wait for approval). It must not repeat any existing world (the table in DOCS.md §4), should be realistic like the forest, and needs a Let's talk that belongs to it. Ask for the workflow JSON and its "How to use" doc too: the stations should follow the real steps.
+2. **Assets.** List the Poly Haven assets you'd like (textures, models, an HDRI) and ask Vasant to send them; convert with §12. If something isn't sent (like the mic and cassette for the studio), build it in code and say so.
 3. **Copy the template** (§2): doctype and viewport, the UI script with `CUT`, `__stage`, the back-link/history logic and in-page link handler, the import map (three@0.158.0), the runbook skeleton, the Let's talk `talk` object, the butterfly, `../site.js` last. Back mark → `../index.html#from-<slug>`.
 4. **Content** comes from Vasant's runbook for that automation. Keep only cleared facts: no keys, webhook URLs, credential names, internal IDs, channel/sheet/workflow names, people's names, real post titles, domains. Write a "left out on purpose" note under the TOC. No invented metrics.
-5. **Build in stages:** a look test of the world first, show screenshots (desktop + phone), then the full story, then fixes. Back up (tag `pre-<name>`) before each change.
+5. **Build in stages:** a look test of the world first, show screenshots (desktop + phone), then the full story, then fixes. Back up (tag `pre-<name>`) before each change. If the camera has to go through a wall (into a building and out again), give the station a `via` path through the door (§10.6). Clamp before every `pow()` in a custom shader (§13).
 6. **Wire it:** add the page (and its asset folder) under `automations/`, set `url: 'automations/<page>.html'` on the matching `AUTOMATIONS` entry in `index.html`, and set the previous page's "Next automation" link if Vasant wants it.
-7. Review at 1440×900 and 390×844, publish the preview artifact (§13), deliver the files (page, asset zip, `index.html`), and tag the version.
+7. Review at 1440×900 and 390×844, publish the preview artifact (§15), deliver the files (page, asset zip, `index.html`), and tag the version.
 
 ---
 
@@ -1775,6 +1999,8 @@ Every page has a **Let's talk** button. Clicking it opens a contact form that be
 | Auto Internal Linking (city) | a ticket machine on the plaza; the form is on its screen | it prints a ticket: "Ticket printed" |
 | AI Blog Drafts (greenhouse) | an order pad on the east gable post | stamped RECEIVED: "Order received" |
 | Webinar to Webflow (studio) | through the window into the vocal booth, to the lyric sheet on the music stand | the ON AIR sign lights up: "You're on air" |
+| Video to Blog (projection booth) | out through the viewing port and down the auditorium to the screen; the form is projected as a silent-film title card | a splice flash and cue marks, then the card "Message received" |
+| Voice to Blog (tracking station) | no scene yet: the hanging board (planned: the form typed on the teleprinter in the hut) | "Message sent" burned into the wood |
 
 On a device without WebGL, every page uses the plain card. If a scene can't draw its surface (for example the painting fails to load), it calls `fallback()` and the plain card opens.
 
@@ -1882,7 +2108,7 @@ You can switch between A and B at any time by changing these variables. The site
    - root: `index.html`, `site.js`, `vercel.json`, the `.md` docs
    - `api/contact.js`
    - `talk/*`
-   - `automations/*.html`, and the folders `automations/city/`, `automations/greenhouse/`, `automations/studio/` (unzipped **inside** `automations/`)
+   - `automations/*.html`, and the folders `automations/city/`, `automations/greenhouse/`, `automations/studio/`, `automations/booth/`, `automations/station/` (unzipped **inside** `automations/`)
    - `forest/*`, `portrait/*`, and `thumbs/*` (his)
 3. Vercel deploys automatically. `cleanUrls` serves `/automations/<page>` and redirects the `.html` links.
 4. Contact form: the env vars in Part D are set once; redeploy after changing them.
@@ -1890,7 +2116,8 @@ You can switch between A and B at any time by changing these variables. The site
    - the hero loads (counter reaches 100) and Let's talk at the hero makes the particle form
    - the forest appears after the rain; cards are clickable when facing; Let's talk in the forest drops the board
    - each automation card opens its page; each page's back arrow returns to its card with no loader
-   - on each automation page: the captions, the runbook, Let's talk (its own form), a test send
+   - on each automation page: the captions, the runbook, Let's talk (its own form; Voice to Blog: the board for now), a test send
+   - on a new page, ask Vasant for a screenshot from his own machine: a real GPU can show what the QA renderer can't (the black half-sky on 3 Nov)
    - the fall, the beach lanterns, the bottle Let's talk, the footer stars and name
    - the day/night toggle
    - the phone layout
@@ -1977,8 +2204,27 @@ Concept labs and the first home page: outline-name and morph-name heroes (reject
 **Docs (25 Oct):**
 46. With a screenshot of the repo: "give me the full updated docs on these docs it cover everything everyyyyy single things and allllllll dont miss anything" → these six documents (v55-docs).
 
+## F.5 Session of 28 Oct – 3 Nov (his messages, close to verbatim)
+
+**Video to Blog (28–29 Oct):**
+47. Attached the docs, the n8n workflow JSON (two files) and its "How to use" README: "Sharing you the readme docs read it completely and lets continue to build the automations scenes next up is video to blogs …" (the slash command, the transcript, the Slack summary, one conversion at a time, videos without captions fail) → three concepts with a pick: the Projection Booth.
+48. "cool go with your pick tell me what you want from polyhaven to build this" → the booth explained and the asset list.
+49. Sent vestibule and solitude_interior (HDRIs), wood_floor_worn, plastered_wall, damaged_plaster, rusty_metal_03, wood_cabinet_worn_long, WoodenTable_03, painted_wooden_table, folding_wooden_stool, metal_tool_chest → the look test (`video-look`). Reported, not fixed: credential handling in the workflow, a batch that can pass Notion's 100-block limit, a filler regex that removes real words.
+50. "build the lets tlk scene", and while it was being built, with a screenshot: "camera angle this showing sideways is not understandable so show this scene from top angle" → the request filmed from above; Let's talk as a title card on the auditorium screen (`video-talk-v1`).
+51. "give the updated index.html and this automation files" → page, `booth.zip`, `index.html` (`v56-video-to-blog`).
+
+**Voice to Blog (3 Nov):**
+52. "Okay now lets build the next scene for new automation Voice to Blog suggest scenes for this" → three concepts: the Tracking Station (pick), the Wireless Room, the Scriptorium.
+53. Pasted the recorder's "How to use" doc (the recorder page, the Notion properties, the steps, the failures) → the stations rewritten to the real flow.
+54. "dont mention founder anywhere its a tool any one can use" → the home card line changed; the page says "the house voice".
+55. "give the story" → the full story, station by station; "cool tell me what all assests u need" → the Namaqualand list (names checked against Poly Haven's API).
+56. "is there a way to connect polyhaven to you so u can automatically download right" → allow `api.polyhaven.com` and `dl.polyhaven.org` in claude.ai's capability settings (an admin does it on a Team or Enterprise plan).
+57. Sent rogland_sunset, goegap_road and quarry_02 (1K .hdr), namaqualand_boulder_02 and _04, namaqualand_rocks_01, quiver_tree_02, wild_rooibos_bush, rust_coarse_01, concrete_floor_03, raw_plank_wall, wooden_table_02, painted_wooden_chair_01, barrel_03, then gravelly_sand and sandy_gravel_02 → the look test (`voice-look`).
+58. With a screenshot: "look at the image half this portion is not rendering properly and added the json file" → the sky's NaN fixed; runbook and captions matched to the workflow (`voice-look-2`). Reported, not fixed: the second Notion step points at a node that doesn't exist and uses the Groq credential; quotes in a title break the Notion request.
+59. "give me the html files to push and the updated docs zip with the same name in github and also ensure that MDs are updated with prev automation world also" → `voice-to-blog.html`, `station.zip`, `index.html` (`v57-voice-to-blog`), and these six documents (`v58-docs`).
+
 ---
 
 # Part G. Suggested first message for a new chat
 
-> I'm continuing my portfolio (Vasant Suraj, github.com/VasantSuraj/portfolio). Attached: PORTFOLIO-HANDOFF.md (read all of it first) and my repo files (or the history zip with the git tags). Current version is v54-webinar. Don't build anything until I say. [Then the request, e.g. "next automation page: Video to Blog, here is the runbook".]
+> I'm continuing my portfolio (Vasant Suraj, github.com/VasantSuraj/portfolio). Attached: PORTFOLIO-HANDOFF.md (read all of it first) and my repo files (or the history zip with the git tags). Current version is v57-voice-to-blog. Don't build anything until I say. [Then the request, e.g. "finish Voice to Blog's Let's talk" or "next automation page: Podcast to CMO Brief, here is the workflow JSON and the README".]
