@@ -1,6 +1,6 @@
 # "Let's talk" form → WhatsApp: setup
 
-_Updated 25 Oct 2026 (v54). The form now takes each world's own shape, but the setup is unchanged since v50: one function, a few environment variables._
+_Updated 3 Nov 2026 (v57). The form now takes each world's own shape, but the setup is unchanged since v50: one function, a few environment variables._
 
 Every page has a **Let's talk** button. Clicking it opens a contact form that belongs to the page's world (see the table below). Whatever it looks like, every form sends the same four fields to `/api/contact` (`api/contact.js`, a Vercel function), which forwards the message to your WhatsApp.
 
@@ -51,6 +51,8 @@ Every page has a **Let's talk** button. Clicking it opens a contact form that be
 | Auto Internal Linking (city) | a ticket machine on the plaza; the form is on its screen | it prints a ticket: "Ticket printed" |
 | AI Blog Drafts (greenhouse) | an order pad on the east gable post | stamped RECEIVED: "Order received" |
 | Webinar to Webflow (studio) | through the window into the vocal booth, to the lyric sheet on the music stand | the ON AIR sign lights up: "You're on air" |
+| Video to Blog (projection booth) | out through the viewing port and down the auditorium to the screen; the form is projected as a silent-film title card | a splice flash and cue marks, then the card "Message received" |
+| Voice to Blog (tracking station) | no scene yet: the hanging board (planned: the form typed on the teleprinter in the hut) | "Message sent" burned into the wood |
 
 On a device without WebGL, every page uses the plain card. If a scene can't draw its surface (for example the painting fails to load), it calls `fallback()` and the plain card opens.
 
