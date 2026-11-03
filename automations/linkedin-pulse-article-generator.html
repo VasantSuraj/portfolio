@@ -1364,7 +1364,7 @@ function faceChanged(reason) {
 async function buildTalk(config, send) {
   const mobile = W / H < 0.85;
   if (talk.group && talk.mobile === mobile) { fitTalk(); return; }
-  if (talk.group) { slate.g.remove(talk.group); talk.surf.destroy(); talk.tex.dispose(); talk.group = null; talk.cv = null; }
+  if (talk.group) { slate.g.remove(talk.group); talk.surf.destroy(); talk.cssScene.remove(talk.css); talk.tex.dispose(); talk.group = null; talk.cv = null; }
   const { createSurface } = await import('../talk/surface.js');
   if (document.fonts) await Promise.all([`700 50px Caveat`, `700 20px Caveat`].map(f => document.fonts.load(f))).catch(() => {});
   talk.mobile = mobile;
@@ -1381,8 +1381,9 @@ async function buildTalk(config, send) {
   const g = new THREE.Group(); slate.g.add(g);
   talk.face = mesh(new THREE.PlaneGeometry(talk.PW, talk.PH), new THREE.MeshBasicMaterial({ map: talk.tex, color: new THREE.Color(0.9, 0.9, 0.88), transparent: true, opacity: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }), g, 0, slate.cy, 0.034, false);   // unlit: chalk you can read, whatever the light
   talk.face.renderOrder = 3;
-  talk.css = new CSS3DObject(s.el); talk.css.scale.setScalar(talk.MPP);
-  talk.css.position.set((talk.ox + s.fw / 2 - talk.FW / 2) * talk.MPP, slate.cy - (talk.oy + s.fh / 2 - talk.FH / 2) * talk.MPP, 0.036); talk.css.visible = false; g.add(talk.css);
+  talk.anchor = new THREE.Object3D(); talk.anchor.scale.setScalar(talk.MPP); talk.anchor.position.set((talk.ox + s.fw / 2 - talk.FW / 2) * talk.MPP, slate.cy - (talk.oy + s.fh / 2 - talk.FH / 2) * talk.MPP, 0.036); g.add(talk.anchor);   // where the form sits, in the scene
+  if (!talk.cssScene) { talk.cssScene = new THREE.Scene(); talk.cssCam = new THREE.PerspectiveCamera(); }
+  talk.css = new CSS3DObject(s.el); talk.css.matrixAutoUpdate = false; talk.css.visible = false; talk.cssScene.add(talk.css);   // drawn in pixels (cssRender)
   talk.group = g;
   startWriting(true); fitTalk();
 }
@@ -1395,18 +1396,35 @@ function fitTalk() {   // square on to the chalked form, far enough back to see 
   const lift = (m ? talk.PH * 0.03 : 0) + mid * d * tn; talkPose.look.y += lift; talkPose.pos.y += lift;   // centred in what shows
 }
 
+/* ---- the CSS3D layer, in pixels: one unit = one CSS pixel of the form. The scene is in metres, so drawn directly the form would be
+   a few units across a few units from the camera, and WebKit (iPhone Safari) snaps such small 3D offsets to whole pixels, then
+   multiplies the error by the perspective: the live fields landed tens of pixels off the painted ones. So the form is drawn in a
+   scene of its own scaled up to its pixel size, with a camera scaled to match: the same picture, sensible numbers. ---- */
+const _KS = new THREE.Matrix4(), _sp = new THREE.Vector3();
+function cssRender() {
+  const K = 1 / talk.MPP; talk.anchor.updateWorldMatrix(true, false);
+  talk.css.matrix.multiplyMatrices(_KS.makeScale(K, K, K), talk.anchor.matrixWorld); talk.css.matrixWorldNeedsUpdate = true;
+  const c = talk.cssCam; c.fov = camera.fov; c.aspect = camera.aspect; c.near = camera.near * K; c.far = camera.far * K; c.updateProjectionMatrix();
+  c.position.copy(camera.position).multiplyScalar(K); c.quaternion.copy(camera.quaternion); c.updateMatrixWorld(true);
+  talk.cssR.render(talk.cssScene, c);
+}
 /* ---- the live form exactly over the painted one. On iPhones the canvas and the CSS3D layer can be laid out differently (the
    canvas can start under the address bar, or change size with the toolbars without a resize event), so while Let's talk is open the
    page measures both every quarter second: it re-renders at the canvas's real size and moves the CSS3D layer onto the canvas.
    ?talkdbg shows the numbers. ---- */
 const talkEl = document.getElementById('talk3d'), talkDbg = /[?&]talkdbg/.test(location.search) ? document.body.appendChild(Object.assign(document.createElement('pre'), { style: 'position:fixed;left:6px;bottom:6px;z-index:99;margin:0;padding:6px 8px;font:11px/1.35 monospace;color:#fff;background:rgba(0,0,0,.7);pointer-events:none' })) : null;
 let syncT = 0, talkDX = 0, talkDY = 0;
-function syncLayers() {
+function syncLayers() {   // and a last check: where the browser says the first live field is, against where its painted box is drawn
   if (!talk.cssR || !document.documentElement.classList.contains('talking')) return;
   let g = canvas.getBoundingClientRect();
   if (Math.abs(Math.round(g.height) - H) > 1 || Math.abs(Math.round(g.width) - W) > 1) { resize(); g = canvas.getBoundingClientRect(); }
-  const t = talkEl.getBoundingClientRect(), dx = g.left - t.left, dy = g.top - t.top;
-  if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) { talkDX += dx; talkDY += dy; talkEl.style.transform = talkDX || talkDY ? `translate(${talkDX}px,${talkDY}px)` : ''; }
+  const t = talkEl.getBoundingClientRect(), inp = talk.css && talk.css.visible && talk.mode === 'on' && talk.L && talk.L.fields.length ? talk.css.element.querySelector('input[data-field]') : null;
+  let dx = g.left - t.left, dy = g.top - t.top;
+  if (inp) { const f = talk.L.fields[0], r = inp.getBoundingClientRect(); talk.anchor.updateWorldMatrix(true, false);
+    _sp.set(f.x + f.w / 2 - talk.surf.fw / 2, -(f.y + f.h / 2 - talk.surf.fh / 2), 0).applyMatrix4(talk.anchor.matrixWorld).project(camera);
+    if (r.width > 0) { dx = g.left + (_sp.x + 1) / 2 * W - (r.left + r.width / 2); dy = g.top + (1 - _sp.y) / 2 * H - (r.top + r.height / 2); talk.fieldSync = true; } }
+  else if (talk.fieldSync) dx = dy = 0;   // (the sent face has no fields: keep the correction the form had)
+  if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) { talkDX += dx; talkDY += dy; talkEl.style.transform = talkDX || talkDY ? `translate(${talkDX.toFixed(1)}px,${talkDY.toFixed(1)}px)` : ''; }
   if (talkDbg) { const vv = window.visualViewport; talkDbg.textContent = `canvas ${g.left.toFixed(1)},${g.top.toFixed(1)} ${g.width.toFixed(1)}x${g.height.toFixed(1)}\nlayer  ${t.left.toFixed(1)},${t.top.toFixed(1)} ${t.width.toFixed(1)}x${t.height.toFixed(1)}\nW,H ${W},${H}  inner ${innerWidth}x${innerHeight}\nvv ${vv ? vv.width.toFixed(1) + 'x' + vv.height.toFixed(1) + ' @' + vv.offsetTop.toFixed(1) : '-'}  shift ${talkDX.toFixed(1)},${talkDY.toFixed(1)}`; }
 }
 function shownPart() {   // the part of the canvas on screen: on iPhones it can start above the top and run on under the bottom bar
@@ -1451,7 +1469,7 @@ async function openTalk({ config, send, opener, fallback }) {
   talk.hold = true; talk.surf.reset();   // → a wiped slate; the form is chalked on as the camera arrives
   const P0 = camera.position.clone();
   talk.L0.copy(talk.mode === 'out' ? _tl : camLook); talk.L1.copy(talkPose.look);
-  if (P0.distanceTo(talkPose.pos) < 0.05) { talk.mode = 'on'; startWriting(false); talk.surf.focusFirst(); return; }
+  if (P0.distanceTo(talkPose.pos) < 0.05) { talk.mode = 'on'; startWriting(false); if (!coarse) talk.surf.focusFirst(); return; }
   talk.curve = curveOf(route(P0, talkPose.pos.clone())); const len = talk.curve.getLength(); talk.ahead = len > 4;
   talk.dur = reduce ? 0.001 : Math.min(4.2, 1.8 + len * 0.12); talk.mode = 'in'; talk.t = 0;
 }
@@ -1485,13 +1503,13 @@ function talkFrame(dt) {
       if (!talk.swapped) swapToReply();
       const u = Math.min(1, (s - OUT - HOLD) / BACK); fly(talk.back, easeIO(u), VANT.look, talkPose.look, true);
       if (talk.hold && (1 - u) * BACK < 0.9) startWriting(false);
-      if (u >= 1) { talk.mode = 'on'; talk.seq = -1; if (talk.hold) startWriting(false); talk.surf.focusFirst(); }
+      if (u >= 1) { talk.mode = 'on'; talk.seq = -1; if (talk.hold) startWriting(false); if (!coarse) talk.surf.focusFirst(); }
     }
     return true;
   }
   talk.t = Math.min(talk.dur, talk.t + dt); fly(talk.curve, easeIO(talk.t / talk.dur), talk.L0, talk.L1, talk.ahead);
   if (talk.mode === 'in' && talk.hold && talk.dur - talk.t < 0.9) startWriting(false);
-  if (talk.mode === 'in' && talk.t >= talk.dur) { talk.mode = 'on'; if (talk.hold) startWriting(false); talk.surf.focusFirst(); }
+  if (talk.mode === 'in' && talk.t >= talk.dur) { talk.mode = 'on'; if (talk.hold) startWriting(false); if (!coarse) talk.surf.focusFirst(); }
   if (talk.mode === 'out' && talk.t >= talk.dur) { talk.mode = 'off'; camPos.copy(camera.position); camLook.copy(_tl); document.documentElement.style.removeProperty('overflow'); if (talk.opener && talk.opener.focus) talk.opener.focus({ preventScroll: true }); }
   return true;
 }
@@ -1694,7 +1712,7 @@ function frame(now) {
   if (window.__camDbg) { camera.position.fromArray(window.__camDbg[0]); camera.lookAt(...window.__camDbg[1]); }   // QA hook
   update(t, dt, progL);
   composer.render(dt);
-  if (talk.cssR && talk.mode !== 'off') talk.cssR.render(scene, camera);
+  if (talk.cssR && talk.mode !== 'off' && talk.css) cssRender();
   requestAnimationFrame(frame);
 }
 resize(); cameraAt(stage.prog); camPos.copy(tgtPos); camLook.copy(tgtLook); progL = stage.prog;
