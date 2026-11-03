@@ -1,6 +1,6 @@
 # Vasant Suraj — portfolio: project documentation
 
-_Status as of 3 Nov 2026, version **v60-podcast** (page and docs). Ten pages are live: the home page and nine automation pages (Reddit Keyword Alerts, Notion to Webflow, SEO Pre-Live Checks, Auto Internal Linking, AI Blog Drafts, Webinar to Webflow, Video to Blog, Voice to Blog, Podcast to CMO Brief). Every page has a Let's talk form that sends to WhatsApp, drawn in that page's own world. Ten automations still use the slide-in panel._
+_Status as of 3 Nov 2026, version **v61-pulse** (page and docs). Eleven pages are live: the home page and ten automation pages (Reddit Keyword Alerts, Notion to Webflow, SEO Pre-Live Checks, Auto Internal Linking, AI Blog Drafts, Webinar to Webflow, Video to Blog, Voice to Blog, Podcast to CMO Brief, LinkedIn Pulse Article Generator). Every page has a Let's talk form that sends to WhatsApp, drawn in that page's own world. Nine automations still use the slide-in panel._
 
 This file says **what** each part is and what it means. `BUILD.md` says how it is built. `HANDOFF.md` says how to continue the work.
 
@@ -52,12 +52,14 @@ Runtime dependencies:
 │   ├── video-to-blog.html                   page 7: The Projection Booth (old cinema booth before the show)
 │   ├── voice-to-blog.html                   page 8: The Tracking Station (desert at dusk)
 │   ├── podcast-to-cmo-brief.html            page 9: The Bento Counter (lunch counter at noon)
+│   ├── linkedin-pulse-article-generator.html  page 10: The Bell Foundry (snow, blue hour)
 │   ├── city/                                45 files: textures + packed models (page 4)
 │   ├── greenhouse/                          23 files: textures, packed models, dawn HDRI (page 5)
 │   ├── studio/                              34 files: textures, packed models, studio HDRI (page 6)
 │   ├── booth/                               35 files, 6.0 MB: textures, packed models, booth light (page 7)
 │   ├── station/                             52 files, 7.1 MB: textures, packed models and scans, dusk light (page 8)
-│   └── counter/                             55 files, 7.2 MB: textures, packed models, room light (page 9)
+│   ├── counter/                             55 files, 7.2 MB: textures, packed models, room light (page 9)
+│   └── foundry/                             74 files, 8.1 MB: textures, packed models, workshop light, snowy backdrop (page 10)
 ├── portrait/
 │   ├── portrait-color.webp                  hero portrait, cut out, real photo colours
 │   ├── portrait-depth.png                   depth map (bright = near) for the particles' 3D relief
@@ -159,7 +161,7 @@ Editing a card means editing one object. The forest runway, the chapters, the co
 - The AI Blog Drafts card's tag reads **Claude** (it used to say Gemini), to match the real workflow.
 
 The 19 automations, in order (★ = has its own page):
-Notion to Webflow Publisher ★ · SEO Pre-Live Checks ★ · Auto Internal Linking ★ · AI Blog Drafts ★ · Webinar to Webflow ★ · Video to Blog · Voice to Blog · Podcast to CMO Brief · Cluster to Pillar Post · Blog Refresh Engine · Blog to Social and Ads · Organic Social Engine · Slack to Post Idea · LinkedIn ICP Leaderboard · Reddit Keyword Alerts ★ · Competitive Intel System · Marketing Ticket Desk · Dev Tasks from Slack · Docs to Notion Sync
+Notion to Webflow Publisher ★ · SEO Pre-Live Checks ★ · Auto Internal Linking ★ · AI Blog Drafts ★ · Webinar to Webflow ★ · Video to Blog ★ · Voice to Blog ★ · Podcast to CMO Brief ★ · LinkedIn Pulse Article Generator ★ (was Cluster to Pillar Post) · Blog Refresh Engine · Blog to Social and Ads · Organic Social Engine · Slack to Post Idea · LinkedIn ICP Leaderboard · Reddit Keyword Alerts ★ · Competitive Intel System · Marketing Ticket Desk · Dev Tasks from Slack · Docs to Notion Sync
 
 ### 3.8 Responsive
 On portrait screens (phones): a wider field of view, cards and titles sized from the screen width, the camera stopping a little further back, and banners about 80 % of the screen width and centred. Lanterns arrive from the side over the water, and the footer lanterns are pushed further away so they don't swamp the screen. The 760 px breakpoint shrinks the header pills, the counter and the card text. The hero form is 344 px wide (or the screen minus 32 px) on phones and 560 px on desktop.
@@ -193,8 +195,9 @@ Every automation page follows one pattern, so they feel like one portfolio while
 | 7 | Video to Blog ("The Projection Booth") | an old cinema projection booth before the first show | late-afternoon sun through one window, warm shade, a pendant lamp; amber, green-grey steel; shadows, light bloom | 1300svh | 7 |
 | 8 | Voice to Blog ("The Tracking Station") | a radio tracking station in the desert at dusk | a painted dusk sky going from sunset to first stars with the scroll, low orange sun, the hut lit from inside; signal amber, scope green; shadows, bloom | 1300svh | 7 |
 | 9 | Podcast to CMO Brief ("The Bento Counter") | a small Japanese lunch counter at noon | low sun through the shop window, lattice light on a pale counter, steam, paper lanterns; hinoki, white tile, indigo, vermilion; shadows, light bloom | 1300svh | 7 |
+| 10 | LinkedIn Pulse Article Generator ("The Bell Foundry") | an old bell foundry in the snow at the blue hour | snow falling, a blue-hour sky (HDRI backdrop), the furnace's orange spilling onto the snow, cold window shafts, molten bronze; brick, soot, oak, chalk on slate; shadows, bloom | 1300svh | 7 |
 
-"Next automation" links: The Press → SEO Pre-Live Checks (**wired**). All others are still `#`: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog, Video to Blog → Voice to Blog, Voice to Blog → Podcast to CMO Brief, Podcast to CMO Brief → Cluster to Pillar Post. (Six of these targets exist now and could be wired; ask first.)
+"Next automation" links: The Press → SEO Pre-Live Checks (**wired**). All others are still `#`: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog, Video to Blog → Voice to Blog, Voice to Blog → Podcast to CMO Brief, Podcast to CMO Brief → LinkedIn Pulse Article Generator, LinkedIn Pulse Article Generator → Blog Refresh Engine. (Seven of these targets exist now and could be wired; ask first.)
 
 ---
 
@@ -580,20 +583,62 @@ Look test (062e240, `podcast-look`) → his fixes: the flicker at the door frame
 
 ---
 
-## 14. Pending items
+## 14. Page 10: LinkedIn Pulse Article Generator, "The Bell Foundry" (`automations/linkedin-pulse-article-generator.html`)
+
+### 14.1 Concept
+**An old bell foundry in the snow, at the blue hour before sunrise.** Snow falls on the yard, the big doors stand open, and the furnace's glow spills out onto the snow; inside, cold window light meets the orange of the fire. The workflow takes a cluster of up to four existing blog posts and has Claude write **one new pillar article** from them, with no sentence copied: four old bells melted down and recast as one new bell. It's the site's first snow, and the first molten metal.
+
+**Name:** Vasant named it "LinkedIn Pulse Article Generator" (3 Nov). The home card was "Cluster to Pillar Post" until then; its line, tags and outcome stay. The workflow's prompt names a person whose voice it writes in; the page says "a marketing leader's voice" and never names anyone. The page shows the sheet-driven flow in the workflow JSON he sent (one file).
+
+### 14.2 What is in the foundry
+- **The hall:** brick walls (factory_brick, sootier inside), a planked timber roof on trusses with snow on top (dark_wooden_planks, snow_02), the big doors swung open on the yard (distressed_painted_planks), four high windows on the right and one on the left with cold light shafts and dust, round windows in both gables, icicles under the lintel and the eaves, a trodden sand floor (dirt_floor), snow blown in over the threshold.
+- **The yard:** snow out to the haze, the cart's ruts and footprints to the doors, drifts against the walls, the little bell on its post with a roof of its own, snow falling (never inside the hall), smoke from the chimney. The backdrop is Snowy Park 01 on a far sphere, graded down to the blue hour.
+- **Built in code:** the furnace (soot-black brick, a fire shader in its mouth, iron ties, its door swung open), the order slate, the cart with four old bells (green patina, snow on their shoulders, luggage tags with their slugs), the gantry with two trolleys and their chains, the ladle with molten bronze, the casting ring with the loam core, the board that sweeps it and the mould (clay_plaster), the pour and its sparks, the tuning lathe, the bell frame with its rope wheel, the brass plate on its post. Every bell is turned from one profile; the new one has LEAD SCORING · START TO FINISH · CAST FROM FOUR POSTS raised round its shoulder.
+- **Poly Haven models:** standing_chalkboard_01 (the voice, by the lathe), barrel_stove (by the door), wooden_crate_02, ladder_sectioned_01, rusted_spade_01, sledgehammer_01, wooden_hammer_01, wooden_lantern_01. Light and reflections: Industrial Workshop Foundry (HDRI, desaturated and warmed). Wooden Bucket 01 was on the list but didn't arrive; the scene doesn't use it.
+
+Everything named in the scene is illustrative: the clusters C-05 to C-09, the Lead scoring topic, its four slugs, the page's properties.
+
+### 14.3 The stations
+| # | Caption | What you see |
+|---|---|---|
+| 1 | **01 · The order book** — "A row says yes." A sheet of topic clusters (topic, pillar keyword, search intent, cluster role, category, up to four posts); set generate to "yes"; checked every minute | The order slate on the left wall: five clusters chalked up; YES on the Lead scoring row gets a yellow ring and an arrow |
+| 2 | **02 · Old bells in** — "Four posts, fetched by slug." Every post in the Webflow collection read once; the four slugs matched to their bodies, stripped to plain text | The cart rolls in out of the snow with four old bells, each tagged POST 1–4 with its slug |
+| 3 | **03 · The pattern** — "The posts are the brief." No separate SEO brief: one new, original article, H2s from the posts' themes, an SEO pack, seven to nine FAQs | The board sweeps round the loam core and stops with its chalk to us: 4 posts → 1 pillar, TL;DR, hook: a scene, H2 · H2 · H2, in a nutshell, FAQ × 7–9, SEO pack. Then it's lifted off and the mould comes down |
+| 4 | **04 · Recast** — "Melted down. Nothing copied." Claude writes 3,000–4,000 words in a marketing leader's voice: TL;DR, a scene for a hook, sentence-case H2s, "In a nutshell", FAQs, a meta-data table on top | The old bells glow red, then orange, and slump; the ladle is lifted, carried over and tipped; bronze pours into the mould's cup with sparks |
+| 5 | **05 · Tuned** — "Checked against the voice." Contractions, no em dashes, no sentence over 30 words, no one-line paragraphs, banned phrases out, six to eight italics, one "Mic drop." | The new bell turns mouth-up on the lathe, curls of bronze come off the cutter, and the chalkboard beside it ticks off the voice |
+| 6 | **06 · Into Notion** — "Built block by block." A draft page with its properties (topic, cluster, keyword, category, intent, source count, status Generated); the article as Notion blocks, 100 at a time | The bell is hoisted into its frame in three lifts; the brass plate reads NOTION · NEW PAGE, the properties, and blocks added 100 · 200 · 247 |
+| 7 | **07 · Marked done** — "The row says done." The row flips to done; the loop takes the next "yes" | The slate: Lead scoring's YES rubbed out and "done ✓" chalked; the ring moves to Sales handoff |
+| 8 | End | "Four posts in. One pillar out." · "A row marked "yes" becomes a pillar draft of 3,000 to 4,000 words in Notion, written from posts you already have, with nothing copied." Out of the doors into the yard; the new bell swings in its frame and the eaves drop their snow |
+
+### 14.4 Let's talk
+**The slate.** "Let's talk" takes the camera to the order slate (in at the doors first if it's out in the yard). The order book fades as if wiped, and the form is chalked onto the slate a character at a time (Caveat, the handwriting the greenhouse uses, in chalk: pitted where the stick skipped), with a header line ("new order · 3 Nov · 22:49"), freehand boxes for the fields and yellow labels. The live fields type in chalk too. Send: the visitor's words stay on the slate while the camera goes out of the doors into the yard, where the bell on its post swings and rings, rings of sound spread from it and its roof sheds its snow; then back to a wiped slate, where "Message received" is chalked up with the time, ringed. Escape or ✕ goes back to wherever the scroll left the camera.
+
+### 14.5 The runbook
+Facts: **Trigger** A Google Sheet, checked every minute for rows marked "yes" · **Runs** One row at a time; a pillar takes a few minutes · **Stack** n8n · Google Sheets · Webflow · Claude · Notion · **Output** A draft page in Notion: the article as blocks, with its properties filled in.
+Sections: 01 Problem · 02 Running it (five steps and an illustrative sheet row) · 03 Flow (seven steps: Google Sheets Trigger · Webflow · Sheets, Filter, Loop · Code · Claude · Code × 2, Notion, HTTP Request loop · Google Sheets) · 04 The article (seven parts, each mapped to a thing in the foundry) · 05 If something fails · 06 Outcome · 07 Operating it.
+Stats: **~1 min** until a "yes" row is picked up · **3–4k** words in every pillar draft · **7–9** FAQs in every article (all from the workflow's own settings, not measured results).
+Note: "The sheet, the Webflow collection, the Notion database, credentials and the prompt's wording are left out on purpose. The topic, posts and page in the scene are illustrative." No sheet or tab names, IDs, workflow name or person's name appear.
+
+### 14.6 Versions
+Story (the bell foundry, chosen over a weaving mill and a stained-glass studio) → assets → look test with its Let's talk (b044680, `v61-foundry-look`; `pre-v61-foundry` before it): the home card opens it and Podcast to CMO Brief's "Next automation" label uses the new name → these docs (**`v61-pulse`**, current; pull request #6). Its own "Next automation" says Blog Refresh Engine (no page yet, `#`).
+
+---
+
+## 15. Pending items
 - **Real testimonials** to replace the six samples (`sample: false`).
 - **Thumbnails** for the 5 Factors.ai pages and 3 personal projects: `thumbs/benchmarks.jpg, campaign-offer.jpg, microsoft.jpg, prove-roi.jpg, routines.jpg, nike.jpg, ilish.jpg, leaderboard.jpg`. A missing file falls back to the card's tint. There is no `thumbs/` folder in the live repo yet.
-- **Ten automation pages** still to build, each with its own world: Cluster to Pillar Post, Blog Refresh Engine, Blog to Social and Ads, Organic Social Engine, Slack to Post Idea, LinkedIn ICP Leaderboard, Competitive Intel System, Marketing Ticket Desk, Dev Tasks from Slack, Docs to Notion Sync. Set each entry's `url`.
+- **Nine automation pages** still to build, each with its own world: Blog Refresh Engine, Blog to Social and Ads, Organic Social Engine, Slack to Post Idea, LinkedIn ICP Leaderboard, Competitive Intel System, Marketing Ticket Desk, Dev Tasks from Slack, Docs to Notion Sync. Set each entry's `url`.
 - **Voice to Blog:** the story animations; whether the recorder's name (Voxlog) may appear on the page.
 - **Video to Blog:** the per-station story animations (§11.6).
 - **Podcast to CMO Brief:** the "regular podcasts, new episodes briefed automatically" idea, once its workflow exists (§13.1). Issues in its three workflow files were reported to Vasant in chat (a transcript-API key pasted in a node's header: rotate it and move it to a credential; RSS links go down the audio path and fail; a CloudConvert failure leaves the result "not ready" for good; a 4,000-token limit can cut a long brief; an unused prompt node; the instructions sent as an assistant message). They are his to fix.
-- **"Next automation" links** still `#` on seven pages (§4); five could be wired now.
+- **LinkedIn Pulse Article Generator:** issues in its workflow file were reported to Vasant in chat (a row stays "yes" through a long run, so a later check can start it again and make a second Notion page; mark it "in progress" first; "Mark row done" writes the read-only row number; each source post is cut at 9,000 characters; the style guide is sent as an assistant message, not a system prompt). They are his to fix.
+- **"Next automation" links** still `#` on nine pages (§4); seven could be wired now.
 - Issues found in the two workflow JSON files were reported to Vasant in chat; they are workflow fixes, not site work.
 - **Mic and cassette models** were never supplied; the studio uses procedural ones.
 - Replace the slide-in panel once every automation has a page.
 - Optional: Pangram Sans Rounded, if the font files are supplied (Elms Sans is the current UI face).
 
-## 15. Decisions log (what was tried and dropped)
+## 16. Decisions log (what was tried and dropped)
 
 **Hero:**
 - Rejected name reveals: falling letters, an outline name with hover fill, particles morphing into the name, letter-by-letter over a long scroll, a bubble font, a glass "Projects" title, a liquid "pour" into the name. The name moved to the footer, and the hero stays portrait → dissolve → rain.
@@ -625,7 +670,7 @@ Look test (062e240, `podcast-look`) → his fixes: the flicker at the door frame
 - v50 started with one shared dialog on every page; talk-* made each world its own form; the forest got the hanging board, the hero the particles, the beach the bottle. "Lets talk is not related to the world" is a rejection reason: each new page needs a form that belongs to it and only appears on click.
 - **The WhatsApp number must never be in the site**: "i dont wanna share my wp contact with anyone". It lives only in Vercel env vars.
 
-## 16. Versioning
+## 17. Versioning
 Every approved state is a git tag in the working repo, usually with copies in `backups/`.
 
 **Home page:**
@@ -646,11 +691,13 @@ Every approved state is a git tag in the working repo, usually with copies in `b
 - Docs: `pre-docs`, `v55-docs`; `v58-docs` (these)
 - Video to Blog: `pre-video`, `video-look`, `pre-video-talk`, `video-talk-v1`, `pre-video-handover`, `video-handover` = **`v56-video-to-blog`**
 - Voice to Blog: `pre-voice-card`, `pre-voice`, `voice-look`, `voice-look-2`, `pre-voice-home`, `v57-voice-to-blog`, `pre-voice-talk`, `v59-voice-talk`, `pre-ios-fix`, `v59.1-ios-fields` (the iPhone fields fix)
-- Podcast to CMO Brief: `podcast-look`, `pre-counter-fixes`, `podcast-talk`, **`v60-podcast` (current)**
+- Podcast to CMO Brief: `podcast-look`, `pre-counter-fixes`, `podcast-talk`, `v60-podcast`
+- Video to Blog, iPhone fields: `v60.1-booth-ios`
+- LinkedIn Pulse Article Generator: `pre-v61-foundry`, `v61-foundry-look`, **`v61-pulse` (current)**
 
-BUILD.md §17 and PORTFOLIO-HANDOFF.md have the full table. The repo with all tags lives in the AI workspace and is handed over as a history zip when asked.
+BUILD.md §18 and PORTFOLIO-HANDOFF.md have the full table. The repo with all tags lives in the AI workspace and is handed over as a history zip when asked.
 
-## 17. Running locally
+## 18. Running locally
 ```
 npx serve .          # or: python3 -m http.server 8765
 ```

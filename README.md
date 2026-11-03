@@ -1,6 +1,6 @@
 # Vasant Suraj — portfolio
 
-_Updated 3 Nov 2026. Current version: **v60-podcast** (Podcast to CMO Brief and its Let's talk, with these docs)._
+_Updated 3 Nov 2026. Current version: **v61-pulse** (LinkedIn Pulse Article Generator and its Let's talk, with these docs)._
 
 A scroll-driven 3D portfolio. It is a static site with no build step and no framework: every page is one HTML file with its CSS and JavaScript inline, plus shared scripts and texture folders. Host it on any static host (it runs on Vercel), or locally with `npx serve .` or `python3 -m http.server`.
 
@@ -20,8 +20,9 @@ Pages must be served over **http**, not opened as `file://`. WebGL loads texture
 | `automations/video-to-blog.html` | Video to Blog: "The Projection Booth", an old cinema booth before the first show |
 | `automations/voice-to-blog.html` | Voice to Blog: "The Tracking Station", a radio dish and a tin hut in the desert at dusk |
 | `automations/podcast-to-cmo-brief.html` | Podcast to CMO Brief: "The Bento Counter", a small lunch counter at noon |
+| `automations/linkedin-pulse-article-generator.html` | LinkedIn Pulse Article Generator: "The Bell Foundry", an old foundry in the snow at the blue hour |
 
-Every page has a **Let's talk** button. It opens a contact form that belongs to that page's world (the particles, a hanging board, a bottle, a sheet of paper, a painting, a title card on a cinema screen, a sheet typed on a teleprinter, a split-flap order board…). The message goes to WhatsApp through a Vercel function. The WhatsApp number and keys are never in the code: see `CONTACT-SETUP.md`.
+Every page has a **Let's talk** button. It opens a contact form that belongs to that page's world (the particles, a hanging board, a bottle, a sheet of paper, a painting, a title card on a cinema screen, a sheet typed on a teleprinter, a split-flap order board, a foundry's chalk slate…). The message goes to WhatsApp through a Vercel function. The WhatsApp number and keys are never in the code: see `CONTACT-SETUP.md`.
 
 ## Files
 
@@ -44,12 +45,14 @@ automations/                  one page per automation, each with its own world
   video-to-blog.html          (124 KB)
   voice-to-blog.html          (130 KB)
   podcast-to-cmo-brief.html   (121 KB)
+  linkedin-pulse-article-generator.html  (152 KB)
   city/                       45 files, 8.4 MB: textures + packed models for Auto Internal Linking
   greenhouse/                 23 files, 3.6 MB: textures, packed models, dawn sky for AI Blog Drafts
   studio/                     34 files, 3.6 MB: textures, packed models, studio light for Webinar to Webflow
   booth/                      35 files, 6.0 MB: textures, packed models, booth light for Video to Blog
   station/                    52 files, 7.1 MB: textures, packed models and scans, dusk light for Voice to Blog
   counter/                    55 files, 7.2 MB: textures, packed models, room light for Podcast to CMO Brief
+  foundry/                    74 files, 8.1 MB: textures, packed models, workshop light, the snowy backdrop for LinkedIn Pulse Article Generator
 portrait/                     3 files: the hero portrait's colour, depth and hoodie mask
 forest/                       26 textures for the forest and beach (bark, leaves, mud, sand, rock, satin)
 thumbs/                       project-card thumbnails (optional; see below)
