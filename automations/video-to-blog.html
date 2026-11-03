@@ -1196,9 +1196,9 @@ async function buildTalk(config, send) {
   talk.group = g; talk.PW = PW; talk.PH = PH; paintCard(); shapeBeam(PW, PH); fitTalk();
 }
 function fitTalk() {   // square on to the picture, far enough back to see all of it with the header clear
-  const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), m = talk.mobile;
-  const d = Math.max(talk.PH / ((m ? 0.84 : 0.74) * 2 * tn), talk.PW / ((m ? 0.92 : 0.8) * 2 * tn * camera.aspect));   // desktop leaves room for the curtains
-  talkPose.look.set(SCR.x, SCR.y + talk.PH * (m ? 0.02 : 0.035), SCR.z); talkPose.pos.set(SCR.x, talkPose.look.y, SCR.z + d);
+  const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), m = talk.mobile, vis = clamp(innerHeight / H, 0.6, 1);   // on iPhones the canvas runs on under the browser's bottom bar: fit the card in the part that shows
+  const d = Math.max(talk.PH / ((m ? 0.84 : 0.74) * 2 * tn * vis), talk.PW / ((m ? 0.92 : 0.8) * 2 * tn * camera.aspect));   // desktop leaves room for the curtains
+  talkPose.look.set(SCR.x, SCR.y + talk.PH * (m ? 0.02 : 0.035) - (1 - vis) * d * tn, SCR.z); talkPose.pos.set(SCR.x, talkPose.look.y, SCR.z + d);
 }
 // the way out of the booth: round the projector if needed, square up to the viewing port, through it, down the hall
 function viaPort(P0, P2) {
@@ -1323,7 +1323,8 @@ function cameraAt(p) {
 const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
 addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty = (e.clientY / H) * 2 - 1; }, { passive: true });
 function resize() {
-  W = innerWidth; H = innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); bloom.resolution.set(W / 2, H / 2);
+  const r = canvas.getBoundingClientRect();   // the canvas's own box: on iPhones a fixed 100%-high box is taller than innerHeight, and drawing for innerHeight stretched the picture under the live fields
+  W = Math.round(r.width) || innerWidth; H = Math.round(r.height) || innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); bloom.resolution.set(W / 2, H / 2);
   camera.aspect = W / H; camera.fov = W / H < 0.85 ? 62 : 42; camera.updateProjectionMatrix();
   if (talk.cssR) talk.cssR.setSize(W, H);
   if (talk.group) fitTalk();
