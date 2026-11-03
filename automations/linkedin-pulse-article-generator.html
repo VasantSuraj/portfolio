@@ -1,0 +1,1682 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LinkedIn Pulse Article Generator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Archivo:wdth,wght@62..125,300..700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* The Bell Foundry. One automation, shown as an old bell foundry on a winter morning: the order slate on the wall, four old bells
+   brought in out of the snow, the board that sweeps the mould, the furnace and the pour, the tuning lathe, the bell hoisted into
+   its frame with its brass plate, and the slate marked done. */
+:root{
+  --bg:#121314; --ink:#f2f0ea; --ink-soft:#a1a09a; --ink-mid:#d8d5cc; --pill:#f2f0ea; --pill-ink:#121314; --line:#2a2b2b; --card:#18191a;
+  --amber:#f3c46a; --ice:#a9c4e6; --red:#ef7d4a; --green:#79d48a;
+  --font:'Elms Sans','Archivo','Helvetica Neue',Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a,button{color:inherit;font:inherit}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;transition:filter .9s ease}
+body.hush #gl{filter:blur(9px) saturate(.85) brightness(.85)}
+.hushveil{position:fixed;inset:0;z-index:2;pointer-events:none;background:rgba(18,19,20,.45);opacity:0;transition:opacity .9s ease}
+body.hush .hushveil{opacity:1}
+.scrim{position:fixed;left:0;right:0;bottom:0;height:48%;z-index:2;pointer-events:none;background:linear-gradient(to top,rgba(18,19,20,.9),rgba(18,19,20,.45) 45%,rgba(18,19,20,0))}
+.vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%)}
+.grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.08;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 1.6s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+
+.ui{position:fixed;inset:0;z-index:4;pointer-events:none}
+.ui > *{pointer-events:auto}
+.ui.off > :not(.mark):not(.actions){opacity:0!important;pointer-events:none!important}
+.mark{position:absolute;top:calc(28px + env(safe-area-inset-top,0px));left:max(28px,env(safe-area-inset-left,0px));font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:14px}
+.mark svg{display:block}
+.actions{position:absolute;top:calc(22px + env(safe-area-inset-top,0px));right:max(24px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center}
+.pill{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 26px;border-radius:999px;background:var(--pill);color:var(--pill-ink);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transition:transform .25s cubic-bezier(.2,.7,.2,1),background .25s;text-decoration:none;white-space:nowrap}
+.pill:hover{transform:translateY(-2px);background:#fff8ea}
+.pill:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.pill .dot{width:5px;height:5px;border-radius:999px;background:var(--pill-ink)}
+.pill.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #34404f}
+.pill.ghost:hover{background:rgba(239,232,218,.06)}
+
+.cap{position:absolute;left:max(28px,env(safe-area-inset-left,0px));bottom:calc(36px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100vw - 56px));opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;pointer-events:none}
+.cap.on{opacity:1;transform:none;pointer-events:auto}
+.cap em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.cap em b{font-weight:600;color:var(--amber)}
+.cap h2{margin:0 0 10px;font-weight:500;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1.05}
+.cap p{margin:0;font-size:16px;line-height:1.5;color:var(--ink-mid);max-width:44ch}
+.cap .key{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.cap .key i{font-style:normal;display:inline-flex;align-items:center;gap:7px}
+.cap .key i::before{content:'';width:9px;height:9px;border-radius:999px;background:var(--c,#fff)}
+
+.hero-title{position:absolute;left:max(28px,env(safe-area-inset-left,0px));right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);pointer-events:none;transition:opacity .5s ease}
+.hero-title em{display:block;font-style:normal;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
+.hero-title h1{margin:0;font-weight:500;font-size:clamp(44px,7.4vw,124px);letter-spacing:-.035em;line-height:.92;max-width:9ch}
+.hero-title p{margin:22px 0 0;font-size:clamp(16px,1.4vw,20px);color:var(--ink-mid);max-width:32ch}
+.hero-title .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.hero-title .row > *{pointer-events:auto}
+
+.progress{position:absolute;right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px}
+.progress i{width:6px;height:6px;border-radius:999px;background:#2a3442;transition:background .3s,transform .3s}
+.progress i.on{background:var(--amber);transform:scale(1.4)}
+
+.end{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:calc(112px + env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(28px,env(safe-area-inset-left,0px));opacity:0;transition:opacity .6s ease;pointer-events:none}
+.end.on{opacity:1;pointer-events:auto}
+.end .big{margin:0;font-weight:500;font-size:clamp(34px,min(6.2vw,9vh),100px);letter-spacing:-.035em;line-height:.95;max-width:14ch}
+.end .sub{margin:22px 0 0;font-size:clamp(17px,1.5vw,22px);color:var(--ink-mid);max-width:42ch}
+.end .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;align-items:center}
+.end .next{margin-top:48px;font-size:14px;color:var(--ink-soft)}
+.end .next a{color:var(--ink);text-decoration:none;font-weight:500}
+
+.scroll{position:absolute;right:max(28px,env(safe-area-inset-right,0px));bottom:calc(32px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);transition:opacity .6s ease}
+.scroll i{display:block;width:44px;height:2px;background:var(--ink-soft);animation:line 2.2s cubic-bezier(.7,0,.3,1) infinite}
+@keyframes line{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+
+#fly{position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;display:block}
+.runway{position:relative;z-index:0;height:1300svh;pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------------- the runbook ---------------- */
+.doc{position:relative;z-index:3;background:var(--bg);padding:0 0 120px}
+.doc::before{content:'';position:absolute;left:0;right:0;top:-220px;height:220px;background:linear-gradient(to bottom,rgba(18,19,20,0),var(--bg));pointer-events:none}
+.doc-in{width:min(1240px,calc(100% - 56px));margin:0 auto}
+.doc-head{padding:140px 0 56px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:end}
+.doc-head em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:18px}
+.doc-head h2{margin:0;font-weight:500;font-size:clamp(34px,4.6vw,68px);letter-spacing:-.03em;line-height:1}
+.doc-head p{margin:20px 0 0;font-size:18px;line-height:1.5;color:var(--ink-mid);max-width:52ch}
+.facts{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.facts div{background:var(--card);padding:18px 20px}
+.facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.facts dd{margin:0;font-size:16px;font-weight:500}
+.doc-grid{display:grid;grid-template-columns:220px 1fr;gap:64px;padding-top:56px}
+.toc{position:sticky;top:120px;align-self:start;display:flex;flex-direction:column;gap:4px;font-size:13px;letter-spacing:.04em}
+.toc a{text-decoration:none;color:var(--ink-soft);padding:8px 0;display:flex;gap:12px;transition:color .25s}
+.toc a span{font-variant-numeric:tabular-nums;color:#556273}
+.toc a:hover,.toc a.on{color:var(--ink)}
+.toc .foot{margin-top:28px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:12px;line-height:1.5}
+article{min-width:0}
+.sec{padding:0 0 72px;margin-bottom:72px;border-bottom:1px solid var(--line)}
+.sec:last-child{border:0;margin:0;padding:0}
+.sec h3{margin:0 0 26px;font-weight:500;font-size:clamp(24px,2.4vw,34px);letter-spacing:-.02em;display:flex;gap:18px;align-items:baseline}
+.sec h3 span{font-family:var(--font);font-size:13px;letter-spacing:.1em;color:var(--ink-soft);font-weight:500}
+.sec p{margin:0 0 16px;font-size:17px;line-height:1.6;color:var(--ink-mid);max-width:64ch}
+.sec p:last-child{margin-bottom:0}
+.lede{font-size:clamp(20px,1.8vw,26px)!important;line-height:1.35!important;letter-spacing:-.01em;color:var(--ink)!important;max-width:30ch!important}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.steps li{background:var(--card);display:grid;grid-template-columns:72px 1fr;gap:20px;padding:24px 26px 26px 22px;align-items:start}
+.steps .n{font-size:13px;letter-spacing:.08em;color:var(--ink-soft);font-variant-numeric:tabular-nums;padding-top:4px;display:flex;align-items:center;gap:10px}
+.steps .n::before{content:'';width:8px;height:8px;border-radius:999px;background:var(--c,#555)}
+.steps h4{margin:0 0 6px;font-weight:500;font-size:18px;letter-spacing:-.01em}
+.steps p{font-size:15px!important;color:#b4bfcb!important;margin:0!important;max-width:60ch!important}
+.steps .node{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:#0d131b;border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+.rules{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.rules li{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.rules b{display:block;font-weight:500;font-size:17px;margin-bottom:8px}
+.rules span{font-size:15px;color:#b4bfcb;line-height:1.5;display:block}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px}
+.checks{width:100%;min-width:520px;border-collapse:collapse;font-size:15px;background:var(--card)}
+.checks th,.checks td{text-align:left;padding:14px 20px;border-bottom:1px solid var(--line);vertical-align:top}
+.checks tr:last-child td{border-bottom:0}
+.checks th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;background:#101720}
+.checks td:first-child{color:var(--ink-soft);font-variant-numeric:tabular-nums;width:48px}
+.checks td i{font-style:normal;color:var(--ink-soft)}
+.checks code{font-family:var(--mono);font-size:13px;color:var(--amber)}
+.note{font-size:14px!important;color:var(--ink-soft)!important;margin-top:16px!important}
+.prio{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.prio div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;border-top:4px solid var(--c)}
+.prio b{display:block;font-weight:600;font-size:28px;letter-spacing:-.02em;color:var(--c);margin-bottom:6px}
+.prio span{font-size:15px;color:#b4bfcb;line-height:1.5}
+.report{margin:28px 0 0;background:#f4eee2;color:#1d2a25;border-radius:20px;max-width:660px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.report .hd{padding:20px 24px;border-bottom:1px solid #e0d8c8;display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.report .hd b{font-weight:600;font-size:17px}
+.report .hd span{font-size:13px;color:#5f6b65}
+.report .st{display:inline-block;background:var(--p0);color:#fff;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;letter-spacing:.06em}
+.report ul{list-style:none;margin:0;padding:10px 24px 18px}
+.report li{display:grid;grid-template-columns:44px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #e7e0d2;font-size:14px;align-items:baseline}
+.report li:last-child{border:0}
+.report li i{font-style:normal;font-weight:700;font-size:12px;letter-spacing:.04em}
+.report li small{display:block;color:#5f6b65;font-size:13px;margin-top:2px}
+.report .p0 i{color:var(--p0)}.report .p1 i{color:#b97614}.report .ok i{color:#2f8a57}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:8px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 22px}
+.stats b{display:block;font-weight:500;font-size:clamp(30px,3vw,44px);letter-spacing:-.03em;line-height:1;margin-bottom:10px;color:var(--amber)}
+.stats span{font-size:14px;color:var(--ink-soft)}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pills i{font-style:normal;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border-radius:999px;background:#18212c}
+.doc-foot{margin-top:96px;padding-top:40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.doc-foot .nm{font-size:14px;color:var(--ink-soft)}
+.doc-foot .nm a{color:var(--ink);text-decoration:none;font-weight:500}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:980px){
+  .doc-head{grid-template-columns:1fr;gap:32px;padding-top:110px}
+  .doc-grid{grid-template-columns:1fr;gap:0}
+  .toc{display:none}
+}
+@media (max-width:760px){
+  .cap{bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+  .cap h2{font-size:26px}.cap p{font-size:15px}
+  .hero-title{top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:none}
+  .hero-title h1{font-size:15vw}
+  .progress{display:none}
+  .scroll{display:none}
+  .mark span{display:none}
+  .doc-in{width:calc(100% - 40px)}
+  .steps li{grid-template-columns:1fr;gap:10px;padding:20px}
+  .checks th,.checks td{padding:12px 14px}
+  .report li{grid-template-columns:38px 1fr}
+}
+@media (prefers-reduced-motion:reduce){#gl,.hushveil{transition:none}.scroll i,.grain{animation:none}.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+.runway{height:1300svh}
+.cap code{font-family:var(--mono);font-size:.92em;background:rgba(242,240,234,.1);padding:2px 6px;border-radius:6px;color:var(--ink)}
+.slip-mock{margin:18px 0 10px;max-width:520px;background:#2a2e2d;color:#efede6;border-radius:14px;padding:18px 22px;display:grid;gap:8px;font-size:15px;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.slip-mock b{font-weight:700;font-size:16px;margin-bottom:4px}
+.slip-mock i{font-style:normal;display:inline-block;width:150px;color:#a9aaa3;font-size:13px;letter-spacing:.04em}
+.slip-mock em.auto{font-style:normal;color:#f3d27a;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid currentColor;border-radius:999px;padding:1px 9px}
+.sec code{font-family:var(--mono);font-size:.9em;background:rgba(242,240,234,.08);padding:1px 6px;border-radius:5px}
+/* Let's talk: the order slate on the left wall, the form chalked on it; everything else steps aside while it's open */
+#talk3d{position:fixed;inset:0;z-index:3;pointer-events:none;display:none}
+html.talking #talk3d{display:block}
+html.talking #talk3d .tb-live{pointer-events:auto}
+html.talking .cap,html.talking .hero-title,html.talking .end,html.talking .progress,html.talking .scroll,html.talking .scrim,html.talking .hushveil{opacity:0!important;pointer-events:none!important;transition:opacity .5s ease}
+html.talking .doc{visibility:hidden}
+html.talking body.hush #gl{filter:none}
+.tb-face.tb-look-chalk{--tb-display:Caveat,'Segoe Print','Bradley Hand',cursive;--tb-display-w:700;--tb-display-ls:0;--tb-ink:#efede6;--tb-field-ink:#f6f3ea;--tb-accent:#f3d27a;--tb-accent-soft:rgba(243,210,122,.22);--tb-placeholder:rgba(239,237,230,.34);--tb-bad:#f19a84;--tb-ghost:#efede6}
+.tb-look-chalk h2{font-size:62px}.tb-look-chalk h3{font-size:54px}
+.tb-face.tb-m.tb-look-chalk h2{font-size:46px}.tb-face.tb-m.tb-look-chalk h3{font-size:42px}
+.tb-look-chalk .tb-intro,.tb-look-chalk p{font-family:Caveat,'Segoe Print',cursive;font-size:24px;font-weight:600;line-height:1.2}
+.tb-face.tb-m.tb-look-chalk .tb-intro{font-size:21px}
+.tb-look-chalk .tb-f label{font-family:Caveat,'Segoe Print',cursive;font-size:22px;font-weight:700;letter-spacing:.01em;text-transform:none}
+.tb-look-chalk .tb-note{font-family:Caveat,'Segoe Print',cursive;font-size:19px;font-weight:600}
+.tb-look-chalk .tb-msg{font-family:Caveat,'Segoe Print',cursive;font-size:18px;font-weight:700}
+.tb-look-chalk .tb-f input,.tb-look-chalk .tb-f textarea{font-family:Caveat,'Segoe Print',cursive;font-size:24px;font-weight:700;letter-spacing:.01em;transition:none;border-radius:3px}
+.tb-look-chalk .tb-f input:focus,.tb-look-chalk .tb-f textarea:focus{box-shadow:0 0 0 2px var(--tb-accent)}
+.tb-look-chalk .tb-btn{font-family:Caveat,'Segoe Print',cursive;font-size:27px;font-weight:700;letter-spacing:.01em;text-transform:none;color:#24262a;background:#f3d27a;border-radius:4px;box-shadow:0 3px 0 #a8873a}
+.tb-look-chalk .tb-btn:hover{filter:brightness(1.06)}
+.tb-look-chalk .tb-knob{color:#efede6;background:transparent;box-shadow:inset 0 0 0 1.5px rgba(239,237,230,.55)}
+.tb-look-chalk .tb-knob:hover{background:rgba(239,237,230,.1)}
+.tb-look-chalk .tb-tag{font-family:Caveat,'Segoe Print',cursive;font-size:22px;background:#f3d27a;color:#24262a;transform:none}
+.tb-look-chalk .tb-ghost{font-family:Caveat,'Segoe Print',cursive;font-size:22px;text-transform:none;letter-spacing:0}
+</style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div id="talk3d"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="scrim" aria-hidden="true"></div>
+<div class="hushveil" aria-hidden="true"></div>
+
+<div class="ui" id="ui">
+  <a class="mark" href="../index.html#from-linkedin-pulse-article-generator" id="mark" aria-label="Back to the projects forest"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3 5 9l6 6"/></svg><span>Vasant Suraj</span></a>
+  <div class="actions"><a class="pill" href="mailto:vasantsuraj02@gmail.com" data-contact aria-haspopup="dialog">Let's talk <span class="dot" aria-hidden="true"></span></a></div>
+
+  <div class="hero-title" id="heroTitle">
+    <em>Automation · Content</em>
+    <h1>LinkedIn Pulse Article Generator</h1>
+    <p>Mark a topic cluster "yes" in a sheet. Its old posts are recast into one new pillar article, waiting in Notion.</p>
+    <div class="row"><a class="pill ghost" href="#doc">Read the runbook</a></div>
+  </div>
+
+  <div class="cap" data-i="1"><em><b>01</b> · The order book</em><h2>A row says yes.</h2><p>A sheet holds the topic clusters: a topic, its pillar keyword, search intent, the cluster's role, a category and up to four existing posts. Set a row's generate column to "yes". The sheet is checked every minute.</p><div class="key"><i style="--c:#f3d27a">yes</i></div></div>
+  <div class="cap" data-i="2"><em><b>02</b> · Old bells in</em><h2>Four posts, fetched by slug.</h2><p>Every post in the Webflow blog collection is read once. The row's four slugs are matched to their bodies, which are stripped down to plain text.</p></div>
+  <div class="cap" data-i="3"><em><b>03</b> · The pattern</em><h2>The posts are the brief.</h2><p>There's no separate SEO brief: the four posts are the brief. Write one new, original article, take the H2s from their themes, and add an SEO pack and seven to nine FAQs.</p></div>
+  <div class="cap" data-i="4"><em><b>04</b> · Recast</em><h2>Melted down. Nothing copied.</h2><p>Claude writes one pillar of 3,000 to 4,000 words in a marketing leader's voice: a TL;DR first, a scene for a hook, sentence-case H2s, "In a nutshell", the FAQs, and a meta-data table on top.</p><div class="key"><i style="--c:#ff9a4a">no sentence copied</i></div></div>
+  <div class="cap" data-i="5"><em><b>05</b> · Tuned</em><h2>Checked against the voice.</h2><p>Contractions, no em dashes, no sentence over 30 words, no one-line paragraphs, the banned phrases out, six to eight italics and one "Mic drop."</p></div>
+  <div class="cap" data-i="6"><em><b>06</b> · Into Notion</em><h2>Built block by block.</h2><p>A draft page with the topic, cluster, primary keyword, category, search intent, source count and status "Generated". The article becomes Notion blocks (headings, lists, real tables, the meta-data pinned on top), added 100 at a time.</p></div>
+  <div class="cap" data-i="7"><em><b>07</b> · Marked done</em><h2>The row says done.</h2><p>The sheet row flips to "done", and the loop moves on to the next "yes".</p><div class="key"><i style="--c:#efede6">done</i><i style="--c:#f3d27a">next yes</i></div></div>
+
+  <div class="end" id="end">
+    <p class="big">Four posts in. One pillar out.</p>
+    <p class="sub">A row marked "yes" becomes a pillar draft of 3,000 to 4,000 words in Notion, written from posts you already have, with nothing copied.</p>
+    <div class="row"><a class="pill" href="#doc">Read the runbook <span class="dot" aria-hidden="true"></span></a><span class="pill ghost">n8n</span><span class="pill ghost">Google Sheets</span><span class="pill ghost">Webflow</span><span class="pill ghost">Claude</span><span class="pill ghost">Notion</span></div>
+    <p class="next">Next automation → <a href="#" id="nextLink">Blog Refresh Engine</a></p>
+  </div>
+
+  <div class="progress" id="progress" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="scroll" id="scrollHint" aria-hidden="true">Scroll to step inside <i></i></div>
+</div>
+
+<canvas id="fly" aria-hidden="true"></canvas>
+<div class="runway" id="runway" aria-hidden="true"></div>
+<h1 class="sr">LinkedIn Pulse Article Generator. A Google Sheet of topic clusters is checked every minute. For each row marked yes, an n8n workflow fetches the row's existing blog posts from Webflow, Claude writes one new pillar article from them in a set voice, the article is built as a draft page in Notion, and the row is marked done.</h1>
+
+<!-- ============================ RUNBOOK ============================ -->
+<section class="doc" id="doc">
+  <div class="doc-in">
+    <header class="doc-head">
+      <div class="rv"><em>Runbook</em><h2>How the LinkedIn Pulse Article Generator works</h2><p>The full picture of the foundry above: how to queue a pillar, what the workflow does with the row, what every article contains, and what to check when a row doesn't come back done.</p></div>
+      <dl class="facts rv">
+        <div><dt>Trigger</dt><dd>A Google Sheet, checked every minute for rows marked "yes"</dd></div>
+        <div><dt>Runs</dt><dd>One row at a time; a pillar takes a few minutes</dd></div>
+        <div><dt>Stack</dt><dd>n8n · Google Sheets · Webflow · Claude · Notion</dd></div>
+        <div><dt>Output</dt><dd>A draft page in Notion: the article as blocks, with its properties filled in</dd></div>
+      </dl>
+    </header>
+
+    <div class="doc-grid">
+      <nav class="toc" id="toc" aria-label="Runbook sections">
+        <a href="#d-problem"><span>01</span>Problem</a>
+        <a href="#d-run"><span>02</span>Running it</a>
+        <a href="#d-flow"><span>03</span>Flow</a>
+        <a href="#d-shape"><span>04</span>The article</a>
+        <a href="#d-fail"><span>05</span>If something fails</a>
+        <a href="#d-outcome"><span>06</span>Outcome</a>
+        <a href="#d-ops"><span>07</span>Operating it</a>
+        <div class="foot">The sheet, the Webflow collection, the Notion database, credentials and the prompt's wording are left out on purpose. The topic, posts and page in the scene are illustrative.</div>
+      </nav>
+
+      <article>
+        <section class="sec rv" id="d-problem">
+          <h3><span>01</span>Problem</h3>
+          <p class="lede">Four good posts, and no page that ties them together.</p>
+          <p>A blog collects posts on the same topic over the years. Each one is fine on its own, but together they compete with each other, and nobody has written the one long page that pulls them into a whole. Writing that pillar by hand means rereading all of them first, then making sure nothing is lifted from them.</p>
+        </section>
+
+        <section class="sec rv" id="d-run">
+          <h3><span>02</span>Running it</h3>
+          <ol class="steps">
+            <li><div class="n" style="--c:#efe8dc">01</div><div><h4>Fill a row</h4><p>One row per cluster: a topic, the primary keyword, search intent, the cluster's role, a category, and the titles and slugs of up to four existing posts.</p></div></li>
+            <li><div class="n" style="--c:#f3d27a">02</div><div><h4>Say yes</h4><p>Set the row's generate column to "yes". The sheet is checked every minute.</p></div></li>
+            <li><div class="n" style="--c:#ff9a4a">03</div><div><h4>Let it write</h4><p>The posts are fetched, the pillar is written, and the page is built in Notion. This takes a few minutes.</p></div></li>
+            <li><div class="n" style="--c:#79d48a">04</div><div><h4>Edit in Notion</h4><p>Open the new draft page (status "Generated"), read it and edit it like any other draft.</p></div></li>
+            <li><div class="n" style="--c:#efe8dc">05</div><div><h4>Next</h4><p>The row now says "done". Any other "yes" rows run in turn.</p></div></li>
+          </ol>
+          <div class="slip-mock">
+            <b>In the sheet · one row</b>
+            <span><i>Topic</i> Lead scoring</span>
+            <span><i>Primary keyword</i> lead scoring</span>
+            <span><i>Posts</i> four slugs from the blog</span>
+            <span><i>Generate</i> <em class="auto">yes</em></span>
+          </div>
+          <p class="note">An illustrative example.</p>
+        </section>
+
+        <section class="sec rv" id="d-flow">
+          <h3><span>03</span>Flow</h3>
+          <ol class="steps">
+            <li><div class="n" style="--c:#efe8dc">01</div><div><h4>Watch the sheet</h4><p>A trigger checks the sheet every minute; a change starts one run.</p><span class="node">Google Sheets Trigger · Code</span></div></li>
+            <li><div class="n" style="--c:#efe8dc">02</div><div><h4>Read the blog</h4><p>Every item in the Webflow blog collection is fetched once per run, so any slug can be looked up.</p><span class="node">Webflow</span></div></li>
+            <li><div class="n" style="--c:#f3d27a">03</div><div><h4>Pick the rows</h4><p>The cluster rows are read and filtered to those marked "yes", then taken one at a time.</p><span class="node">Google Sheets · Filter · Loop Over Items</span></div></li>
+            <li><div class="n" style="--c:#f3d27a">04</div><div><h4>Match the posts</h4><p>Each slug in the row is matched to its post's body, which is stripped of HTML and trimmed. The prompt is built from the posts and the row's keyword, intent, role and category.</p><span class="node">Code</span></div></li>
+            <li><div class="n" style="--c:#ff9a4a">05</div><div><h4>Write the pillar</h4><p>Claude writes the article, with room for a long answer.</p><span class="node">Claude</span></div></li>
+            <li><div class="n" style="--c:#79d48a">06</div><div><h4>Build the page</h4><p>The meta-data table is pulled out of the article. A Notion page is created with its properties, and the rest becomes Notion blocks (headings, bullets, numbered lists and real tables), appended 100 at a time.</p><span class="node">Code × 2 · Notion · HTTP Request (loop)</span></div></li>
+            <li><div class="n" style="--c:#79d48a">07</div><div><h4>Mark it done</h4><p>The row is found by its cluster ID and set to "done", status "Generated". The loop moves to the next row.</p><span class="node">Google Sheets</span></div></li>
+          </ol>
+        </section>
+
+        <section class="sec rv" id="d-shape">
+          <h3><span>04</span>The article</h3>
+          <p>Every pillar has the same parts, so each one reads like the others and an editor knows where to look. It's written as a new article, not a summary: the four posts are the brief, and no sentence is copied from them.</p>
+          <div class="tbl-wrap">
+          <table class="checks">
+            <thead><tr><th>#</th><th>Part</th><th>What it holds</th><th>In the foundry</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Meta-data</td><td>Title tag, meta description, H1, slug and keywords, in a table pinned to the top of the page</td><td><i>the brass plate</i></td></tr>
+              <tr><td>2</td><td>TL;DR</td><td>First, before anything else</td><td><i>chalked on the board</i></td></tr>
+              <tr><td>3</td><td>Hook</td><td>A scene, not a definition</td><td><i>chalked on the board</i></td></tr>
+              <tr><td>4</td><td>H2 sections</td><td>In sentence case, built from the four posts' themes</td><td><i>chalked on the board</i></td></tr>
+              <tr><td>5</td><td>In a nutshell</td><td>The wrap-up</td><td><i>chalked on the board</i></td></tr>
+              <tr><td>6</td><td>FAQs</td><td>Seven to nine, numbered</td><td><i>chalked on the board</i></td></tr>
+              <tr><td>7</td><td>The voice</td><td>A marketing leader's: contractions, short sentences, no em dashes, the banned phrases out, a few italics, one "Mic drop."</td><td><i>the board by the lathe</i></td></tr>
+            </tbody>
+          </table>
+          </div>
+        </section>
+
+        <section class="sec rv" id="d-fail">
+          <h3><span>05</span>If something fails</h3>
+          <ul class="rules">
+            <li><b>Start here</b><span>The Executions tab of the workflow in n8n shows which step stopped and why.</span></li>
+            <li><b>A row stays "yes"</b><span>The run stopped before the row was marked done. The usual causes: a slug that matched no post, or the page build in Notion failing partway.</span></li>
+            <li><b>A post is missing from the article</b><span>Its slug in the sheet doesn't match the slug in Webflow exactly. Copy it from Webflow.</span></li>
+            <li><b>The same cluster appears twice in Notion</b><span>A long run was still going when the next check picked the row up again. Keep one page and delete the other.</span></li>
+            <li><b>A long post is only partly used</b><span>Each post is trimmed to its first 9,000 characters before Claude reads it.</span></li>
+          </ul>
+        </section>
+
+        <section class="sec rv" id="d-outcome">
+          <h3><span>06</span>Outcome</h3>
+          <div class="stats">
+            <div><b>~1 min</b><span>until a row marked "yes" is picked up</span></div>
+            <div><b>3–4k</b><span>words in every pillar draft</span></div>
+            <div><b>7–9</b><span>FAQs, numbered, in every article</span></div>
+          </div>
+          <p style="margin-top:26px">Clusters of old posts become pillar drafts without anyone rereading them first. The time goes into editing one strong page, not into writing it from scratch.</p>
+        </section>
+
+        <section class="sec rv" id="d-ops">
+          <h3><span>07</span>Operating it</h3>
+          <ul class="rules">
+            <li><b>Only "yes" runs</b><span>Rows marked "done" or left blank are never touched.</span></li>
+            <li><b>Slugs must match</b><span>The workflow finds each post by its Webflow slug, so copy the slug rather than typing it.</span></li>
+            <li><b>It's a draft</b><span>Pages land with status "Generated". An editor reads, edits and publishes.</span></li>
+            <li><b>One row at a time</b><span>Several "yes" rows queue up and run one after another.</span></li>
+          </ul>
+          <div class="pills" style="margin-top:28px"><i>n8n</i><i>Google Sheets</i><i>Webflow</i><i>Claude</i><i>Notion</i></div>
+        </section>
+      </article>
+    </div>
+
+    <footer class="doc-foot">
+      <a class="pill ghost" href="#top">Back to the foundry</a>
+      <p class="nm">Next automation → <a href="#" id="nextLink2">Blog Refresh Engine</a></p>
+    </footer>
+  </div>
+</section>
+
+<script>
+/* UI layer: scroll → station. Runs before the 3D module so the page reads even if WebGL is unavailable. */
+(() => {
+  const caps = [...document.querySelectorAll('.cap')], dots = [...document.querySelectorAll('.progress i')];
+  const runway = document.getElementById('runway'), ui = document.getElementById('ui'), hero = document.getElementById('heroTitle'), hint = document.getElementById('scrollHint'), end = document.getElementById('end');
+  const S = window.__stage = { prog: 0, station: 0, doc: 0 };
+  // stations: 0 hero · 1 the order book · 2 old bells in · 3 the pattern · 4 recast · 5 tuned · 6 into Notion · 7 marked done · 8 end
+  const CUT = [0.05, 0.17, 0.29, 0.41, 0.53, 0.65, 0.76, 0.88];
+  function onScroll() {
+    const H = innerHeight, max = Math.max(1, runway.offsetHeight - H);
+    const pr = Math.max(0, Math.min(1, scrollY / max));
+    let st = 0; while (st < CUT.length && pr >= CUT[st]) st++;
+    S.prog = pr; S.station = st; S.doc = Math.max(0, Math.min(1, (scrollY - (runway.offsetHeight - H * 0.9)) / (H * 0.5)));
+    caps.forEach(c => c.classList.toggle('on', Number(c.dataset.i) === st));
+    dots.forEach((d, i) => d.classList.toggle('on', i === st));
+    hero.style.opacity = String(1 - Math.min(1, pr / 0.04));
+    hint.style.opacity = String(pr < 0.02 ? 1 : 0);
+    end.classList.toggle('on', st === 8 && S.doc < 0.5);
+    document.body.classList.toggle('hush', st === 8 && S.doc < 0.5);
+    ui.classList.toggle('off', S.doc >= 0.5);
+  }
+  addEventListener('scroll', onScroll, { passive: true }); addEventListener('resize', onScroll); onScroll();
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  const links = [...document.querySelectorAll('.toc a')];
+  const io2 = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-30% 0px -55% 0px' });
+  document.querySelectorAll('.sec').forEach(s => io2.observe(s));
+})();
+
+/* back to the forest: when the visitor came from the home page, the arrow is a real browser "back" (usually instant, no reload,
+   exactly where they left). Otherwise the link opens the home page at this page's card. */
+(() => {
+  const mark = document.getElementById('mark'); if (!mark) return;
+  const slug = (/#from-([\w-]+)$/.exec(mark.getAttribute('href')) || [])[1];
+  mark.addEventListener('click', e => {
+    let ref; try { ref = new URL(document.referrer); } catch (_) { return; }
+    const home = new URL('../', location.href).pathname;
+    const fromHome = ref.origin === location.origin && [home, home + 'index.html', home + 'index'].includes(ref.pathname);
+    if (!fromHome || history.length < 2) return;
+    e.preventDefault();
+    try { if (slug) sessionStorage.setItem('returnTo', slug); } catch (_) {}
+    history.back();
+  });
+  // in-page links (#doc, #top) scroll without adding history entries, so "back" always means the forest
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || e.defaultPrevented) return;
+    const id = a.getAttribute('href'); e.preventDefault(); if (id === '#') return;
+    const el = id === '#top' ? null : document.querySelector(id), how = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (el) el.scrollIntoView({ behavior: how }); else scrollTo({ top: 0, behavior: how });
+    history.replaceState(null, '', id);
+  });
+})();
+</script>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(hover: none)').matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = t => t * t * (3 - 2 * t);
+const sstep = (a, b, v) => smooth(clamp((v - a) / (b - a), 0, 1));
+const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+let W = innerWidth, H = innerHeight;
+const stage = window.__stage; const SNAP = /snap/.test(location.search);
+// a single NaN pixel would be smeared into a black block by the bloom: zero it where it's made (?nan paints it magenta to find it)
+THREE.ShaderChunk.dithering_fragment += /[?&]nan/.test(location.search) ? '\nif (any(isnan(gl_FragColor)) || any(isinf(gl_FragColor))) gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);' : '\nif (any(isnan(gl_FragColor)) || any(isinf(gl_FragColor))) gl_FragColor = vec4(0.0);';
+const SANS = "'Elms Sans', Archivo, Arial, sans-serif", MONO = "ui-monospace, Menlo, Consolas, monospace", CHALK = "Caveat, 'Segoe Print', 'Bradley Hand', cursive";
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+let seed = 23; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+/* =====================================================================
+   RENDERER · a bell foundry on a winter morning: cold light through the big doors, the furnace's glow, molten bronze
+   ===================================================================== */
+const canvas = document.getElementById('gl');
+canvas.style.opacity = '0'; canvas.style.transition = 'opacity 1.2s ease';
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+const DPR = Math.min(coarse ? 1.25 : 1.5, devicePixelRatio || 1);
+renderer.setPixelRatio(DPR);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.08;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x56627a);
+scene.fog = new THREE.FogExp2(0x66738c, 0.0085);   // the blue hour before sunrise: the yard fades into the snow beyond
+const camera = new THREE.PerspectiveCamera(42, W / H, 0.03, 900);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.55, 0.55, 0.92);
+if (!/[?&]nan/.test(location.search)) composer.addPass(bloom); composer.addPass(new OutputPass());
+
+/* ---- loading ---- */
+const manager = new THREE.LoadingManager();
+manager.onLoad = () => { canvas.style.opacity = '1'; };
+manager.onError = u => console.warn('[foundry] missing', u);
+setTimeout(() => { canvas.style.opacity = '1'; }, 7000);
+const TL = new THREE.TextureLoader(manager);
+const ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+function tex(name, srgb, tile = 0) { const t = TL.load('foundry/' + name); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; if (srgb) t.colorSpace = THREE.SRGBColorSpace; if (tile) t.repeat.set(1 / tile, 1 / tile); return t; }
+const SMALL = new Set(['stove', 'ladder', 'spade', 'sledge', 'easel', 'slate', 'crate', 'mallet', 'lantern', 'lglass']);   // props: 512 px is all they show
+function pbr(base, tile = 0, metal = false) {   // geometry UVs are in metres; tile = how many metres one texture covers
+  const r = SMALL.has(base) ? '512' : '1k';
+  const m = { map: tex(`${base}_diff_${r}.jpg`, true, tile), normalMap: tex(`${base}_nor_${r}.jpg`, false, tile), roughnessMap: tex(`${base}_rough_${r}.jpg`, false, tile) };
+  if (metal) m.metalnessMap = tex(`${base}_metal_${r}.jpg`, false, tile); return m;
+}
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer;
+async function loadPacked(file) {
+  const r = await fetch('foundry/' + file); if (!r.ok) throw new Error(file + ' ' + r.status); const d = await r.json(); const out = {};
+  for (const mat in d) out[mat] = d[mat].parts.map(p => {
+    const q = new Uint16Array(b64(p.p)), nr = new Int8Array(b64(p.nr)), uvq = new Int16Array(b64(p.uv)), ix = p.i32 ? new Uint32Array(b64(p.i)) : new Uint16Array(b64(p.i));
+    const P = new Float32Array(p.n * 3), N = new Float32Array(p.n * 3), U = new Float32Array(p.n * 2);
+    for (let i = 0; i < p.n; i++) { for (let c = 0; c < 3; c++) { P[i * 3 + c] = p.lo[c] + q[i * 3 + c] / 65535 * p.sc[c]; N[i * 3 + c] = nr[i * 3 + c] / 127; } U[i * 2] = uvq[i * 2] / 8000; U[i * 2 + 1] = uvq[i * 2 + 1] / 8000; }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.BufferAttribute(N, 3)); g.setAttribute('uv', new THREE.BufferAttribute(U, 2)); g.setIndex(new THREE.BufferAttribute(ix, 1));
+    g.name = p.name; return g;
+  });
+  return out;
+}
+const footTo0 = g => { g.computeBoundingBox(); const b = g.boundingBox; g.translate(-(b.min.x + b.max.x) / 2, -b.min.y, -(b.min.z + b.max.z) / 2); return g; };   // centre a scanned part on its own footprint
+function canvasTex(w, h, draw, opts = {}) {   // a canvas texture that redraws when the web fonts arrive
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  const t = new THREE.CanvasTexture(c); t.colorSpace = opts.linear ? THREE.LinearSRGBColorSpace : THREE.SRGBColorSpace; t.anisotropy = ANISO;
+  if (opts.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; }
+  const redraw = (...a) => { x.save(); x.textAlign = 'left'; x.textBaseline = 'alphabetic'; draw(x, w, h, ...a); x.restore(); t.needsUpdate = true; };
+  redraw(); t.userData.redraw = redraw; if (!opts.static && document.fonts) document.fonts.ready.then(() => redraw());
+  return t;
+}
+function wrapText(x, text, X, Y, maxW, lh, maxLines = 99) {
+  const words = text.split(' '); let line = '', y = Y, n = 0;
+  for (const w of words) { const t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { x.fillText(line, X, y); line = w; y += lh; if (++n >= maxLines) return y; } else line = t; }
+  if (line) x.fillText(line, X, y); return y + lh;
+}
+function grain(x, w, h, n, a = 0.05, col = '90,70,40') { let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; for (let i = 0; i < n; i++) { x.fillStyle = `rgba(${col},${r() * a})`; x.fillRect(r() * w, r() * h, 2, 2); } }
+const metresUV = (g, tile = 1) => {   // box UVs from world metres, so textures keep their scale on every face
+  g.computeVertexNormals(); const p = g.attributes.position, n = g.attributes.normal, uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) { const nx = Math.abs(n.getX(i)), ny = Math.abs(n.getY(i)), x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    if (ny > 0.5) uv.setXY(i, x / tile, z / tile); else if (nx > 0.5) uv.setXY(i, z / tile, y / tile); else uv.setXY(i, x / tile, y / tile); }
+  return g;
+};
+const box = (w, h, d, x, y, z) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); return metresUV(g); };
+const mesh = (geo, mat, parent, x = 0, y = 0, z = 0, sh = true) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = sh; m.receiveShadow = true; (parent || scene).add(m); return m; };
+
+/* ---- light from a workshop: Poly Haven "Industrial Workshop Foundry", desaturated and warmed when converted; reflections and fill only ---- */
+const pmrem = new THREE.PMREMGenerator(renderer);
+const ENVK = 0.5, ENVMAX = 5;
+fetch('foundry/foundry_env.json').then(r => r.json()).then(d => {
+  const src = new Uint8Array(b64(d.d)), w = d.w, h = d.h, out = new Uint16Array(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4, o = ((h - 1 - y) * w + x) * 4, e = src[i + 3], f0 = e ? Math.pow(2, e - 136) * ENVK : 0, lum = (src[i] + src[i + 1] + src[i + 2]) / 3 * f0, f = lum > ENVMAX ? f0 * ENVMAX / lum : f0;
+    out[o] = THREE.DataUtils.toHalfFloat(src[i] * f); out[o + 1] = THREE.DataUtils.toHalfFloat(src[i + 1] * f); out[o + 2] = THREE.DataUtils.toHalfFloat(src[i + 2] * f); out[o + 3] = THREE.DataUtils.toHalfFloat(1);
+  }
+  const t = new THREE.DataTexture(out, w, h, THREE.RGBAFormat, THREE.HalfFloatType);
+  t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.LinearSRGBColorSpace; t.magFilter = t.minFilter = THREE.LinearFilter; t.needsUpdate = true;
+  scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose();
+}).catch(err => console.warn('[foundry] reflections unavailable:', err && err.message));
+
+/* =====================================================================
+   THE HALL: an old bell foundry on a winter morning. x runs across (-5.5 left … 5.5 right, standing in the doorway looking in),
+   z from the back wall (-5) to the big doors (+5), y up from the floor. A brick hall under a timber roof with snow on it; the
+   doors stand open on a snowy yard. Cold daylight comes in at the doors and the high windows; the furnace glows on the left.
+   ===================================================================== */
+const R = { x0: -5.5, x1: 5.5, z0: -5.0, z1: 5.0, h: 4.6, ridge: 7.2, t: 0.35 };
+const OUTX = R.x1 + R.t, TANR = (R.ridge - R.h) / OUTX;                     // the walls' outer face; the roof's pitch
+const roofY = x => R.ridge - Math.abs(x) * TANR;                           // the underside of the roof over x
+const DOOR = { x0: -1.9, x1: 1.9, y1: 4.0 };
+const WIN_R = [-3.6, -1.2, 1.2, 3.6], WIN_L = [-0.4], WIN = { w: 1.1, y0: 2.0, y1: 3.9 };   // the high windows: their centres along z
+const FURN = { x0: R.x0, x1: -3.3, z0: -3.9, z1: -1.3, h: 2.5, mz: -2.6 };  // the furnace against the left wall; its mouth faces the hall (+x)
+const PIT = { x: 0.3, z: -2.6, r: 1.25 };                                  // the casting ring
+const LATHE = { x: 3.55, z: -2.5 };
+const FRAME = { x: 3.2, z: 2.2 };                                          // the bell frame, right of the doors
+const SLATE = { x: R.x0 + 0.03, z: 2.25, y0: 0.78, w: 3.3, h: 2.36 };      // the order slate on the left wall
+const YB = { x: -3.1, z: 7.5 };                                            // the yard bell on its post
+
+/* ---- materials ---- */
+function tint(m, sat, mul = 1) {   // a uniform (not a baked constant: programs are shared) to take the colour out of a scan
+  m.onBeforeCompile = sh => { sh.uniforms.uSat = { value: sat }; sh.uniforms.uMul = { value: mul };
+    sh.fragmentShader = 'uniform float uSat, uMul;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#ifdef USE_MAP
+      vec4 sampledDiffuseColor = texture2D( map, vMapUv );
+      sampledDiffuseColor.rgb = mix(vec3(dot(sampledDiffuseColor.rgb, vec3(0.299, 0.587, 0.114))), sampledDiffuseColor.rgb, uSat) * uMul;
+      diffuseColor *= sampledDiffuseColor;
+    #endif`); };
+  m.customProgramCacheKey = () => 'tint';
+  return m;
+}
+const brickM = new THREE.MeshStandardMaterial({ ...pbr('brick', 1.7), color: 0xa89189, roughness: 1, envMapIntensity: 0.35 });
+const brickInM = tint(new THREE.MeshStandardMaterial({ ...pbr('brick', 1.7), color: 0x8f7d76, roughness: 1, envMapIntensity: 0.3 }), 0.75);   // inside: older, sootier
+const sootM = tint(new THREE.MeshStandardMaterial({ ...pbr('brick', 1.2), color: 0x4a403c, roughness: 1, envMapIntensity: 0.25 }), 0.5);      // the furnace: black with heat
+const dirtM = tint(new THREE.MeshStandardMaterial({ ...pbr('dirt', 2.4), color: 0x7d6c5c, roughness: 1, envMapIntensity: 0.3 }), 0.55);      // moulding sand, trodden dark
+const sandM = tint(new THREE.MeshStandardMaterial({ ...pbr('dirt', 1.2), color: 0x9a8268, roughness: 1, envMapIntensity: 0.3 }), 0.7);
+const oakM = new THREE.MeshStandardMaterial({ ...pbr('oak', 1.3), color: 0xc8b8a6, roughness: 1, envMapIntensity: 0.35 });
+const oakLtM = new THREE.MeshStandardMaterial({ ...pbr('oak', 1.0), color: 0xf0dcc0, roughness: 0.95, envMapIntensity: 0.4 });
+const doorM = new THREE.MeshStandardMaterial({ ...pbr('door', 1.9), color: 0xc9d4cf, roughness: 1, envMapIntensity: 0.35 });
+const snowM = new THREE.MeshStandardMaterial({ ...pbr('snow', 3.0), color: 0xf4f7fc, roughness: 0.9, envMapIntensity: 0.2, emissive: 0x7c8fb4, emissiveIntensity: 0.1 });
+const snowNearM = new THREE.MeshStandardMaterial({ ...pbr('snow', 1.4), color: 0xf4f7fc, roughness: 0.9, envMapIntensity: 0.2, emissive: 0x7c8fb4, emissiveIntensity: 0.1 });
+const loamM = new THREE.MeshStandardMaterial({ ...pbr('loam', 0.9), color: 0xc2a088, roughness: 1, envMapIntensity: 0.3 });
+const ironM = tint(new THREE.MeshStandardMaterial({ ...pbr('plate', 0.8, true), color: 0x5a5856, roughness: 0.75, metalness: 0.75, envMapIntensity: 0.6 }), 0.0);
+const ironDkM = new THREE.MeshStandardMaterial({ color: 0x24221f, roughness: 0.6, metalness: 0.6, envMapIntensity: 0.6, roughnessMap: tex('plate_rough_1k.jpg', false, 0.6) });
+const steelM = new THREE.MeshStandardMaterial({ color: 0x8b8e90, roughness: 0.35, metalness: 0.9, envMapIntensity: 0.9 });
+const ropeM = new THREE.MeshStandardMaterial({ color: 0x9a845f, roughness: 1 });
+const blackM = new THREE.MeshStandardMaterial({ color: 0x151413, roughness: 0.7, metalness: 0.2 });
+for (const m of [brickM, brickInM, dirtM, oakM, doorM, loamM]) m.normalScale.set(0.9, 0.9);
+const paperM = (map, extra = {}) => new THREE.MeshStandardMaterial({ map, roughness: 0.9, side: THREE.DoubleSide, ...extra });
+const flat = (w, h, map, parent, x, y, z, rx, ry, rz, extra) => { const m = mesh(new THREE.PlaneGeometry(w, h), paperM(map, extra), parent, x, y, z, false); m.rotation.set(rx, ry, rz); return m; };
+function multi(geo, mats, parent, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mats); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; (parent || scene).add(m); return m; }
+
+/* ---- the sky: Poly Haven "Snowy Park 01" on a far sphere, drawn through the same tone mapping as the yard so the two meet ---- */
+const skyTex = TL.load('foundry/sky.jpg'); skyTex.colorSpace = THREE.SRGBColorSpace;
+const sky = new THREE.Mesh(new THREE.SphereGeometry(520, 64, 32), new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, fog: false, depthWrite: false, color: new THREE.Color(0.62, 0.7, 0.95) }));   // graded down to the blue hour
+sky.scale.x = -1; sky.rotation.y = 0.35; sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);
+
+/* ---- the yard: snow out to the haze, the cart's tracks to the doors, drifts against the walls ---- */
+{ const g = new THREE.PlaneGeometry(900, 900); g.rotateX(-Math.PI / 2); metresUV(g); const m = mesh(g, snowM, null, 0, -0.02, 0, false); m.receiveShadow = true; }
+const trackTex = canvasTex(256, 1024, (x, w, h) => {   // two wheel ruts and the trodden snow between, packed and greyer
+  x.clearRect(0, 0, w, h); let s = 31; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (const cx of [62, 194]) for (let y = 0; y < h; y += 2) { const a = 0.32 + r() * 0.1; x.fillStyle = `rgba(92,100,116,${a})`; x.fillRect(cx - 13 + (r() - 0.5) * 3, y, 26, 2); }
+  for (let i = 0; i < 260; i++) { x.fillStyle = `rgba(90,96,110,${0.04 + r() * 0.08})`; x.beginPath(); x.ellipse(70 + r() * 116, r() * h, 10 + r() * 14, 16 + r() * 18, 0, 0, 7); x.fill(); }   // footprints
+  const fade = x.createLinearGradient(0, 0, 0, h); fade.addColorStop(0, 'rgba(0,0,0,1)'); fade.addColorStop(0.75, 'rgba(0,0,0,1)'); fade.addColorStop(1, 'rgba(0,0,0,0)');
+  x.globalCompositeOperation = 'destination-in'; x.fillStyle = fade; x.fillRect(0, 0, w, h); x.globalCompositeOperation = 'source-over';
+}, { static: true });
+{ const t = mesh(new THREE.PlaneGeometry(1.5, 14), new THREE.MeshStandardMaterial({ map: trackTex, transparent: true, depthWrite: false, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -2 }), null, -0.3, 0.004, R.z1 + 7.2, false);
+  t.rotation.x = -Math.PI / 2; t.rotation.z = Math.PI; t.receiveShadow = true; }
+const drift = (x, z, sx, sy, sz, ry = 0) => { const d = mesh(new THREE.SphereGeometry(1, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), snowNearM, null, x, -0.01, z, false); d.scale.set(sx, sy, sz); d.rotation.y = ry; d.receiveShadow = true; return d; };
+for (const [x, z, sx, sy, sz] of [[-4.2, R.z1 + R.t + 0.8, 1.7, 0.36, 0.75], [4.0, R.z1 + R.t + 0.85, 1.9, 0.42, 0.8], [OUTX + 0.85, 0.5, 0.8, 0.4, 3.2], [-OUTX - 0.85, -1.6, 0.8, 0.45, 2.8], [-OUTX - 0.75, 3.6, 0.7, 0.36, 1.6], [6.8, 9.0, 2.2, 0.3, 1.4], [-7.5, 11.5, 2.8, 0.45, 1.8]]) drift(x, z, sx, sy, sz);   // (clear of the walls: inside, a drift would show through)
+
+/* ---- the shell: walls of brick, the doors, high windows, a round window in the back gable ---- */
+function wallShape(w0, w1, top, holes) {   // outline in (u, y); top: [[u, y], …] along the top from w1 back to w0
+  const sh = new THREE.Shape(); sh.moveTo(w0, 0); sh.lineTo(w1, 0); for (const [u, y] of top) sh.lineTo(u, y); sh.lineTo(w0, 0);
+  for (const h of holes) { const p = new THREE.Path(); if (h.r) p.absarc(h.u, h.y, h.r, 0, Math.PI * 2, true); else { p.moveTo(h.u0, h.y0); p.lineTo(h.u1, h.y0); p.lineTo(h.u1, h.y1); p.lineTo(h.u0, h.y1); p.closePath(); } sh.holes.push(p); }
+  return sh;
+}
+const gableTop = [[OUTX, R.h], [0, R.ridge], [-OUTX, R.h]];
+{ // front and back gables (extruded outward from the room's edge), lined with the sooty brick inside
+  const front = wallShape(-OUTX, OUTX, gableTop, [{ u0: DOOR.x0, u1: DOOR.x1, y0: 0, y1: DOOR.y1 }, { u: 0, y: 5.55, r: 0.55 }]);
+  const back = wallShape(-OUTX, OUTX, gableTop, [{ u: 0, y: 5.55, r: 0.6 }]);
+  multi(metresUV(new THREE.ExtrudeGeometry(front, { depth: R.t, bevelEnabled: false })), brickM, null, 0, 0, R.z1);
+  mesh(new THREE.ShapeGeometry(front), brickInM, null, 0, 0, R.z1 - 0.002).rotation.y = Math.PI;   // turned to face into the room (the outline is symmetric)
+  const bk = multi(metresUV(new THREE.ExtrudeGeometry(back, { depth: R.t, bevelEnabled: false })), brickM, null, 0, 0, R.z0 - R.t);
+  mesh(new THREE.ShapeGeometry(back), brickInM, null, 0, 0, R.z0 + 0.002);   // faces +z, into the room
+  // the sides, rotated to run along z: (u, y, w) → (-w, y, u)
+  for (const side of [1, -1]) {
+    const holes = (side > 0 ? WIN_R : WIN_L).map(z => ({ u0: z - WIN.w / 2, u1: z + WIN.w / 2, y0: WIN.y0, y1: WIN.y1 }));
+    const sh = wallShape(R.z0 - R.t, R.z1 + R.t, [[R.z1 + R.t, R.h], [R.z0 - R.t, R.h]], holes);
+    const g = metresUV(new THREE.ExtrudeGeometry(sh, { depth: R.t, bevelEnabled: false })); g.rotateY(-Math.PI / 2);
+    multi(g, brickM, null, side > 0 ? OUTX : R.x0, 0, 0);
+    const lin = new THREE.ShapeGeometry(sh); lin.rotateY(side > 0 ? -Math.PI / 2 : Math.PI / 2); if (side < 0) lin.scale(1, 1, -1);
+    mesh(lin, brickInM, null, side > 0 ? R.x1 - 0.002 : R.x0 + 0.002, 0, 0, false);
+  }
+}
+// window frames and their small panes (each frame a centimetre into the opening: a face flush with the wall's edge flickers)
+const glassM = new THREE.MeshStandardMaterial({ color: 0xd8e4f0, roughness: 0.08, metalness: 0, transparent: true, opacity: 0.18, envMapIntensity: 1.2, depthWrite: false, side: THREE.DoubleSide });
+function windowAt(x, z, axis) {   // axis 'x': the window lies in a side wall
+  const parts = [], w = WIN.w, h = WIN.y1 - WIN.y0, cy = (WIN.y0 + WIN.y1) / 2;
+  const b = (ww, hh, u, y) => axis === 'x' ? box(0.08, hh, ww, x, y, z + u) : box(ww, hh, 0.08, x + u, y, z);
+  parts.push(b(w + 0.02, 0.07, 0, WIN.y0 + 0.025), b(w + 0.02, 0.07, 0, WIN.y1 - 0.025), b(0.07, h, -w / 2 + 0.025, cy), b(0.07, h, w / 2 - 0.025, cy));
+  for (let i = 1; i < 3; i++) parts.push(b(0.03, h, -w / 2 + w * i / 3, cy));
+  for (let j = 1; j < 5; j++) parts.push(b(w, 0.03, 0, WIN.y0 + h * j / 5));
+  mesh(mergeGeometries(parts), ironDkM, null);
+  const gl = mesh(new THREE.PlaneGeometry(w, h), glassM, null, x, cy, z, false); if (axis === 'x') gl.rotation.y = Math.PI / 2; gl.renderOrder = 3;
+  // the sill outside, with snow on it
+  const sx = axis === 'x' ? Math.sign(x) : 0;
+  if (sx) { mesh(box(0.22, 0.06, w + 0.2, x + sx * 0.2, WIN.y0 - 0.03, z), oakM, null); mesh(box(0.2, 0.07, w + 0.16, x + sx * 0.21, WIN.y0 + 0.03, z), snowNearM, null, 0, 0, 0, false); }
+}
+for (const z of WIN_R) windowAt(R.x1 + R.t / 2, z, 'x');
+for (const z of WIN_L) windowAt(R.x0 - R.t / 2, z, 'x');
+for (const zz of [R.z1 + R.t / 2, R.z0 - R.t / 2]) {   // the round gable windows: an iron ring and glass
+  const ring = new THREE.TorusGeometry(zz > 0 ? 0.55 : 0.6, 0.05, 8, 40); mesh(ring, ironDkM, null, 0, 5.55, zz);
+  const gl = mesh(new THREE.CircleGeometry(zz > 0 ? 0.55 : 0.6, 40), glassM, null, 0, 5.55, zz, false); gl.renderOrder = 3;
+  for (const r of [0, Math.PI / 2]) { const bar = mesh(box(1.1, 0.03, 0.03, 0, 0, 0), ironDkM, null, 0, 5.55, zz); bar.rotation.z = r; }
+}
+// the doorway: an oak lintel and posts, a sill, the two leaves swung open on the yard, icicles under the lintel
+{ const T = R.t + 0.1, z = R.z1 + R.t / 2;
+  mesh(mergeGeometries([box(DOOR.x1 - DOOR.x0 + 0.6, 0.32, T, 0, DOOR.y1 + 0.15, z), box(0.24, DOOR.y1, T, DOOR.x0 - 0.1, DOOR.y1 / 2, z), box(0.24, DOOR.y1, T, DOOR.x1 + 0.1, DOOR.y1 / 2, z)]), oakM, null);
+  mesh(box(DOOR.x1 - DOOR.x0 + 0.6, 0.12, T + 0.08, 0, DOOR.y1 + 0.37, z + 0.03), snowNearM, null, 0, 0, 0, false);   // snow on the lintel
+  mesh(box(DOOR.x1 - DOOR.x0, 0.06, R.t + 0.3, 0, 0.0, z), oakM, null);                                                 // the sill
+  const leafW = (DOOR.x1 - DOOR.x0) / 2, leafG = () => { const parts = [box(leafW - 0.02, DOOR.y1 - 0.06, 0.07, leafW / 2, DOOR.y1 / 2, 0)];
+    for (const y of [0.55, DOOR.y1 / 2, DOOR.y1 - 0.55]) parts.push(box(leafW - 0.1, 0.16, 0.05, leafW / 2, y, 0.055));   // ledges
+    const br = box(0.14, Math.hypot(leafW - 0.2, DOOR.y1 / 2 - 0.55) , 0.05, 0, 0, 0); br.rotateZ(-Math.atan2(leafW - 0.2, DOOR.y1 / 2 - 0.55)); br.translate(leafW / 2, (0.55 + DOOR.y1 / 2) / 2, 0.055); parts.push(br);
+    return mergeGeometries(parts); };
+  for (const s of [-1, 1]) {   // hinged at the jambs, swung out ~105° against the front wall
+    const g = new THREE.Group(); g.position.set(s > 0 ? DOOR.x1 + 0.02 : DOOR.x0 - 0.02, 0.03, R.z1 + R.t + 0.06); g.rotation.y = s > 0 ? Math.PI + 1.83 : -1.83; scene.add(g);
+    mesh(leafG(), doorM, g);
+    for (const y of [0.5, DOOR.y1 - 0.5]) mesh(box(0.5, 0.05, 0.02, 0.25, y, 0.09), ironDkM, g);   // strap hinges
+    mesh(box(leafW - 0.02, 0.16, 0.08, leafW / 2, DOOR.y1 + 0.02, 0.02), snowNearM, g, 0, 0, 0, false);
+  }
+  // icicles along the lintel and the eaves of the front
+  const ice = new THREE.MeshPhysicalMaterial({ color: 0xe6f2ff, roughness: 0.08, metalness: 0, transmission: 0.0, transparent: true, opacity: 0.62, envMapIntensity: 1.6, emissive: 0xaec8e8, emissiveIntensity: 0.12 });
+  const cone = new THREE.ConeGeometry(1, 1, 7); cone.rotateX(Math.PI); cone.translate(0, -0.5, 0);
+  const icicles = new THREE.InstancedMesh(cone, ice, 40), M = new THREE.Matrix4(), q = new THREE.Quaternion();
+  let n = 0;
+  for (let i = 0; i < 18; i++) { const x = DOOR.x0 - 0.25 + (DOOR.x1 - DOOR.x0 + 0.5) * (i + rnd() * 0.6) / 18, l = 0.08 + rnd() * rnd() * 0.42, r = 0.012 + l * 0.05; M.compose(V(x, DOOR.y1 - 0.01, R.z1 + R.t + 0.08), q, V(r, l, r)); icicles.setMatrixAt(n++, M); }
+  for (let i = 0; i < 22; i++) { const s = i < 11 ? -1 : 1, z = R.z1 + R.t + 0.6 - (i % 11 + rnd() * 0.6) / 11 * 4.2, l = 0.06 + rnd() * rnd() * 0.55, r = 0.012 + l * 0.05;   // along both eaves, toward the front
+    M.compose(V(s * (OUTX + 0.44), roofY(OUTX + 0.44) - 0.02, z), q, V(r, l, r)); icicles.setMatrixAt(n++, M); }
+  icicles.count = n; scene.add(icicles);
+}
+
+/* ---- the roof: planked underneath, snow on top; trusses across the hall; the chimney ---- */
+const ROOF = { th: 0.22, snow: 0.2, over: 0.48, z0: R.z0 - R.t - 0.55, z1: R.z1 + R.t + 0.62 };
+for (const s of [1, -1]) {
+  const run = OUTX + ROOF.over, L = Math.hypot(run, run * TANR), a = Math.atan(TANR);
+  const n = V(s * Math.sin(a), Math.cos(a), 0);
+  const zc = (ROOF.z0 + ROOF.z1) / 2, D = ROOF.z1 - ROOF.z0;
+  const yAt = u => R.ridge - u * TANR;              // underside height at |x| = u
+  const c0 = V(s * run / 2, yAt(run / 2), zc);       // centre of the underside
+  const slab = new THREE.BoxGeometry(L, ROOF.th, D); metresUV(slab);
+  const planks = multi(slab, [oakM, oakM, oakM, oakM, oakM, oakM], null);
+  planks.position.copy(c0).addScaledVector(n, ROOF.th / 2); planks.rotation.z = -s * a;
+  const sn = multi(new THREE.BoxGeometry(L + 0.02, ROOF.snow, D + 0.04), snowNearM, null);
+  sn.position.copy(c0).addScaledVector(n, ROOF.th + ROOF.snow / 2 - 0.01); sn.rotation.z = -s * a; sn.receiveShadow = true;
+  const lip = new THREE.CylinderGeometry(ROOF.snow * 0.62, ROOF.snow * 0.62, D + 0.04, 16, 1); lip.rotateX(Math.PI / 2);   // the rounded snow overhang at the eave
+  const eave = V(s * run, yAt(run), zc).addScaledVector(n, ROOF.th + ROOF.snow * 0.4); mesh(lip, snowNearM, null, eave.x + s * 0.02, eave.y, eave.z, false);
+}
+// the ridge: a capping of snow
+{ const c = new THREE.CylinderGeometry(0.2, 0.2, ROOF.z1 - ROOF.z0 + 0.04, 16); c.rotateX(Math.PI / 2); mesh(c, snowNearM, null, 0, R.ridge + ROOF.th + 0.08, (ROOF.z0 + ROOF.z1) / 2, false); }
+// trusses: a tie beam across, a king post, two struts; rafters under the planks
+const TRUSS_Z = [-3.75, -1.25, 1.25, 3.75];
+{ const parts = [];
+  for (const z of TRUSS_Z) {
+    parts.push(box(R.x1 - R.x0 + 0.1, 0.26, 0.24, 0, R.h - 0.13, z), box(0.22, R.ridge - R.h, 0.22, 0, (R.h + R.ridge) / 2 - 0.1, z));
+    for (const s of [1, -1]) {
+      const raf = new THREE.BoxGeometry(Math.hypot(OUTX, OUTX * TANR), 0.24, 0.2); raf.rotateZ(-s * Math.atan(TANR)); raf.translate(s * OUTX / 2, roofY(OUTX / 2) - 0.12, z); parts.push(metresUV(raf));
+      const sx0 = 0.1, sy0 = R.h + 0.4, sx1 = s * 2.6, sy1 = roofY(2.6) - 0.22, len = Math.hypot(sx1 - s * sx0, sy1 - sy0);
+      const st = new THREE.BoxGeometry(0.16, len, 0.16); st.rotateZ(Math.atan2(-(sx1 - s * sx0), sy1 - sy0)); st.translate((sx1 + s * sx0) / 2, (sy0 + sy1) / 2, z); parts.push(metresUV(st));
+    }
+  }
+  const rb = box(0.2, 0.24, R.z1 - R.z0 + 0.6, 0, R.ridge - 0.14, 0); parts.push(rb);
+  mesh(mergeGeometries(parts), oakM, null);
+}
+// the furnace's chimney, up through the left slope and well above it
+const CHIM = { x: -4.4, z: FURN.mz, w: 0.95, top: 9.3 };
+mesh(box(CHIM.w, CHIM.top - FURN.h, CHIM.w, CHIM.x, (CHIM.top + FURN.h) / 2, CHIM.z), sootM, null);
+mesh(box(CHIM.w + 0.16, 0.16, CHIM.w + 0.16, CHIM.x, CHIM.top - 0.05, CHIM.z), brickM, null);
+mesh(box(CHIM.w + 0.2, 0.12, CHIM.w + 0.2, CHIM.x, roofY(CHIM.x + CHIM.w / 2) + ROOF.th + ROOF.snow + 0.02, CHIM.z), snowNearM, null, 0, 0, 0, false);
+
+/* ---- the floor: trodden sand, an iron plate at the doorway ---- */
+{ const g = new THREE.PlaneGeometry(R.x1 - R.x0, R.z1 - R.z0); g.rotateX(-Math.PI / 2); metresUV(g); const f = mesh(g, dirtM, null, 0, 0, 0, false); f.receiveShadow = true;
+  mesh(box(DOOR.x1 - DOOR.x0 - 0.2, 0.012, 1.2, 0, 0.006, R.z1 - 0.65), ironM, null);
+  // snow blown in over the threshold, thinning into the hall: a soft-edged dusting
+  const dustTex = canvasTex(512, 256, (x, w, h) => { x.clearRect(0, 0, w, h); let s = 9; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 900; i++) { const X = r() * w, Y = h - Math.pow(r(), 1.8) * h, a = 0.05 + 0.25 * (Y / h); x.fillStyle = `rgba(240,244,252,${a})`; x.beginPath(); x.ellipse(X, Y, 4 + r() * 22, 2 + r() * 8, 0, 0, 7); x.fill(); } }, { static: true });
+  const dm = mesh(new THREE.PlaneGeometry(DOOR.x1 - DOOR.x0 + 0.6, 1.6), new THREE.MeshStandardMaterial({ map: dustTex, transparent: true, depthWrite: false, roughness: 0.9, polygonOffset: true, polygonOffsetFactor: -3 }), null, 0, 0.013, R.z1 - 0.8, false);
+  dm.rotation.x = -Math.PI / 2; dm.receiveShadow = true; }
+
+/* ---- light: overcast daylight at the doors and windows, the sky's fill, the furnace, lanterns ---- */
+const dayDir = V(0.46, 0.62, 0.64).normalize();
+const day = new THREE.DirectionalLight(0xaabfe8, 0.95);
+day.castShadow = true; day.shadow.mapSize.set(coarse ? 1024 : 2048, coarse ? 1024 : 2048);
+{ const c = day.shadow.camera; c.left = -12; c.right = 12; c.top = 12; c.bottom = -12; c.near = 1; c.far = 70; c.updateProjectionMatrix(); }
+day.shadow.bias = -0.0006; day.shadow.normalBias = 0.03; day.shadow.radius = 4;
+day.target.position.set(0, 0, 1); day.position.copy(day.target.position).addScaledVector(dayDir, 35); scene.add(day, day.target);
+const hemi = new THREE.HemisphereLight(0x90a6d0, 0x2c2622, 0.42); scene.add(hemi);
+const doorFill = new THREE.PointLight(0xa9bde8, 3.2, 10, 1.6); doorFill.position.set(0.2, 2.4, R.z1 - 1.1); scene.add(doorFill);   // the blue light off the snow, in at the doors
+const hallFill = new THREE.PointLight(0x8aa4d8, 3.0, 13, 1.4); hallFill.position.set(1.2, 3.8, -0.4); scene.add(hallFill);    // the windows' cold light, so the shadows aren't only black
+const spill = new THREE.PointLight(0xffa25a, 9, 12, 1.5); spill.position.set(0.0, 1.5, R.z1 + 0.35); scene.add(spill);         // the furnace's glow spilling out at the doors onto the snow
+const FURN_MOUTH = V(FURN.x1 + 0.3, 0.95, FURN.mz);
+const fireLight = new THREE.PointLight(0xff7428, 26, 15, 1.7); fireLight.position.copy(FURN_MOUTH); scene.add(fireLight);
+if (!coarse) { fireLight.castShadow = true; fireLight.shadow.mapSize.set(512, 512); fireLight.shadow.bias = -0.004; fireLight.shadow.radius = 3; fireLight.shadow.camera.near = 0.2; }
+const meltLight = new THREE.PointLight(0xff8a34, 0, 7, 1.8); scene.add(meltLight);
+
+/* ---- shafts of cold light from the right-hand windows, with dust turning in them ---- */
+const beamM = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false,
+  uniforms: { uTime: { value: 0 }, uK: { value: 1 } },
+  vertexShader: 'varying vec2 vUv; varying vec3 vW; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
+  fragmentShader: `uniform float uTime, uK; varying vec2 vUv; varying vec3 vW;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h(i), h(i + vec2(1, 0)), f.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), f.x), f.y); }
+    void main(){
+      float edge = pow(clamp(sin(3.14159 * clamp(vUv.x, 0.0, 1.0)), 0.0, 1.0), 1.2);
+      float along = smoothstep(0.0, 0.1, vUv.y) * (1.0 - smoothstep(0.45, 1.0, vUv.y));
+      float floorFade = smoothstep(0.0, 0.6, vW.y);
+      float drift = 0.55 + 0.45 * n(vec2(vUv.x * 5.0 + uTime * 0.04, vUv.y * 3.0 - uTime * 0.025));
+      float a = clamp(edge * along * floorFade * drift * 0.05 * uK, 0.0, 1.0);
+      gl_FragColor = vec4(vec3(0.82, 0.9, 1.0) * a, a);
+    }` });
+const beams = (() => {
+  const g = new THREE.Group(); scene.add(g); const L = 5.2, dir = dayDir.clone().negate();
+  for (const z of WIN_R) {
+    const x = R.x1 + 0.02, corners = [V(x, WIN.y0, z - WIN.w / 2 + 0.04), V(x, WIN.y0, z + WIN.w / 2 - 0.04), V(x, WIN.y1, z + WIN.w / 2 - 0.04), V(x, WIN.y1, z - WIN.w / 2 + 0.04)];
+    const pos = [], uv = [], idx = [];
+    for (let s = 0; s < 4; s++) { const a = corners[s], b = corners[(s + 1) % 4], o = pos.length / 3;
+      for (const [p, u, v] of [[a, 0, 0], [b, 1, 0], [a.clone().addScaledVector(dir, L), 0, 1], [b.clone().addScaledVector(dir, L), 1, 1]]) { pos.push(p.x, p.y, p.z); uv.push(u, v); }
+      idx.push(o, o + 1, o + 2, o + 1, o + 3, o + 2); }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx);
+    const m = new THREE.Mesh(geo, beamM); m.renderOrder = 5; m.frustumCulled = false; g.add(m);
+  }
+  return g;
+})();
+const dust = (() => {   // motes: in the window light, and the warm ones over the furnace
+  const N = 420, P = new Float32Array(N * 3), S = new Float32Array(N), C = new Float32Array(N), dir = dayDir.clone().negate();
+  for (let i = 0; i < N; i++) {
+    let p; if (i < 300) { const z = WIN_R[i % 4] + (rnd() - 0.5) * WIN.w; p = V(R.x1, lerp(WIN.y0, WIN.y1, rnd()), z).addScaledVector(dir, 0.2 + rnd() * 3.4); if (p.y < 0.3) p.y = 0.3 + rnd() * 0.6; C[i] = 0; }
+    else { p = V(lerp(FURN.x1, PIT.x + 1, rnd()), 0.8 + rnd() * 3, lerp(FURN.z0, FURN.z1, rnd())); C[i] = 1; }
+    P.set([p.x, p.y, p.z], i * 3); S[i] = rnd(); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('seed', new THREE.BufferAttribute(S, 1)); g.setAttribute('warm', new THREE.BufferAttribute(C, 1));
+  const m = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uTime: { value: 0 }, uScale: { value: H * DPR }, uHeat: { value: 0 } },
+    vertexShader: `attribute float seed, warm; uniform float uTime, uScale, uHeat; varying float vA, vW;
+      void main(){ vec3 p = position; p.x += sin(uTime * 0.21 + seed * 40.0) * 0.07; p.y += sin(uTime * 0.13 + seed * 17.0) * 0.08 + fract(uTime * (0.008 + warm * 0.05) + seed) * (0.15 + warm * 1.2); p.z += cos(uTime * 0.17 + seed * 23.0) * 0.07;
+        vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = uScale * 0.0017 * (0.6 + seed) * (1.0 - warm * 0.35) / max(0.2, -mv.z);
+        vA = (0.5 + 0.5 * sin(uTime * (0.7 + seed) + seed * 9.0)) * (warm > 0.5 ? 0.5 + uHeat : 1.0); vW = warm; }`,
+    fragmentShader: `varying float vA, vW; void main(){ vec2 d = gl_PointCoord - 0.5; float a = smoothstep(0.5, 0.0, length(d)) * 0.45 * vA; vec3 c = mix(vec3(0.9, 0.95, 1.0), vec3(1.0, 0.55, 0.2), vW); gl_FragColor = vec4(c * a, a); }` });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; pts.renderOrder = 6; scene.add(pts); return m;
+})();
+
+/* ---- snow falling on the yard and over the roof (none inside the hall) ---- */
+const snowfall = (() => {
+  const N = coarse ? 2600 : 5200, P = new Float32Array(N * 3), S = new Float32Array(N);
+  for (let i = 0; i < N; i++) { P.set([lerp(-22, 22, rnd()), rnd() * 14, lerp(-14, 34, rnd())], i * 3); S[i] = rnd(); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('seed', new THREE.BufferAttribute(S, 1));
+  const m = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, uniforms: { uTime: { value: 0 }, uScale: { value: H * DPR } },
+    vertexShader: `attribute float seed; uniform float uTime, uScale; varying float vA;
+      void main(){ vec3 p = position; float sp = 0.45 + seed * 0.35;
+        p.y = mod(p.y - uTime * sp, 14.0); p.x += sin(uTime * 0.5 + seed * 30.0) * 0.35 + uTime * 0.12; p.x = mod(p.x + 22.0, 44.0) - 22.0; p.z += cos(uTime * 0.4 + seed * 21.0) * 0.3;
+        float roof = ${R.ridge.toFixed(2)} + 0.5 - abs(p.x) * ${TANR.toFixed(4)};
+        float inside = step(abs(p.x), ${(OUTX + 0.5).toFixed(2)}) * step(p.z, ${(R.z1 + R.t + 0.6).toFixed(2)}) * step(${(R.z0 - R.t - 0.6).toFixed(2)}, p.z) * step(p.y, roof);
+        vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv;
+        gl_PointSize = (1.0 - inside) * uScale * 0.016 * (0.55 + seed * 0.7) / max(0.4, -mv.z);
+        vA = (0.55 + 0.45 * seed) * smoothstep(0.0, 1.2, p.y); }`,
+    fragmentShader: `varying float vA; void main(){ vec2 d = gl_PointCoord - 0.5; float a = smoothstep(0.5, 0.15, length(d)) * 0.9 * vA; gl_FragColor = vec4(vec3(0.97, 0.98, 1.0), a); }` });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; pts.renderOrder = 4; scene.add(pts); return m;
+})();
+
+/* ---- puffs: smoke from the chimney, steam off the cooling mould, snow knocked off the eaves ---- */
+const puffTex = canvasTex(128, 128, (x, w, h) => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 62); g.addColorStop(0, 'rgba(255,255,255,.55)'); g.addColorStop(0.5, 'rgba(255,255,255,.2)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.clearRect(0, 0, w, h); x.fillStyle = g; x.fillRect(0, 0, w, h); }, { static: true });
+const plumes = [];
+function plume(x, y, z, o) {   // o: { n, spread, rise, speed, size, color, alpha, wind }
+  const puffs = []; for (let i = 0; i < o.n; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTex, transparent: true, depthWrite: false, opacity: 0, color: o.color, fog: true })); s.renderOrder = 7; scene.add(s); puffs.push({ s, o: i / o.n, a: rnd() * 6.28, r: rnd() }); }
+  const p = { x, y, z, puffs, k: 1, ...o }; plumes.push(p); return p;
+}
+function plumeTick(t) {
+  for (const st of plumes) for (const p of st.puffs) {
+    const u = (t * st.speed + p.o) % 1, rise = u * st.rise;
+    p.s.position.set(st.x + Math.sin(p.a + t * 0.5) * st.spread * (0.3 + u) + u * st.wind, st.y + rise, st.z + Math.cos(p.a * 1.3 + t * 0.4) * st.spread * (0.3 + u));
+    const sc = st.size * (0.35 + u * 1.3 * (0.7 + p.r * 0.6)); p.s.scale.set(sc, sc, sc);
+    p.s.material.opacity = st.k * (reduce ? 0.4 : 1) * st.alpha * Math.sin(Math.PI * u) * (0.6 + 0.4 * p.r);
+  }
+}
+plume(CHIM.x, CHIM.top + 0.2, CHIM.z, { n: 18, spread: 0.35, rise: 7, speed: 0.06, size: 2.2, color: 0x6f6a68, alpha: 0.5, wind: 3.5 });
+
+/* =====================================================================
+   THE STORY'S THINGS: the order slate on the wall, four old bells on a cart, the furnace, the ladle on its gantry, the loam
+   core and the board that sweeps it, the mould, the tuning lathe and its chalkboard, the bell frame and its brass plate, and
+   the little bell on a post in the yard. Bells are turned from one profile (a lip, a soundbow, a waist, a shoulder, a crown).
+   ===================================================================== */
+const brassM = new THREE.MeshStandardMaterial({ color: 0xc8a35e, metalness: 1, roughness: 0.32, envMapIntensity: 1.1 });
+const bronzeRough = tex('plate_rough_1k.jpg', false, 0.35);
+const bronzeM = new THREE.MeshPhysicalMaterial({ color: 0xb98049, metalness: 1, roughness: 0.36, roughnessMap: bronzeRough, envMapIntensity: 1.25, clearcoat: 0.15, clearcoatRoughness: 0.4 });
+
+/* ---- the bell's profile, mouth radius 1: outside from the lip up to the crown, then the inside back down ---- */
+const BELL_OUT = [[1.0, 0.0], [0.985, 0.05], [0.93, 0.13], [0.84, 0.24], [0.74, 0.37], [0.66, 0.52], [0.61, 0.68], [0.585, 0.84], [0.575, 0.96], [0.555, 1.06], [0.5, 1.12], [0.38, 1.16], [0.0, 1.17]];
+const BELL_IN = [[0.0, 1.09], [0.33, 1.08], [0.47, 1.03], [0.51, 0.93], [0.52, 0.8], [0.545, 0.64], [0.59, 0.49], [0.66, 0.35], [0.75, 0.22], [0.84, 0.11], [0.91, 0.035], [0.93, 0.0], [1.0, 0.0]];
+const BELL_H = 1.17;
+const outerR = y => { for (let i = 0; i < BELL_OUT.length - 1; i++) { const [r0, y0] = BELL_OUT[i], [r1, y1] = BELL_OUT[i + 1]; if (y >= y0 && y <= y1) return lerp(r0, r1, (y - y0) / Math.max(1e-6, y1 - y0)); } return 0; };
+const smoothProfile = (pts, n = 4) => {   // a few points between each pair, on a Catmull-Rom through them, so the lathe is round where it should be
+  const c = new THREE.SplineCurve(pts.map(([r, y]) => new THREE.Vector2(r, y))); return c.getPoints(pts.length * n).map(p => new THREE.Vector2(Math.max(0, p.x), p.y));
+};
+const BELL_PTS = [...smoothProfile(BELL_OUT), ...smoothProfile(BELL_IN)];
+function bellGeo(Rm, seg = 64) { const g = new THREE.LatheGeometry(BELL_PTS.map(p => new THREE.Vector2(p.x * Rm, p.y * Rm)), seg); g.computeVertexNormals(); return g; }
+function bellOf(Rm, mat, opts = {}) {   // a bell, mouth down, its lip at y 0; the crown's loop on top; a clapper inside
+  const g = new THREE.Group();
+  const body = mesh(bellGeo(Rm, opts.seg || 64), mat, g); body.castShadow = true;
+  const loop = new THREE.TorusGeometry(Rm * 0.16, Rm * 0.05, 10, 24); mesh(loop, mat, g, 0, Rm * (BELL_H + 0.12), 0);
+  mesh(new THREE.CylinderGeometry(Rm * 0.2, Rm * 0.26, Rm * 0.06, 24), mat, g, 0, Rm * (BELL_H + 0.02), 0);
+  if (opts.clapper) { mesh(new THREE.CylinderGeometry(Rm * 0.03, Rm * 0.03, Rm * 0.9, 8), ironDkM, g, 0, Rm * 0.6, 0); mesh(new THREE.SphereGeometry(Rm * 0.11, 16, 12), ironDkM, g, 0, Rm * 0.16, 0); }
+  g.userData.body = body; return g;
+}
+
+/* ---- chalk: drawn, then pitted where the stick skipped, with a little dust round it ---- */
+const CHALKC = '#efede6', CHALKY = '#f3d27a', CHALKR = '#f19a84';
+const speck = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); let s = 77; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 7000; i++) { x.fillStyle = `rgba(0,0,0,${0.2 + r() * 0.8})`; x.fillRect(r() * 256, r() * 256, 0.8 + r() * 2.2, 0.8 + r() * 1.4); } return c; })();
+function chalkify(x, w, h, k = 1) { x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'destination-out'; const p = x.createPattern(speck, 'repeat'); try { p.setTransform(new DOMMatrix().scale(Math.max(0.6, k))); } catch (_) {} x.fillStyle = p; x.globalAlpha = 0.55; x.fillRect(0, 0, w, h); x.restore(); }
+function chalkLine(x, pts, lw, col = CHALKC, jit = 1.5, seed = 1) {   // a hand-drawn line: twice, a little apart
+  let s = seed * 7 + 3; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  x.strokeStyle = col; x.lineCap = 'round'; x.lineJoin = 'round';
+  for (let pass = 0; pass < 2; pass++) { x.lineWidth = lw * (pass ? 0.6 : 1); x.globalAlpha = pass ? 0.55 : 0.9; x.beginPath();
+    pts.forEach(([px, py], i) => { const X = px + (r() - 0.5) * jit, Y = py + (r() - 0.5) * jit; i ? x.lineTo(X, Y) : x.moveTo(X, Y); }); x.stroke(); }
+  x.globalAlpha = 1;
+}
+function chalkRing(x, cx, cy, rx, ry, lw, col = CHALKY, seed = 3, turns = 1.12, frac = 1) {   // a ring drawn round something, overshooting its start
+  const pts = [], n = 48, a0 = -2.4; for (let i = 0; i <= n * turns * frac; i++) { const a = a0 + (i / n) * Math.PI * 2, w = 1 + 0.05 * Math.sin(i * 0.7 + seed); pts.push([cx + Math.cos(a) * rx * w, cy + Math.sin(a) * ry * w]); }
+  if (pts.length > 1) chalkLine(x, pts, lw, col, 1.2, seed);
+}
+function chalkText(x, str, X, Y, px, col = CHALKC, w = 700, align = 'left') { x.font = `${w} ${px}px ${CHALK}`; x.textAlign = align; x.textBaseline = 'alphabetic'; x.fillStyle = col; x.fillText(str, X, Y); x.globalAlpha = 0.35; x.fillText(str, X + px * 0.012, Y + px * 0.01); x.globalAlpha = 1; }
+function slateGround(x, w, h, seed = 5, wiped = 0) {   // slate: dark, uneven, with old writing rubbed out across it
+  let s = seed; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  x.fillStyle = '#272b2a'; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 40; i++) { const g = x.createRadialGradient(r() * w, r() * h, 0, r() * w, r() * h, 80 + r() * 400); g.addColorStop(0, `rgba(${r() > 0.5 ? '60,66,64' : '18,20,20'},${0.25 + r() * 0.3})`); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); }
+  for (let i = 0; i < 26 + wiped * 30; i++) { x.save(); x.translate(r() * w, r() * h); x.rotate((r() - 0.5) * 0.5); x.fillStyle = `rgba(230,230,222,${0.025 + r() * 0.04})`; x.beginPath(); x.ellipse(0, 0, 120 + r() * 380, 18 + r() * 60, 0, 0, 7); x.fill(); x.restore(); }   // the duster's sweeps
+  x.font = `700 ${Math.round(h * 0.05)}px ${CHALK}`; x.fillStyle = 'rgba(230,230,222,.032)';
+  for (let i = 0; i < 9; i++) x.fillText(['casting', 'tin 22%', 'cope', 'core', 'no. 41', 'strike', 'C-04 done', 'loam', 'tenor'][i], r() * w * 0.85, 60 + r() * (h - 80));
+  for (let i = 0; i < 9000; i++) { x.fillStyle = `rgba(${r() > 0.5 ? '255,255,250' : '0,0,0'},${r() * 0.05})`; x.fillRect(r() * w, r() * h, 1.5, 1.5); }
+}
+
+/* ---- 01 · 07: the order slate on the left wall: the sheet of clusters, chalked up ---- */
+const slate = (() => {
+  const g = new THREE.Group(); g.position.set(SLATE.x, 0, SLATE.z); g.rotation.y = Math.PI / 2; scene.add(g);   // local +z faces into the hall (+x); local +x runs toward -z
+  const W2 = SLATE.w, H2 = SLATE.h, cy = SLATE.y0 + H2 / 2;
+  const bg = canvasTex(2048, Math.round(2048 * H2 / W2), (x, w, h) => slateGround(x, w, h, 5), { static: true });
+  mesh(new THREE.PlaneGeometry(W2, H2), new THREE.MeshStandardMaterial({ map: bg, roughness: 0.9, envMapIntensity: 0.2 }), g, 0, cy, 0.03, false).receiveShadow = true;
+  const fr = [box(W2 + 0.2, 0.1, 0.07, 0, cy + H2 / 2 + 0.05, 0.035), box(W2 + 0.2, 0.1, 0.07, 0, cy - H2 / 2 - 0.05, 0.035), box(0.1, H2, 0.07, -W2 / 2 - 0.05, cy, 0.035), box(0.1, H2, 0.07, W2 / 2 + 0.05, cy, 0.035)];
+  mesh(mergeGeometries(fr), oakM, g);
+  mesh(box(W2 + 0.1, 0.035, 0.13, 0, SLATE.y0 - 0.11, 0.08), oakM, g);                                           // the chalk ledge
+  for (let i = 0; i < 4; i++) { const c = mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.08, 8), new THREE.MeshStandardMaterial({ color: i === 2 ? 0xf3d27a : 0xf2efe6, roughness: 1 }), g, -0.9 + i * 0.07, SLATE.y0 - 0.083, 0.09, false); c.rotation.z = Math.PI / 2 + (i - 1.5) * 0.3; }
+  mesh(new RoundedBoxGeometry(0.16, 0.045, 0.07, 2, 0.01), new THREE.MeshStandardMaterial({ color: 0x6b5a48, roughness: 1 }), g, 0.6, SLATE.y0 - 0.07, 0.09);   // the duster
+  // the order book, chalked on a layer of its own (it fades for Let's talk, when the form is chalked on the slate instead)
+  const CW = 2048, CH = Math.round(2048 * H2 / W2), k = CW / 2048;
+  const ROWS = [['C-05', 'Email nurture', 'email nurture', 'info', '4', 'done'], ['C-06', 'Webinar playbook', 'webinar strategy', 'info', '3', 'done'],
+    ['C-07', 'Lead scoring', 'lead scoring', 'info', '4', 'yes'], ['C-08', 'Sales handoff', 'sales handoff', 'info', '4', 'yes'], ['C-09', 'Win-loss reviews', 'win loss analysis', 'commercial', '3', '']];
+  const COLS = [96, 300, 820, 1270, 1500, 1700], HEAD = ['group', 'topic', 'primary keyword', 'intent', 'posts', 'generate'];
+  const rowY = i => 470 + i * 196 + (i > 2 ? 70 : 0);
+  const orderTex = canvasTex(CW, CH, (x, w, h, st = 0, ring = 1) => {
+    x.clearRect(0, 0, w, h);
+    chalkText(x, 'Order book', 96, 168, 128); chalkLine(x, [[96, 196], [600, 190]], 6, CHALKC, 3, 2);
+    chalkText(x, 'clusters to recast · one new pillar from each', 660, 166, 54, 'rgba(239,237,230,.72)', 600);
+    HEAD.forEach((t, i) => chalkText(x, t, COLS[i], 330, 46, 'rgba(239,237,230,.7)', 600)); chalkLine(x, [[90, 356], [w - 90, 352]], 3, 'rgba(239,237,230,.6)', 2, 4);
+    ROWS.forEach((row, ri) => {
+      const y = rowY(ri), mine = ri === 2, next = ri === 3;
+      row.forEach((c, ci) => {
+        if (ci === 5) {
+          let val = c; if (st >= 2 && mine) val = 'done';
+          if (val === 'done') { chalkText(x, 'done', COLS[5], y, 64, 'rgba(239,237,230,.8)'); chalkLine(x, [[COLS[5] + 140, y - 24], [COLS[5] + 156, y - 6], [COLS[5] + 192, y - 52]], 7, CHALKC, 1.5, ri); }
+          else if (val === 'yes') chalkText(x, 'YES', COLS[5] + 6, y, 72, (mine && st < 2) || (next && st >= 2) ? CHALKY : CHALKC);
+          if (mine && st >= 2) { x.save(); x.globalAlpha = 0.18; x.fillStyle = CHALKC; x.beginPath(); x.ellipse(COLS[5] + 190, y - 26, 120, 40, -0.05, 0, 7); x.fill(); x.restore(); }   // where the YES was rubbed out
+          return; }
+        chalkText(x, c, COLS[ci], y, ci === 1 ? 70 : 60, ci === 0 ? 'rgba(239,237,230,.75)' : CHALKC, ci === 1 ? 700 : 600);
+      });
+      if (mine) {   // the row's four old posts, written under it
+        chalkText(x, 'posts:  /lead-scoring-basics   /scoring-models   /scoring-mistakes   /scores-sales-trust', COLS[1], y + 66, 44, 'rgba(239,237,230,.72)', 600);
+        chalkLine(x, [[COLS[1] - 30, y + 30], [COLS[1] - 30, y + 54], [COLS[1] - 12, y + 54]], 3, 'rgba(239,237,230,.6)', 1, 9);
+      }
+    });
+    // the ring round the row being worked on, and an arrow to it
+    const ri = st >= 2 ? 3 : 2, y = rowY(ri);
+    if (st >= 1) { chalkRing(x, COLS[5] + 64, y - 24, 118, 54, 7, CHALKY, ri, 1.12, ring); if (ring >= 1) chalkLine(x, [[COLS[5] - 120, y - 24], [COLS[5] - 30, y - 24], [COLS[5] - 56, y - 42], [COLS[5] - 30, y - 24], [COLS[5] - 56, y - 6]], 6, CHALKY, 1.2, 11); }
+    chalkify(x, w, h, 1.4);
+  });
+  orderTex.userData.redraw(0, 1);
+  const orderM = new THREE.MeshStandardMaterial({ map: orderTex, transparent: true, roughness: 0.9, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, envMapIntensity: 0.2 });
+  const order = mesh(new THREE.PlaneGeometry(W2, H2), orderM, g, 0, cy, 0.032, false); order.renderOrder = 2;
+  void k;
+  return { g, bg, orderTex, orderM, order, cy };
+})();
+
+/* ---- 02: four old bells on a cart, in from the snow, each with a tag for the post it stands for ---- */
+const patinaTex = canvasTex(512, 256, (x, w, h) => {   // old bronze: green bloom over brown, streaked where the rain ran down
+  x.fillStyle = '#5a8a77'; x.fillRect(0, 0, w, h); let s = 13; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 160; i++) { x.fillStyle = `rgba(${r() > 0.6 ? '96,64,38' : '120,170,150'},${0.12 + r() * 0.3})`; x.beginPath(); x.ellipse(r() * w, r() * h, 6 + r() * 30, 4 + r() * 18, r() * 3, 0, 7); x.fill(); }
+  for (let i = 0; i < 70; i++) { const X = r() * w; x.fillStyle = `rgba(70,110,96,${0.2 + r() * 0.3})`; x.fillRect(X, 0, 2 + r() * 5, h * (0.3 + r() * 0.7)); }
+  for (let i = 0; i < 4000; i++) { x.fillStyle = `rgba(${r() > 0.5 ? '200,230,215' : '30,40,35'},${r() * 0.08})`; x.fillRect(r() * w, r() * h, 2, 2); }
+}, { static: true });
+patinaTex.wrapS = THREE.RepeatWrapping;
+const SLUGS = [['POST 1', '/lead-scoring-basics'], ['POST 2', '/scoring-models'], ['POST 3', '/scoring-mistakes'], ['POST 4', '/scores-sales-trust']];
+const tagTex = (a, b) => canvasTex(512, 220, (x, w, h) => {
+  x.fillStyle = '#d9c39a'; x.fillRect(0, 0, w, h); grain(x, w, h, 1200, 0.08);
+  x.fillStyle = '#3a2c1c'; x.beginPath(); x.arc(44, h / 2, 16, 0, 7); x.fill(); x.strokeStyle = '#a88c5c'; x.lineWidth = 6; x.beginPath(); x.arc(44, h / 2, 24, 0, 7); x.stroke();
+  x.fillStyle = '#2a2016'; x.font = `800 58px ${SANS}`; try { x.letterSpacing = '4px'; } catch (_) {} x.fillText(a, 92, 88); try { x.letterSpacing = '0px'; } catch (_) {}
+  let fs = 46; do { x.font = `600 ${fs}px ${MONO}`; } while (x.measureText(b).width > w - 110 && --fs > 18); x.fillStyle = '#4a3a26'; x.fillText(b, 92, 166);
+});
+const CART = { x: -0.3, zOut: R.z1 + 4.8, zIn: 2.7, fx: -2.3, fz: -0.95, deck: 0.46 };
+const OLD = [[0.18, -0.57, 0.02], [0.205, -0.185, -0.03], [0.17, 0.2, 0.03], [0.19, 0.57, -0.02]];   // radius, x and z on the deck: a row of four, tags to the front
+const cart = (() => {
+  const g = new THREE.Group(); scene.add(g);
+  mesh(box(1.5, 0.06, 0.95, 0, CART.deck - 0.03, 0), oakM, g);
+  for (const s of [-1, 1]) mesh(box(1.5, 0.08, 0.06, 0, CART.deck - 0.1, s * 0.4), ironDkM, g);
+  const wheels = [];
+  for (const sx of [-0.55, 0.55]) for (const sz of [-1, 1]) { const w = new THREE.Group(); w.position.set(sx, 0.17, sz * 0.52); g.add(w);
+    const wg = new THREE.CylinderGeometry(0.17, 0.17, 0.06, 24); wg.rotateZ(Math.PI / 2); mesh(wg, ironDkM, w);
+    for (let i = 0; i < 4; i++) { const sp = mesh(box(0.02, 0.3, 0.025, 0, 0, 0), ironM, w); sp.rotation.x = i * Math.PI / 4; } wheels.push(w); }
+  // the wheels turn about x: the cart rolls along its own z
+  for (const w of wheels) w.rotation.order = 'YXZ';
+  const handle = new THREE.Group(); handle.position.set(0, CART.deck, -0.48); g.add(handle);
+  mesh(box(0.04, 0.04, 0.7, 0, 0.18, -0.32), ironDkM, handle).rotation.x = -0.5; mesh(box(0.5, 0.04, 0.04, 0, 0.36, -0.62), ironDkM, handle);
+  const bells = OLD.map(([r, x, z], i) => {
+    const m = new THREE.MeshStandardMaterial({ map: patinaTex, color: 0xffffff, metalness: 0.35, roughness: 0.72, envMapIntensity: 0.6, emissive: 0x000000, emissiveIntensity: 1 });
+    const b = bellOf(r, m, { seg: 48 }); b.position.set(x, CART.deck, z); g.add(b); b.userData.body.rotation.y = i * 1.3;
+    const cap = new THREE.LatheGeometry(smoothProfile([[0.57, 0.97], [0.575, 1.04], [0.53, 1.11], [0.42, 1.18], [0.2, 1.22], [0.0, 1.23]], 3).map(p => new THREE.Vector2(p.x * r, p.y * r)), 40);   // snow on the shoulders and crown
+    const c = mesh(cap, snowNearM, b, 0, 0, 0, false); c.scale.set(1.04, 1, 1.04);
+    const tg = new THREE.Group(); b.add(tg);   // a luggage tag tied to the crown, hanging down the front (toward the cart's leading end, -z)
+    const top = V(0, r * 1.3, 0), at = V(0, r * 0.55 + 0.04, -(r + 0.035)), str = mesh(new THREE.CylinderGeometry(0.0025, 0.0025, top.distanceTo(at), 4), ropeM, tg, 0, 0, 0, false);
+    str.position.copy(top).lerp(at, 0.5); str.quaternion.setFromUnitVectors(V(0, 1, 0), top.clone().sub(at).normalize());
+    const t = flat(0.2, 0.086, tagTex(...SLUGS[i]), tg, 0, r * 0.55, -(r + 0.045), 0.12, Math.PI, (i % 2 ? 1 : -1) * 0.06, { side: THREE.DoubleSide }); t.castShadow = true;
+    return { b, m, cap: c, tg, r };
+  });
+  return { g, wheels, bells, handle };
+})();
+const cartPath = new THREE.CatmullRomCurve3([V(CART.x, 0, CART.zIn), V(CART.x - 0.3, 0, 1.2), V(-1.4, 0, 0.0), V(CART.fx, 0, CART.fz)], false, 'centripetal');
+
+/* ---- the furnace: soot-black brick, a mouth full of fire, iron ties; a spout toward the casting ring ---- */
+const fireM = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uHeat: { value: 1 } }, fog: false,
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform float uTime, uHeat; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h(i), h(i + vec2(1, 0)), f.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), f.x), f.y); }
+    float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * n(p); p *= 2.03; a *= 0.5; } return v; }
+    void main(){
+      vec2 p = vUv; float t = uTime;
+      float f = fbm(vec2(p.x * 4.0, p.y * 3.0 - t * 1.6)) * 1.2 + (1.0 - p.y) * 0.9 - 0.55;
+      float coal = fbm(p * 9.0 + vec2(t * 0.05, 0.0)) * smoothstep(0.35, 0.0, p.y);
+      float k = clamp(f + coal * 0.9, 0.0, 1.0) * (0.75 + 0.25 * uHeat);
+      vec3 c = mix(vec3(0.25, 0.03, 0.0), vec3(1.0, 0.32, 0.04), smoothstep(0.1, 0.55, k));
+      c = mix(c, vec3(1.0, 0.78, 0.36), smoothstep(0.6, 0.95, k));
+      gl_FragColor = vec4(c * (1.2 + 2.6 * k) * uHeat, 1.0);
+    }` });
+const furnace = (() => {
+  const g = new THREE.Group(); scene.add(g);
+  const x0 = FURN.x0, x1 = FURN.x1, z0 = FURN.z0, z1 = FURN.z1, Hh = FURN.h, mz = FURN.mz, mw = 0.86, my0 = 0.58, my1 = 1.32;
+  const parts = [box(x1 - x0, my0, z1 - z0, (x0 + x1) / 2, my0 / 2, (z0 + z1) / 2), box(x1 - x0, Hh - my1, z1 - z0, (x0 + x1) / 2, (my1 + Hh) / 2, (z0 + z1) / 2),
+    box(x1 - x0, my1 - my0, (mz - mw / 2) - z0, (x0 + x1) / 2, (my0 + my1) / 2, (z0 + mz - mw / 2) / 2), box(x1 - x0, my1 - my0, z1 - (mz + mw / 2), (x0 + x1) / 2, (my0 + my1) / 2, (z1 + mz + mw / 2) / 2)];
+  mesh(mergeGeometries(parts.map(p => p.toNonIndexed ? p.toNonIndexed() : p)), sootM, g);
+  // the mouth: an arch of brick over it, the fire at the back
+  const arch = new THREE.TorusGeometry(mw / 2 + 0.08, 0.1, 8, 20, Math.PI); arch.rotateY(Math.PI / 2); mesh(arch, brickM, g, x1 + 0.03, my1 - 0.05, mz);
+  const fire = mesh(new THREE.PlaneGeometry(mw, my1 - my0), fireM, g, x1 - 0.42, (my0 + my1) / 2, mz, false); fire.rotation.y = Math.PI / 2;
+  const glowIn = new THREE.MeshBasicMaterial({ color: 0xff6a1e, side: THREE.BackSide, transparent: true, opacity: 0.85, fog: false });
+  mesh(new THREE.BoxGeometry(0.42, my1 - my0, mw), glowIn, g, x1 - 0.21, (my0 + my1) / 2, mz, false);
+  // iron ties round it, the door swung open, a spout
+  for (const y of [0.3, 1.5, 2.25]) { mesh(box(0.05, 0.08, z1 - z0 + 0.1, x1 + 0.025, y, (z0 + z1) / 2), ironDkM, g); for (const z of [z0 - 0.025, z1 + 0.025]) mesh(box(x1 - x0, 0.08, 0.05, (x0 + x1) / 2, y, z), ironDkM, g); }
+  const door = new THREE.Group(); door.position.set(x1 + 0.03, my0 - 0.02, mz + mw / 2 + 0.05); door.rotation.y = 1.25; g.add(door);
+  mesh(box(0.06, my1 - my0 + 0.12, mw + 0.1, 0, (my1 - my0 + 0.12) / 2, -(mw + 0.1) / 2), ironM, door);
+  mesh(box(0.04, 0.04, 0.2, 0.05, (my1 - my0) / 2, -mw + 0.02), ironDkM, door);
+  return { g, fire };
+})();
+// a little warm glow hanging in front of the mouth
+const glowTex = canvasTex(128, 128, (x, w, h) => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 62); g.addColorStop(0, 'rgba(255,170,90,.9)'); g.addColorStop(0.4, 'rgba(255,110,40,.35)'); g.addColorStop(1, 'rgba(255,80,20,0)'); x.clearRect(0, 0, w, h); x.fillStyle = g; x.fillRect(0, 0, w, h); }, { static: true });
+const glowSprite = (s, x, y, z, o = 0.6) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: o, fog: false })); sp.scale.setScalar(s); sp.position.set(x, y, z); sp.renderOrder = 8; scene.add(sp); return sp; };
+const mouthGlow = glowSprite(2.2, FURN.x1 + 0.25, 0.95, FURN.mz, 0.5);
+
+/* ---- the gantry over the casting ring: an iron beam on the trusses, a trolley for the ladle, one for the mould ---- */
+const GY = 4.2;
+mesh(mergeGeometries([box(5.4, 0.04, 0.22, -0.6, GY + 0.16, PIT.z), box(5.4, 0.04, 0.22, -0.6, GY - 0.16, PIT.z), box(5.4, 0.3, 0.04, -0.6, GY, PIT.z)]), ironDkM, null);
+for (const x of [-3.1, 1.9]) mesh(box(0.16, 0.16, TRUSS_Z[1] - TRUSS_Z[0] + 0.24, x, R.h - 0.13 + 0.0, (TRUSS_Z[0] + TRUSS_Z[1]) / 2), ironDkM, null), mesh(box(0.06, R.h - 0.26 - GY - 0.16 + 0.02, 0.06, x, (R.h - 0.26 + GY + 0.16) / 2, PIT.z), ironDkM, null);
+const linkGeo = new THREE.TorusGeometry(0.03, 0.009, 6, 12);
+function chain(maxLinks, mat = ironDkM) {   // links from a point downward; set(top, length)
+  const im = new THREE.InstancedMesh(linkGeo, mat, maxLinks), M = new THREE.Matrix4(), q = new THREE.Quaternion(), q2 = new THREE.Quaternion().setFromAxisAngle(V(0, 1, 0), Math.PI / 2);
+  im.castShadow = true; im.frustumCulled = false; scene.add(im);
+  return { im, set(top, len) { const n = Math.max(0, Math.min(maxLinks, Math.round(len / 0.046))); for (let i = 0; i < n; i++) { M.compose(V(top.x, top.y - 0.03 - i * 0.046, top.z), i % 2 ? q2 : q, V(1, 1.3, 1)); im.setMatrixAt(i, M); } im.count = n; im.instanceMatrix.needsUpdate = true; } };
+}
+function trolley() { const g = new THREE.Group(); scene.add(g); mesh(box(0.34, 0.16, 0.36, 0, 0, 0), ironM, g); for (const s of [-1, 1]) mesh(box(0.3, 0.26, 0.03, 0, 0.13, s * 0.14), ironDkM, g); mesh(box(0.16, 0.22, 0.2, 0, -0.18, 0), ironDkM, g); return g; }
+const ladleTrolley = trolley(), copeTrolley = trolley();
+const ladleChain = chain(70), copeChains = [0, 1, 2, 3].map(() => chain(60));
+
+/* ---- the ladle: an iron crucible on trunnions, a bail to the hook; molten bronze in it ---- */
+const moltenM = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uK: { value: 0 } }, fog: false,
+  vertexShader: 'varying vec2 vUv; varying vec3 vP; void main(){ vUv = uv; vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform float uTime, uK; varying vec2 vUv; varying vec3 vP;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h(i), h(i + vec2(1, 0)), f.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), f.x), f.y); }
+    void main(){ vec2 p = vUv * 6.0; float t = uTime;
+      float s = n(p + vec2(t * 0.3, t * 0.2)) * 0.6 + n(p * 2.3 - vec2(t * 0.4, 0.0)) * 0.4;
+      float crust = smoothstep(0.55, 0.75, n(p * 1.4 + vec2(0.0, t * 0.1)));
+      vec3 c = mix(vec3(1.0, 0.55, 0.12), vec3(1.0, 0.85, 0.5), s); c = mix(c, vec3(0.35, 0.08, 0.02), crust * 0.6);
+      gl_FragColor = vec4(c * (0.4 + 3.2 * uK), 1.0); }` });
+const LADLE = { r: 0.3, h: 0.5, xFurn: -2.75, xPour: -0.62, hang: 1.25 };   // hang: how far the crucible's base hangs under the hook
+const ladle = (() => {
+  const pivot = new THREE.Group(); scene.add(pivot);   // the trunnions: it tips about z, pouring toward +x
+  const body = new THREE.Group(); body.position.y = -LADLE.h * 0.62; pivot.add(body);
+  const shell = new THREE.CylinderGeometry(LADLE.r, LADLE.r * 0.86, LADLE.h, 32, 1, true); mesh(shell, ironDkM, body, 0, LADLE.h / 2, 0).material.side = THREE.DoubleSide;
+  mesh(new THREE.CylinderGeometry(LADLE.r * 0.86, LADLE.r * 0.86, 0.04, 32), ironDkM, body, 0, 0.02, 0);
+  mesh(new THREE.TorusGeometry(LADLE.r + 0.01, 0.025, 8, 40).rotateX(Math.PI / 2), ironM, body, 0, LADLE.h, 0);
+  const lip = new THREE.ConeGeometry(0.09, 0.16, 4, 1, true); lip.rotateZ(-Math.PI / 2); mesh(lip, ironDkM, body, LADLE.r + 0.04, LADLE.h - 0.02, 0).material.side = THREE.DoubleSide;
+  const melt = mesh(new THREE.CircleGeometry(LADLE.r - 0.015, 32).rotateX(-Math.PI / 2), moltenM, body, 0, LADLE.h - 0.07, 0, false);
+  for (const s of [-1, 1]) mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.1, 12).rotateX(Math.PI / 2), ironM, pivot, 0, 0, s * (LADLE.r + 0.05));
+  const bailM = mesh(new THREE.TorusGeometry(LADLE.r + 0.09, 0.022, 8, 32, Math.PI), ironDkM, null); bailM.rotation.y = Math.PI / 2;   // stays upright on the hook while the pot tips
+  return { pivot, body, melt, bail: bailM };
+})();
+
+/* ---- the casting ring: a low wall of brick round a bed of sand; the loam core and the board that sweeps it; the mould ---- */
+const RING = { y: 0.34 };
+{ const wall = new THREE.CylinderGeometry(PIT.r, PIT.r, 0.4, 48, 1, true); metresUV(wall); mesh(wall, tint(new THREE.MeshStandardMaterial({ ...pbr('brick', 1.2), color: 0x8f7d76, roughness: 1, envMapIntensity: 0.3, side: THREE.DoubleSide }), 0.75), null, PIT.x, 0.2, PIT.z);
+  mesh(new THREE.TorusGeometry(PIT.r, 0.07, 8, 48).rotateX(Math.PI / 2), brickM, null, PIT.x, 0.4, PIT.z);
+  const bed = new THREE.CircleGeometry(PIT.r - 0.02, 48); bed.rotateX(-Math.PI / 2); metresUV(bed); mesh(bed, sandM, null, PIT.x, RING.y, PIT.z, false).receiveShadow = true; }
+const NB = 0.48;                                                                 // the new bell's mouth radius
+const CORE_PTS = smoothProfile([[0.9, 0.0], [0.84, 0.11], [0.75, 0.22], [0.66, 0.35], [0.59, 0.49], [0.545, 0.64], [0.52, 0.8], [0.51, 0.93], [0.47, 1.03], [0.33, 1.08], [0.0, 1.09]], 4);
+const core = mesh(new THREE.LatheGeometry([new THREE.Vector2(0, 0), ...CORE_PTS.map(p => new THREE.Vector2(p.x * NB, p.y * NB))], 56), new THREE.MeshStandardMaterial({ ...pbr('loam', 0.5), color: 0x8f735e, roughness: 0.9, envMapIntensity: 0.4 }), null, PIT.x, RING.y, PIT.z);
+const spindle = mesh(new THREE.CylinderGeometry(0.022, 0.022, 2.1, 10), steelM, null, PIT.x, RING.y + 1.05, PIT.z);
+const STRICKLE = { r0: 0.03, r1: 1.0, h: 1.5 };
+const strickleTex = canvasTex(1024, Math.round(1024 * STRICKLE.h / STRICKLE.r1), (x, w, h) => {   // pale wood, the outline of the article chalked on it
+  const g = x.createLinearGradient(0, 0, w, 0); g.addColorStop(0, '#5e4632'); g.addColorStop(1, '#6e543c'); x.fillStyle = g; x.fillRect(0, 0, w, h);   // old dark oak
+  let s = 4; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 110; i++) { x.strokeStyle = `rgba(${r() > 0.5 ? '40,28,18' : '150,120,90'},${0.12 + r() * 0.2})`; x.lineWidth = 1 + r() * 3; x.beginPath(); const y = r() * h; x.moveTo(0, y); x.bezierCurveTo(w * 0.3, y + (r() - 0.5) * 30, w * 0.7, y + (r() - 0.5) * 30, w, y + (r() - 0.5) * 20); x.stroke(); }
+  const L = [['4 posts → 1 pillar', 84, CHALKY], ['TL;DR', 80], ['hook: a scene', 76], ['H2 · H2 · H2', 76], ['in a nutshell', 76], ['FAQ × 7–9', 78], ['SEO pack', 76]];
+  let y = 128; for (const [t, px, col] of L) { chalkText(x, t, w * 0.08, y, px, col || CHALKC, 700); y += px * 1.24; }
+  chalkLine(x, [[w * 0.08, 154], [w * 0.92, 148]], 5, CHALKY, 2, 3);
+  chalkify(x, w, h, 1.1);
+});
+const strickle = (() => {
+  const g = new THREE.Group(); g.position.set(PIT.x, RING.y, PIT.z); scene.add(g);
+  const sh = new THREE.Shape(); const pr = CORE_PTS.slice().reverse();   // the board's inner edge follows the core, a finger's width off it
+  sh.moveTo(STRICKLE.r1, 0); sh.lineTo(STRICKLE.r1, STRICKLE.h); sh.lineTo(STRICKLE.r0, STRICKLE.h); sh.lineTo(STRICKLE.r0, 1.09 * NB + 0.02);
+  for (const p of pr) sh.lineTo(Math.max(STRICKLE.r0, p.x * NB + 0.015), p.y * NB); sh.lineTo(STRICKLE.r1, 0);
+  const geo = new THREE.ShapeGeometry(sh); const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / STRICKLE.r1, uv.getY(i) / STRICKLE.h);
+  const front = mesh(geo, new THREE.MeshStandardMaterial({ map: strickleTex, roughness: 0.9, envMapIntensity: 0.3 }), g, 0, 0, 0.012, true);
+  mesh(geo, new THREE.MeshStandardMaterial({ color: 0xa88b68, roughness: 0.9, side: THREE.BackSide }), g, 0, 0, -0.012, true);   // its plain back
+  mesh(box(0.06, 0.06, 0.03, STRICKLE.r1 * 0.5, STRICKLE.h - 0.05, 0), ironDkM, g); mesh(box(0.06, 0.06, 0.03, 0.08, STRICKLE.h - 0.05, 0), ironDkM, g);   // the clamps to the spindle
+  return g;
+})();
+const COPE = { pts: smoothProfile([[0.0, 0.0], [0.84, 0.0], [0.84, 0.3], [0.78, 0.62], [0.66, 0.86], [0.46, 1.0], [0.22, 1.06], [0.0, 1.08]], 3), lowY: RING.y, upY: 2.55 };
+const cope = (() => {
+  const g = new THREE.Group(); g.position.set(PIT.x, COPE.upY, PIT.z); scene.add(g);
+  mesh(new THREE.LatheGeometry(COPE.pts.map(p => new THREE.Vector2(p.x, p.y)), 56), loamM, g);
+  for (const [y, r] of [[0.12, 0.845], [0.42, 0.825], [0.72, 0.76]]) mesh(new THREE.TorusGeometry(r, 0.022, 8, 56).rotateX(Math.PI / 2), ironDkM, g, 0, y, 0);
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + 0.4; mesh(new THREE.TorusGeometry(0.06, 0.015, 6, 14), ironDkM, g, Math.cos(a) * 0.6, 0.86, Math.sin(a) * 0.6); }   // lifting eyes
+  const cup = new THREE.CylinderGeometry(0.17, 0.09, 0.2, 24, 1, true); mesh(cup, loamM, g, 0.0, 1.16, 0).material.side = THREE.DoubleSide;
+  mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.14, 12), loamM, g, 0.32, 1.06, 0.12);   // a riser
+  const fill = mesh(new THREE.CircleGeometry(0.15, 24).rotateX(-Math.PI / 2), moltenM, g, 0, 1.2, 0, false); fill.visible = false;
+  return { g, fill };
+})();
+// the pour: a ribbon of bronze from the lip to the cup, sparks off the cup
+const streamM = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uLen: { value: 0 }, uEnd: { value: 0 } }, fog: false, transparent: true, depthWrite: false,
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform float uTime, uLen, uEnd; varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h(i), h(i + vec2(1, 0)), f.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), f.x), f.y); }
+    void main(){ if (vUv.x > uLen || vUv.x < uEnd) discard;
+      float s = n(vec2(vUv.x * 18.0 - uTime * 9.0, vUv.y * 6.0));
+      vec3 c = mix(vec3(1.0, 0.5, 0.1), vec3(1.0, 0.9, 0.6), s);
+      gl_FragColor = vec4(c * (3.0 + 1.5 * s), 1.0); }` });
+let stream = null;
+function shapeStream() {   // once the ladle is parked and tipped: the curve from its lip into the cup
+  if (stream) { scene.remove(stream); stream.geometry.dispose(); }
+  ladle.pivot.updateWorldMatrix(true, true);
+  const lip = ladle.body.localToWorld(V(LADLE.r + 0.11, LADLE.h - 0.02, 0)), cup = V(PIT.x, COPE.lowY + 1.18, PIT.z);
+  const mid = lip.clone().lerp(cup, 0.35); mid.x += 0.12; mid.y = Math.max(lip.y, cup.y) + 0.02;
+  const c = new THREE.CatmullRomCurve3([lip, mid, cup.clone().add(V(-0.02, 0.18, 0)), cup], false, 'centripetal');
+  stream = new THREE.Mesh(new THREE.TubeGeometry(c, 40, 0.032, 10, false), streamM); stream.frustumCulled = false; stream.renderOrder = 6; scene.add(stream);
+}
+const sparks = (() => {
+  const N = 220, P = new Float32Array(N * 3), S = new Float32Array(N);
+  for (let i = 0; i < N; i++) { S[i] = rnd(); P.set([rnd() * 2 - 1, rnd(), rnd() * 2 - 1], i * 3); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('seed', new THREE.BufferAttribute(S, 1));
+  const m = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, uniforms: { uTime: { value: 0 }, uOn: { value: 0 }, uScale: { value: H * DPR }, uO: { value: V(PIT.x, COPE.lowY + 1.24, PIT.z) } },
+    vertexShader: `attribute float seed; uniform float uTime, uOn, uScale; uniform vec3 uO; varying float vA;
+      void main(){ float life = 0.5 + seed * 0.7, t = fract(uTime / life + seed * 7.0) * life;
+        vec3 v = vec3(position.x * 1.6, 1.2 + position.y * 2.4, position.z * 1.6);
+        vec3 p = uO + v * t + vec3(0.0, -4.9, 0.0) * t * t;
+        vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv;
+        gl_PointSize = uOn * uScale * 0.006 * (0.6 + seed) / max(0.3, -mv.z); vA = (1.0 - t / life) * uOn; }`,
+    fragmentShader: `varying float vA; void main(){ vec2 d = gl_PointCoord - 0.5; float a = smoothstep(0.5, 0.0, length(d)) * vA; gl_FragColor = vec4(vec3(1.0, 0.7, 0.3) * a * 2.5, a); }` });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; pts.renderOrder = 9; scene.add(pts); return m;
+})();
+const cupGlow = glowSprite(1.4, PIT.x, COPE.lowY + 1.3, PIT.z, 0);
+
+/* ---- 05: the tuning lathe: an iron table that turns, the bell on it mouth up, a cutter inside; a chalkboard of the voice ---- */
+const lathe = (() => {
+  const g = new THREE.Group(); g.position.set(LATHE.x, 0, LATHE.z); scene.add(g);
+  mesh(new THREE.CylinderGeometry(0.62, 0.72, 0.62, 32), ironDkM, g, 0, 0.31, 0);
+  const table = new THREE.Group(); table.position.y = 0.62; g.add(table);
+  mesh(new THREE.CylinderGeometry(0.78, 0.78, 0.07, 48), ironM, table, 0, 0.035, 0);
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; mesh(new THREE.BoxGeometry(0.14, 0.1, 0.1), ironDkM, table, Math.cos(a) * 0.5, 0.12, Math.sin(a) * 0.5).rotation.y = -a; }   // the jaws (placed, then turned: a box() is already moved off its centre)
+  const bell = bellOf(NB, bronzeM); bell.rotation.x = Math.PI; bell.position.y = 0.07 + NB * (BELL_H + 0.2); table.add(bell);   // upside down: the crown in the chuck, the mouth up
+  mesh(new THREE.CylinderGeometry(0.3, 0.36, 0.2, 40, 1, true), ironM, table, 0, 0.17, 0).material.side = THREE.DoubleSide;   // the cradle round the shoulder
+  mesh(new THREE.TorusGeometry(0.3, 0.02, 8, 40).rotateX(Math.PI / 2), ironDkM, table, 0, 0.27, 0);
+  // the tool column, its arm over the rim, the cutter down inside
+  const col = new THREE.Group(); col.position.set(1.0, 0, 0.1); g.add(col);
+  mesh(box(0.22, 1.9, 0.22, 0, 0.95, 0), ironDkM, col);
+  const arm = new THREE.Group(); arm.position.set(0, 1.62, 0); col.add(arm);
+  mesh(box(1.0, 0.12, 0.12, -0.5, 0, 0), ironM, arm);
+  const bar = mesh(box(0.04, 0.37, 0.04, -0.65, -0.185, 0), steelM, arm);   // down over the rim to the soundbow, where the bell is tuned
+  mesh(box(0.06, 0.035, 0.07, -0.63, -0.37, 0), new THREE.MeshStandardMaterial({ color: 0xd8d0c0, metalness: 1, roughness: 0.2 }), arm);
+  return { g, table, bell, arm, bar };
+})();
+const shavings = (() => {   // bronze curls coming off the cutter and dropping onto the table
+  const N = 60, geo = new THREE.TorusGeometry(0.018, 0.0035, 4, 12, Math.PI * 1.6), im = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ color: 0xe0a25a, metalness: 1, roughness: 0.25, envMapIntensity: 1.3 }), N);
+  im.frustumCulled = false; scene.add(im); const seeds = Array.from({ length: N }, () => [rnd(), rnd(), rnd()]); return { im, seeds, N };
+})();
+
+/* ---- 06: the bell frame, right of the doors: two oak A-frames, a beam over them, the chain; a brass plate for the page ---- */
+const FR = { half: 0.95, top: 3.6, pivot: 3.3 };
+const belfry = (() => {
+  const g = new THREE.Group(); g.position.set(FRAME.x, 0, FRAME.z); scene.add(g);
+  const parts = [];
+  for (const s of [-1, 1]) { const z = s * FR.half;
+    for (const sx of [-1, 1]) { const len = Math.hypot(1.0, FR.top); const leg = new THREE.BoxGeometry(0.18, len, 0.18); leg.rotateZ(sx * Math.atan2(1.0, FR.top)); leg.translate(sx * 0.5, FR.top / 2, z); parts.push(metresUV(leg)); }
+    parts.push(box(1.5, 0.16, 0.16, 0, 1.0, z), box(0.5, 0.2, 0.24, 0, FR.top - 0.05, z)); }
+  parts.push(box(0.2, 0.22, 2 * FR.half + 0.5, 0, FR.top + 0.14, 0));                                                             // the beam over both
+  for (const sx of [-1, 1]) parts.push(box(0.16, 0.16, 2 * FR.half, sx * 0.83, 0.6, 0));                                         // ties low down, leg to leg
+  mesh(mergeGeometries(parts), oakM, g);
+  for (const s of [-1, 1]) mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.1, 16).rotateX(Math.PI / 2), ironDkM, g, 0, FR.pivot, s * (FR.half - 0.06));   // the bearings
+  // the bell, hung from a headstock that turns in the bearings; it swings about z
+  const swing = new THREE.Group(); swing.position.set(0, FR.pivot, 0); g.add(swing);
+  const head = mesh(box(0.24, 0.22, 2 * FR.half - 0.18, 0, 0.0, 0), oakM, swing); void head;
+  for (const s of [-1, 1]) mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.12, 12).rotateX(Math.PI / 2), steelM, swing, 0, 0, s * (FR.half - 0.08));
+  const bell = bellOf(NB, bronzeM, { clapper: true }); bell.position.y = -0.11 - NB * (BELL_H + 0.2); swing.add(bell);
+  for (const s of [-1, 1]) mesh(box(0.04, 0.24, 0.05, s * 0.09, -0.2, 0), ironDkM, swing);   // straps over the crown
+  // a wheel and its rope on the headstock: how a bell is rung
+  const wheel = new THREE.TorusGeometry(0.55, 0.025, 8, 40); mesh(wheel, oakM, swing, 0, -0.1, FR.half - 0.2).rotation.y = 0;
+  for (let i = 0; i < 6; i++) { const sp = mesh(box(0.025, 1.08, 0.025, 0, -0.1, FR.half - 0.2), oakM, swing); sp.rotation.z = i * Math.PI / 6; }
+  return { g, swing, bell };
+})();
+const frameChain = chain(80);
+const plateTex = canvasTex(1024, 720, (x, w, h, blocks = 0) => {   // cast brass: the page's properties
+  const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#caa45f'); g.addColorStop(0.5, '#e2c27c'); g.addColorStop(1, '#b48c48'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  grain(x, w, h, 3000, 0.08, '90,60,20'); x.strokeStyle = '#7d5d28'; x.lineWidth = 10; x.strokeRect(22, 22, w - 44, h - 44); x.lineWidth = 3; x.strokeRect(40, 40, w - 80, h - 80);
+  for (const [cx, cy] of [[64, 64], [w - 64, 64], [64, h - 64], [w - 64, h - 64]]) { x.fillStyle = '#7d5d28'; x.beginPath(); x.arc(cx, cy, 13, 0, 7); x.fill(); }
+  const ink = '#3d2b0e'; x.fillStyle = ink; x.textAlign = 'left';
+  x.font = `800 34px ${SANS}`; try { x.letterSpacing = '6px'; } catch (_) {} x.fillText('NOTION · NEW PAGE', 96, 120); try { x.letterSpacing = '0px'; } catch (_) {}
+  x.font = `800 60px ${SANS}`; x.fillText('Lead scoring', 96, 200);
+  const rows = [['Cluster', 'C-07'], ['Primary keyword', 'lead scoring'], ['Category', 'Pipeline'], ['Search intent', 'Informational'], ['Source count', '4'], ['Status', 'Generated']];
+  rows.forEach(([a, b], i) => { const y = 272 + i * 56; x.font = `600 34px ${SANS}`; x.globalAlpha = 0.75; x.fillText(a, 96, y); x.globalAlpha = 1; x.font = `800 36px ${SANS}`; x.fillText(b, 470, y); });
+  x.fillStyle = 'rgba(61,43,14,.25)'; x.fillRect(96, 612, w - 192, 4);
+  x.fillStyle = ink; x.font = `700 34px ${MONO}`; x.fillText(`blocks added  ${blocks >= 3 ? '247' : blocks >= 2 ? '200' : blocks >= 1 ? '100' : '0'}`, 96, 664);
+  for (let i = 0; i < 3; i++) { x.fillStyle = i < blocks ? ink : 'rgba(61,43,14,.25)'; x.fillRect(560 + i * 120, 640, 100, 26); }
+});
+const PLATE = { x: FRAME.x - 1.35, z: FRAME.z + 0.55 };
+const plate = (() => {   // on a post in front of the frame, turned to the hall
+  const g = new THREE.Group(); g.position.set(PLATE.x, 0, PLATE.z); g.rotation.y = Math.atan2(-0.3 - PLATE.x, -0.3 - PLATE.z); scene.add(g);
+  mesh(box(0.1, 1.4, 0.1, 0, 0.7, -0.04), oakM, g); mesh(box(0.86, 0.62, 0.04, 0, 1.62, -0.01), oakM, g);
+  const p = flat(0.8, 0.5625, plateTex, g, 0, 1.62, 0.012, 0, 0, 0, { color: 0xb8b0a0, metalness: 0.6, roughness: 0.5, envMapIntensity: 0.55, side: THREE.FrontSide }); p.rotation.x = 0;
+  g.rotation.x = 0; return p; })();
+// the inscription cast round the new bell's shoulder: letters standing out of the bronze
+const inscTex = canvasTex(2048, 128, (x, w, h) => { x.fillStyle = '#000'; x.fillRect(0, 0, w, h); x.fillStyle = '#fff'; x.font = `800 74px ${SANS}`; x.textBaseline = 'middle'; try { x.letterSpacing = '10px'; } catch (_) {}
+  const s = 'LEAD SCORING · START TO FINISH · CAST FROM FOUR POSTS · '; x.fillText(s, 10, h / 2 + 4); x.fillText(s, 10 + x.measureText(s).width, h / 2 + 4); try { x.letterSpacing = '0px'; } catch (_) {} }, { linear: true });
+function inscribe(bell, Rm) {
+  const ys = [], pts = []; for (let i = 0; i <= 8; i++) { const y = lerp(0.8, 0.95, i / 8); pts.push(new THREE.Vector2(outerR(y) * Rm + 0.004, y * Rm)); }
+  const geo = new THREE.LatheGeometry(pts, 96); void ys;
+  const m = mesh(geo, new THREE.MeshStandardMaterial({ color: 0xc89058, metalness: 1, roughness: 0.25, alphaMap: inscTex, alphaTest: 0.5, bumpMap: inscTex, bumpScale: 2, envMapIntensity: 1.3, side: THREE.FrontSide }), bell, 0, 0, 0, false);
+  return m;
+}
+inscribe(belfry.bell, NB); inscribe(lathe.bell, NB);
+
+/* ---- the yard bell: a post in the snow, a little roof over the bell, a rope (Let's talk rings it) ---- */
+const yard = (() => {
+  const g = new THREE.Group(); g.position.set(YB.x, 0, YB.z); scene.add(g);
+  mesh(box(0.18, 2.75, 0.18, 0, 1.375, 0), oakM, g); mesh(box(0.9, 0.14, 0.14, 0.32, 2.48, 0), oakM, g);
+  mesh(metresUV(new THREE.BoxGeometry(0.08, 0.6, 0.08)), oakM, g, 0.2, 2.25, 0).rotation.z = 0.8;   // the brace under the arm
+  for (const s of [-1, 1]) { const r = mesh(metresUV(new THREE.BoxGeometry(1.0, 0.04, 0.42)), oakM, g, 0.32, 2.72, s * 0.17); r.rotation.x = s * 0.55;   // a little roof over the bell, its ridge along the arm
+    const sn = mesh(new THREE.BoxGeometry(1.02, 0.06, 0.4), snowNearM, g, 0.32, 2.765, s * 0.195, false); sn.rotation.x = s * 0.55; }
+  const swing = new THREE.Group(); swing.position.set(0.58, 2.4, 0); g.add(swing);
+  const bell = bellOf(0.17, new THREE.MeshPhysicalMaterial({ color: 0xa8743f, metalness: 1, roughness: 0.4, roughnessMap: bronzeRough, envMapIntensity: 1.2 }), { clapper: true, seg: 40 });
+  bell.position.y = -0.05 - 0.17 * (BELL_H + 0.2); swing.add(bell);
+  const rope = mesh(new THREE.CylinderGeometry(0.008, 0.008, 1.5, 6), ropeM, swing, 0, -0.95, 0, false);
+  drift(YB.x, YB.z, 0.5, 0.18, 0.5);
+  return { g, swing, bell, rope };
+})();
+
+/* ---- Poly Haven props ---- */
+const propM = (k, metal = false, extra = {}) => new THREE.MeshStandardMaterial({ ...pbr(k, 0, metal), roughness: 1, metalness: metal ? 1 : 0, envMapIntensity: 0.6, ...extra });
+function fit(geos, want, axis = 'h') {
+  const all = new THREE.Box3(); for (const g of geos) { g.computeBoundingBox(); all.union(g.boundingBox); }
+  const sz = all.getSize(V(0, 0, 0)), s = want / (axis === 'h' ? sz.y : Math.max(sz.x, sz.z));
+  for (const g of geos) { g.translate(-(all.min.x + all.max.x) / 2, -all.min.y, -(all.min.z + all.max.z) / 2); g.scale(s, s, s); }
+  return geos;
+}
+function placeAll(d, mats, spots, parent) {   // spots: [x, y, z, ry, rx, rz]
+  const groups = spots.map(([x, y, z, ry = 0, rx = 0, rz = 0]) => { const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.set(rx, ry, rz, 'YXZ'); (parent || scene).add(g); return g; });
+  for (const k in d) { const m = mats[k] || mats.default; for (const geo of d[k]) for (const g of groups) mesh(geo, m, g); }
+  return groups;
+}
+const EASEL = { x: 4.45, z: -1.2, ry: -1.0 };
+const easelTex = canvasTex(1024, 1510, (x, w, h, ticks = 0) => {   // the voice, chalked on the board by the lathe; ticks go on as the bell is tuned
+  x.clearRect(0, 0, w, h);
+  chalkText(x, 'The voice', 70, 150, 120); chalkLine(x, [[70, 180], [470, 172]], 6, CHALKC, 2, 5);
+  const L = ['contractions', 'no em dashes', '30 words a sentence, max', 'no one-line paragraphs', 'banned phrases out', '6 to 8 italics', 'one "Mic drop."', 'TL;DR first'];
+  L.forEach((t, i) => { const y = 320 + i * 148; chalkText(x, t, 120, y, 72, CHALKC, 600);
+    chalkLine(x, [[54, y - 46], [94, y - 46], [94, y - 6], [54, y - 6], [54, y - 46]], 3.5, 'rgba(239,237,230,.6)', 1, i);
+    if (i < ticks) chalkLine(x, [[50, y - 30], [70, y - 4], [108, y - 66]], 8, CHALKY, 1.5, 20 + i); });
+  chalkify(x, w, h, 1.2);
+});
+const easelChalk = { mesh: null };
+const props = (async () => {
+  const jobs = [];
+  jobs.push(loadPacked('easel_p.json').then(d => { fit(Object.values(d).flat(), 1.509);
+    const [g] = placeAll(d, { standing_chalkboard_01_frame: propM('easel', true), standing_chalkboard_01_board: propM('slate', true, { roughness: 0.95 }), default: propM('easel') }, [[EASEL.x, 0, EASEL.z, EASEL.ry]]);
+    const m = flat(0.74, 1.09, easelTex, g, 0.0, 0.881, 0.183, -0.2094, 0, 0, { transparent: true, depthWrite: false, side: THREE.FrontSide, roughness: 0.95, polygonOffset: true, polygonOffsetFactor: -2 }); m.renderOrder = 2; easelChalk.mesh = m; }));
+  jobs.push(loadPacked('stove_p.json').then(d => { fit(Object.values(d).flat(), 0.86);
+    placeAll(d, { default: propM('stove', true, { alphaMap: tex('stove_alpha_512.jpg', false), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }) }, [[-4.55, 0, 4.15, 0.6]]); }));
+  jobs.push(loadPacked('crate_p.json').then(d => { const geos = Object.values(d).flat(); fit(geos, 1.0, 'w'); geos.forEach(g => g.computeBoundingBox()); const hgt = Math.max(...geos.map(g => g.boundingBox.max.y));
+    placeAll(d, { default: propM('crate', true) }, [[4.75, 0, 0.0, Math.PI / 2], [4.8, hgt, -0.05, Math.PI / 2 + 0.06], [4.7, 0, -1.3 + 0.05, Math.PI / 2 - 0.04], [-4.6, 0, 0.7, 0.2]]); }));
+  jobs.push(loadPacked('ladder_p.json').then(d => { fit(Object.values(d).flat(), 2.13);
+    placeAll(d, { default: propM('ladder', true) }, [[FRAME.x + 0.95, 0.0, FRAME.z + 0.15, Math.PI / 2, -0.32]]); }));
+  jobs.push(loadPacked('spade_p.json').then(d => { fit(Object.values(d).flat(), 1.1);
+    placeAll(d, { default: propM('spade', true) }, [[PIT.x + 1.32, 0.0, PIT.z + 0.6, -0.8, 0.2, 0.0]]); }));
+  jobs.push(loadPacked('sledge_p.json').then(d => { fit(Object.values(d).flat(), 1.0);
+    placeAll(d, { default: propM('sledge', true) }, [[FURN.x1 + 0.12, 0.0, FURN.z1 + 0.25, 0.3, 0.22, 0], [CART.fx + 0.95, 0.0, CART.fz - 0.65, 1.8, 0.0, 1.45]]); }));
+  jobs.push(loadPacked('mallet_p.json').then(d => { fit(Object.values(d).flat(), 0.28);
+    placeAll(d, { default: propM('mallet', true) }, [[LATHE.x - 0.9, 0.012, LATHE.z + 0.55, 0.9, 0, Math.PI / 2]]); }));
+  jobs.push(loadPacked('lantern_p.json').then(d => { fit(Object.values(d).flat(), 0.4);
+    const glass = propM('lglass', true, { alphaMap: tex('lglass_alpha_512.jpg', false), transparent: true, opacity: 0.9, depthWrite: false, emissive: 0xffb466, emissiveIntensity: 1.6, roughness: 0.4 });
+    const spots = [[-4.2, 2.55, 1.25, 0.3], [2.1, 2.5, 3.75, -0.4], [-2.35, 2.2, R.z1 + R.t + 0.25, 0.0]];
+    placeAll(d, { wooden_lantern_01: propM('lantern', true), wooden_lantern_01_glass: glass, default: propM('lantern', true) }, spots);
+    for (const [x, y, z] of spots) { if (y > 2.4) { const l = new THREE.PointLight(0xffb06a, 1.6, 5, 1.8); l.position.set(x, y + 0.18, z); scene.add(l); mesh(new THREE.CylinderGeometry(0.006, 0.006, R.h - 0.26 - y - 0.4, 6), blackM, null, x, (R.h - 0.26 + y + 0.4) / 2, z, false); } } }));   // (the one outside lives on the doors' spill)
+  for (const j of jobs) await j.catch(err => console.warn('[foundry] model unavailable:', err && err.message));
+})();
+// a lantern-glow in the stove, through its holes
+const stoveLight = new THREE.PointLight(0xff8a3a, 2.2, 3.5, 1.8); stoveLight.position.set(-4.55, 0.42, 4.15); scene.add(stoveLight);
+glowSprite(0.7, -4.55, 0.42, 4.15, 0.35);
+
+/* =====================================================================
+   LET'S TALK: the slate. "Let's talk" takes the camera to the order slate on the left wall (in at the doors first if it's out in
+   the yard). The order book fades as if wiped, and the form is chalked onto the slate a character at a time (talk/surface.js
+   lays it out; this writes it in chalk); the live fields sit over it in CSS3D. Send: the camera turns to the doors, where the
+   bell on its post in the yard swings and rings and knocks the snow off its roof; then back to the slate, where "Message
+   received" and the time are chalked up. Escape or ✕ goes back to wherever the scroll left the camera.
+   ===================================================================== */
+const RATE = 150;                                                          // characters chalked a second
+const OUT = 3.0, HOLD = 2.6, BACK = 3.0;                                   // out of the doors to watch the yard bell, and back
+const VANT = { pos: V(0.25, 1.8, 13.3), look: V(YB.x + 0.58, 1.95, YB.z) };   // out in the yard, the bell against the glowing doors
+const DOOR_IN = [0.0, 1.85, R.z1 - 1.3], DOOR_OUT = [0.0, 1.95, R.z1 + 2.2];
+const talk = { mode: 'off', t: 0, dur: 3, curve: null, back: null, ahead: false, L0: V(0, 0, 0), L1: V(0, 0, 0), v: 0, busy: false, surf: null, L: null,
+  group: null, face: null, css: null, cssR: null, opener: null, mobile: null, cv: null, tex: null, FW: 0, FH: 0, ox: 0, oy: 0, MPP: 0, PW: 0, PH: 0,
+  shown: 0, total: 0, writing: false, hold: false, cssK: 0, seq: -1, swapped: false, ring: -1, when: new Date(), sentVals: null };
+const talkPose = { pos: V(0, 0, 0), look: V(0, 0, 0) }, _tl = V(0, 0, 0), _ta = V(0, 0, 0);
+
+/* ---- sound you can see: rings spreading from a bell; snow knocked loose ---- */
+const rippleM = () => new THREE.MeshBasicMaterial({ color: 0xffe6b0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+function ripples(n = 4) { const rs = []; for (let i = 0; i < n; i++) { const r = new THREE.Mesh(new THREE.RingGeometry(0.965, 1, 72), rippleM()); r.visible = false; r.renderOrder = 9; r.frustumCulled = false; scene.add(r); rs.push(r); } return rs; }
+function rippleTick(rs, at, t0, size = 1) {   // t0: seconds since the strike (or -1)
+  rs.forEach((r, i) => { const u = (t0 - i * 0.42) / 1.9, on = t0 >= 0 && u > 0 && u < 1; r.visible = on; if (!on) return;
+    r.position.copy(at); r.quaternion.copy(camera.quaternion); const s = size * (0.25 + u * 2.6); r.scale.set(s, s, s);
+    r.material.opacity = 0.42 * Math.pow(1 - u, 1.5) * sstep(0, 0.05, u); });
+}
+function snowBurst(n = 90) {   // flakes knocked off something, tumbling down
+  const P = new Float32Array(n * 3), S = new Float32Array(n); for (let i = 0; i < n; i++) { P.set([rnd() * 2 - 1, rnd(), rnd() * 2 - 1], i * 3); S[i] = rnd(); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('seed', new THREE.BufferAttribute(S, 1));
+  const m = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, fog: false, uniforms: { uT: { value: -1 }, uO: { value: V(0, 0, 0) }, uSpread: { value: V(0.5, 0.1, 0.3) }, uScale: { value: H * DPR } },
+    vertexShader: `attribute float seed; uniform float uT, uScale; uniform vec3 uO, uSpread; varying float vA;
+      void main(){ float t = uT - seed * 0.35; vec3 p = uO + position * uSpread;
+        p.y -= max(t, 0.0) * max(t, 0.0) * 2.2 + max(t, 0.0) * 0.3; p.x += sin(t * 3.0 + seed * 20.0) * 0.05 * t;
+        vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv;
+        float on = step(0.0, t) * step(t, 2.2); gl_PointSize = on * uScale * 0.02 * (0.5 + seed) / max(0.4, -mv.z);
+        vA = on * (1.0 - smoothstep(1.4, 2.2, t)); }`,
+    fragmentShader: `varying float vA; void main(){ vec2 d = gl_PointCoord - 0.5; float a = smoothstep(0.5, 0.1, length(d)) * vA; gl_FragColor = vec4(vec3(0.97, 0.98, 1.0), a); }` });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; pts.renderOrder = 8; scene.add(pts); return m;
+}
+const yardRipples = ripples(4), yardSnow = snowBurst(70);
+yardSnow.uniforms.uO.value.set(YB.x + 0.32, 2.85, YB.z); yardSnow.uniforms.uSpread.value.set(0.55, 0.08, 0.3);
+
+/* ---- the chalk ---- */
+const two2 = n => String(n).padStart(2, '0'), MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const hhmm2 = d => two2(d.getHours()) + ':' + two2(d.getMinutes());
+const TCOL = { title: CHALKC, intro: 'rgba(239,237,230,.9)', label: 'rgba(243,210,122,.95)', msg: CHALKR, note: 'rgba(239,237,230,.6)' };
+function chalkBox(x, f, k, seed) {   // a field: a box drawn freehand
+  const X0 = f.x * k, Y0 = f.y * k, X1 = (f.x + f.w) * k, Y1 = (f.y + f.h) * k, j = 2.2 * k;
+  chalkLine(x, [[X0 + 2 * k, Y0], [X1 - 3 * k, Y0 + 1 * k], [X1, Y1 - 2 * k], [X0 + 3 * k, Y1], [X0, Y0 + 4 * k]], 2.6 * k, 'rgba(239,237,230,.72)', j, seed);
+}
+function drawValue(x, f, v, k, tall) {   // what the visitor wrote, left on the slate in chalk once it's sent
+  if (!v) return; x.font = `700 ${22 * k}px ${CHALK}`; x.fillStyle = CHALKC; x.textBaseline = 'middle'; x.textAlign = 'left';
+  if (!tall) { let s = v; while (x.measureText(s).width > (f.w - 28) * k && s.length > 1) s = s.slice(0, -2) + '…'; x.fillText(s, (f.x + 14) * k, (f.y + f.h / 2) * k); return; }
+  const words = v.replace(/\s+/g, ' ').trim().split(' '), lines = []; let line = '';
+  for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (x.measureText(t).width > (f.w - 28) * k && line) { lines.push(line); line = wd; } else line = t; } if (line) lines.push(line);
+  lines.slice(0, Math.max(1, Math.floor((f.h - 12) / 26))).forEach((l, i) => x.fillText(l, (f.x + 14) * k, (f.y + 20 + i * 26) * k));
+}
+function paintFace() {
+  const cv = talk.cv, x = cv.getContext('2d'), w = cv.width, h = cv.height, k = w / talk.FW, L = talk.L, st = talk.surf.state;
+  x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, w, h);
+  const d = talk.when, head = `${st === 'sent' ? 'received' : st === 'error' ? 'not sent' : 'new order'}  ·  ${d.getDate()} ${MON[d.getMonth()]}  ·  ${hhmm2(d)}`;
+  if (!talk.hold) chalkText(x, head, talk.ox * k, talk.oy * 0.62 * k, 19 * k, 'rgba(239,237,230,.6)', 600);
+  x.translate(talk.ox * k, talk.oy * k);
+  // the fields, drawn as their labels come
+  let n = 0, lab = 0; const drawn = [];
+  for (const t of L.texts) {
+    x.font = t.font(k); x.textBaseline = 'middle'; x.textAlign = 'left'; try { x.letterSpacing = (t.ls * k) + 'px'; } catch (_) {}
+    const col = TCOL[t.kind] || TCOL.intro;
+    for (const wd of t.words) {
+      const m = wd.w.length, left = talk.hold ? 0 : talk.shown - n, c = Math.min(m, Math.floor(left));
+      if (c > 0) { x.fillStyle = col; x.fillText(wd.w.slice(0, c), wd.x * k, (wd.y + wd.h / 2) * k); if (t.kind === 'title') { x.globalAlpha = 0.35; x.fillText(wd.w.slice(0, c), wd.x * k + 1.2 * k, (wd.y + wd.h / 2) * k + 0.8 * k); x.globalAlpha = 1; } }
+      n += m + 1;
+    }
+    try { x.letterSpacing = '0px'; } catch (_) {}
+    if (t.kind === 'label') { if (!talk.hold && talk.shown >= n) drawn.push(lab); lab++; }
+  }
+  L.fields.forEach((f, i) => { if (!drawn.includes(i)) return; const tall = f.h > 70; chalkBox(x, f, k, 40 + i * 7); if (talk.sentVals) drawValue(x, f, talk.sentVals[['name', 'phone', 'email', 'message'][i]], k, tall); });
+  // the buttons: a chalk outline under each live one, so the slate reads whole before the live layer comes up
+  if (!talk.hold && talk.shown >= talk.total) for (const b of L.buttons) { if (b.w < 50) continue; chalkBox(x, { x: b.x, y: b.y, w: b.w, h: b.h }, k, 90); }
+  // sent: the time, big, ringed, where the form's seal goes
+  if (st === 'sent' && !talk.hold && talk.shown >= talk.total) for (const sl of L.seals) {
+    chalkText(x, hhmm2(talk.when), (sl.x + sl.w / 2) * k, (sl.y + sl.h * 0.68) * k, 44 * k, CHALKY, 700, 'center');
+    chalkRing(x, (sl.x + sl.w / 2) * k, (sl.y + sl.h / 2) * k, sl.w * 0.62 * k, sl.h * 0.5 * k, 3 * k, CHALKY, 7);
+  }
+  chalkify(x, w, h, k * 0.9);
+  talk.tex.needsUpdate = true;
+}
+const countAll = L => L.texts.reduce((n, t) => n + t.words.reduce((m, wd) => m + wd.w.length + 1, 0), 0);
+function startWriting(hold) { talk.L = talk.surf.layout(); talk.total = countAll(talk.L); talk.shown = reduce ? talk.total : 0; talk.writing = !reduce && !hold; talk.hold = !!hold && !reduce; paintFace(); }
+function faceChanged(reason) {
+  if (!talk.cv) return;
+  if (reason === 'state') {
+    if (talk.surf.state === 'sent') { talk.when = new Date(); talk.css.element.style.opacity = '0'; talk.cssK = 0;
+      if (!reduce) { talk.shown = talk.total; talk.writing = false; talk.hold = false; paintFace(); return; } }   // the sent form stays chalked up until the camera has turned away
+    startWriting(talk.hold);
+  } else { talk.L = talk.surf.layout(); talk.total = countAll(talk.L); if (!talk.writing && !talk.hold) talk.shown = talk.total; paintFace(); }
+}
+
+/* ---- building it ---- */
+async function buildTalk(config, send) {
+  const mobile = W / H < 0.85;
+  if (talk.group && talk.mobile === mobile) { fitTalk(); return; }
+  if (talk.group) { slate.g.remove(talk.group); talk.surf.destroy(); talk.tex.dispose(); talk.group = null; talk.cv = null; }
+  const { createSurface } = await import('../talk/surface.js');
+  if (document.fonts) await Promise.all([`700 50px Caveat`, `700 20px Caveat`].map(f => document.fonts.load(f))).catch(() => {});
+  talk.mobile = mobile;
+  const s = talk.surf = createSurface({ config, send, width: mobile ? 344 : 600, mobile, look: 'tb-look-chalk', pad: mobile ? ['30px', '20px', '24px'] : ['36px', '44px', '30px'],
+    copy: { sentTitle: 'Message received', sentText: "Thanks. I'll get back to you soon, on WhatsApp or by email." },
+    onChange: r => faceChanged(r), onClose: () => closeTalk(), onSent: () => ringOut() });
+  s.el.addEventListener('submit', e => { const f = e.target; talk.sentVals = Object.fromEntries(['name', 'phone', 'email', 'message'].map(n => [n, (f.elements[n] && f.elements[n].value) || ''])); }, true);
+  const mt = mobile ? 44 : 54, mb = mobile ? 24 : 30, mx = mobile ? 20 : 40;
+  talk.FW = s.fw + 2 * mx; talk.FH = s.fh + mt + mb; talk.ox = mx; talk.oy = mt;
+  talk.PW = Math.min(mobile ? 1.05 : 1.62, (SLATE.h - 0.14) * talk.FW / talk.FH, SLATE.w - 0.3); talk.MPP = talk.PW / talk.FW; talk.PH = talk.FH * talk.MPP;
+  const kk = Math.min(2048 / Math.max(talk.FW, talk.FH), 2.8);
+  talk.cv = document.createElement('canvas'); talk.cv.width = Math.round(talk.FW * kk); talk.cv.height = Math.round(talk.FH * kk);
+  talk.tex = new THREE.CanvasTexture(talk.cv); talk.tex.colorSpace = THREE.SRGBColorSpace; talk.tex.anisotropy = ANISO;
+  const g = new THREE.Group(); slate.g.add(g);
+  talk.face = mesh(new THREE.PlaneGeometry(talk.PW, talk.PH), new THREE.MeshBasicMaterial({ map: talk.tex, color: new THREE.Color(0.9, 0.9, 0.88), transparent: true, opacity: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }), g, 0, slate.cy, 0.034, false);   // unlit: chalk you can read, whatever the light
+  talk.face.renderOrder = 3;
+  talk.css = new CSS3DObject(s.el); talk.css.scale.setScalar(talk.MPP);
+  talk.css.position.set((talk.ox + s.fw / 2 - talk.FW / 2) * talk.MPP, slate.cy - (talk.oy + s.fh / 2 - talk.FH / 2) * talk.MPP, 0.036); talk.css.visible = false; g.add(talk.css);
+  talk.group = g;
+  startWriting(true); fitTalk();
+}
+function fitTalk() {   // square on to the chalked form, far enough back to see all of it
+  slate.g.updateWorldMatrix(true, true);
+  const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), m = talk.mobile, vis = clamp(innerHeight / H, 0.6, 1);   // (on iPhones the canvas runs on under the bottom bar: fit in what shows)
+  const d = Math.max(talk.PH / ((m ? 0.84 : 0.8) * 2 * tn * vis), talk.PW / ((m ? 0.92 : 0.84) * 2 * tn * camera.aspect));
+  const c = slate.g.localToWorld(V(0, slate.cy, 0.03)), n = V(0, 0, 1).transformDirection(slate.g.matrixWorld);
+  talkPose.look.copy(c); talkPose.pos.copy(c).addScaledVector(n, d);
+  const lift = (m ? talk.PH * 0.03 : 0) - (1 - vis) * d * tn; talkPose.look.y += lift; talkPose.pos.y += lift;
+}
+
+/* ---- the camera's way: inside, straight; from the yard, in at the doors ---- */
+const inHall = p => p.x > R.x0 && p.x < R.x1 && p.z > R.z0 && p.z < R.z1 && p.y < roofY(p.x);
+function route(A, B) {
+  const a = inHall(A), b = inHall(B);
+  if (a && b) return [A, B];
+  if (!a && b) return [A, V(...DOOR_OUT), V(...DOOR_IN), B];
+  if (a && !b) return [A, V(...DOOR_IN), V(...DOOR_OUT), B];
+  return [A, B];
+}
+function curveOf(pts) {
+  const q = [pts[0]]; for (const p of pts.slice(1)) if (p.distanceTo(q[q.length - 1]) > 0.08) q.push(p);
+  if (q.length < 2) q.push(q[0].clone().add(V(0, 0.01, 0)));
+  if (q.length === 2) q.splice(1, 0, q[0].clone().lerp(q[1], 0.5));
+  return new THREE.CatmullRomCurve3(q, false, 'centripetal');
+}
+function fly(curve, e, L0, L1, ahead) {   // long ways look where they're going, then turn to what they came for
+  camera.position.copy(curve.getPointAt(e));
+  if (ahead) { _ta.copy(curve.getPointAt(Math.min(1, e + 0.1))); _tl.copy(L0).lerp(_ta, sstep(0.03, 0.3, e)).lerp(L1, sstep(0.65, 1, e)); }
+  else _tl.copy(L0).lerp(L1, sstep(0, 0.6, e));
+  camera.lookAt(_tl);
+}
+
+/* ---- open, send, close ---- */
+async function openTalk({ config, send, opener, fallback }) {
+  if (talk.mode === 'in' || talk.mode === 'on' || talk.mode === 'away' || talk.busy) return;
+  talk.opener = opener; talk.busy = true;
+  if (!talk.cssR) { talk.cssR = new CSS3DRenderer(); document.getElementById('talk3d').appendChild(talk.cssR.domElement); talk.cssR.setSize(W, H); }
+  document.documentElement.classList.add('talking'); document.documentElement.style.overflow = 'hidden';
+  try { await buildTalk(config, send); } catch (err) {
+    console.warn('[contact] the slate is unavailable:', err && err.message); talk.busy = false;
+    document.documentElement.classList.remove('talking'); document.documentElement.style.removeProperty('overflow'); talk.group = null; if (fallback) fallback(); return; }
+  talk.busy = false; talk.when = new Date(); talk.seq = -1; talk.swapped = false; talk.sentVals = null;
+  talk.hold = true; talk.surf.reset();   // → a wiped slate; the form is chalked on as the camera arrives
+  const P0 = camera.position.clone();
+  talk.L0.copy(talk.mode === 'out' ? _tl : camLook); talk.L1.copy(talkPose.look);
+  if (P0.distanceTo(talkPose.pos) < 0.05) { talk.mode = 'on'; startWriting(false); talk.surf.focusFirst(); return; }
+  talk.curve = curveOf(route(P0, talkPose.pos.clone())); const len = talk.curve.getLength(); talk.ahead = len > 4;
+  talk.dur = reduce ? 0.001 : Math.min(4.2, 1.8 + len * 0.12); talk.mode = 'in'; talk.t = 0;
+}
+function ringOut() {   // Send went through: turn to the doors to watch the yard bell ring it out, then back for the reply
+  if (reduce) { talk.ring = -1; return; }
+  talk.seq = 0; talk.mode = 'away'; talk.swapped = false;
+  talk.curve = curveOf(route(talkPose.pos.clone(), VANT.pos.clone()));
+}
+function swapToReply() {   // the slate wiped for the reply; it's chalked up as the camera comes back
+  talk.swapped = true; talk.sentVals = null; talk.L = talk.surf.layout(); talk.total = countAll(talk.L);
+  talk.shown = 0; talk.writing = false; talk.hold = true; paintFace();
+  talk.back = curveOf(route(camera.position.clone(), talkPose.pos.clone()));
+}
+function closeTalk() {
+  if (talk.mode === 'off' || talk.mode === 'out') return;
+  cameraAt(stage.prog);
+  talk.curve = curveOf(route(camera.position.clone(), tgtPos.clone())); const len = talk.curve.getLength(); talk.ahead = len > 4;
+  talk.L0.copy(_tl); talk.L1.copy(tgtLook);
+  talk.dur = reduce ? 0.001 : Math.min(3.8, 1.6 + len * 0.11); talk.mode = 'out'; talk.t = 0; talk.seq = -1; talk.hold = false;
+  document.documentElement.classList.remove('talking');
+}
+function talkFrame(dt) {
+  if (talk.mode === 'off') return false;
+  if (talk.mode === 'on') { camera.position.copy(talkPose.pos); _tl.copy(talkPose.look); camera.lookAt(_tl); return true; }
+  if (talk.mode === 'away') {
+    talk.seq = talk.freeze != null ? talk.freeze : talk.seq + dt; const s = talk.seq;   // (freeze: QA hook)
+    if (s < OUT) fly(talk.curve, easeIO(s / OUT), talkPose.look, VANT.look, true);
+    else if (s < OUT + HOLD) { camera.position.copy(VANT.pos).add(_ta.set(0, (s - OUT) / HOLD * 0.06, 0)); _tl.copy(VANT.look); camera.lookAt(_tl); }
+    else {
+      if (!talk.swapped) swapToReply();
+      const u = Math.min(1, (s - OUT - HOLD) / BACK); fly(talk.back, easeIO(u), VANT.look, talkPose.look, true);
+      if (talk.hold && (1 - u) * BACK < 0.9) startWriting(false);
+      if (u >= 1) { talk.mode = 'on'; talk.seq = -1; if (talk.hold) startWriting(false); talk.surf.focusFirst(); }
+    }
+    return true;
+  }
+  talk.t = Math.min(talk.dur, talk.t + dt); fly(talk.curve, easeIO(talk.t / talk.dur), talk.L0, talk.L1, talk.ahead);
+  if (talk.mode === 'in' && talk.hold && talk.dur - talk.t < 0.9) startWriting(false);
+  if (talk.mode === 'in' && talk.t >= talk.dur) { talk.mode = 'on'; if (talk.hold) startWriting(false); talk.surf.focusFirst(); }
+  if (talk.mode === 'out' && talk.t >= talk.dur) { talk.mode = 'off'; camPos.copy(camera.position); camLook.copy(_tl); document.documentElement.style.removeProperty('overflow'); if (talk.opener && talk.opener.focus) talk.opener.focus({ preventScroll: true }); }
+  return true;
+}
+function talkUpdate(t, dt) {   // after the story's own update: the slate, the chalk, the yard bell
+  const want = talk.mode === 'in' || talk.mode === 'on' || talk.mode === 'away' ? 1 : 0;
+  talk.v = reduce ? want : lerp(talk.v, want, 1 - Math.exp(-dt * (want ? 2.6 : 1.4)));
+  slate.orderM.opacity = 1 - clamp(talk.v * 1.6, 0, 1); slate.order.visible = slate.orderM.opacity > 0.002;
+  if (talk.group) {
+    talk.face.material.opacity = clamp(talk.v * 1.6 - 0.3, 0, 1); talk.face.visible = talk.face.material.opacity > 0.002;
+    if (talk.writing) { talk.shown = Math.min(talk.total, talk.shown + dt * RATE); if (talk.shown >= talk.total) talk.writing = false; paintFace(); }
+    const show = talk.mode === 'on' && !talk.writing && !talk.hold && talk.shown >= talk.total;   // the live fields once the chalk is down
+    talk.cssK = show ? (reduce ? 1 : lerp(talk.cssK, 1, 1 - Math.exp(-dt * 9))) : 0;
+    talk.css.visible = talk.cssK > 0.01; talk.css.element.style.opacity = talk.cssK.toFixed(3);
+  }
+  // the yard bell: pulled once it's sent; it swings, rings, and its roof sheds its snow
+  const s = talk.mode === 'away' ? talk.seq : -1, bt = s >= 0 ? s - (OUT - 0.35) : -1;
+  if (bt >= 0 && talk.ring < 0) talk.ring = 0;
+  if (talk.ring >= 0) { talk.ring += dt; const r = talk.ring;
+    yard.swing.rotation.z = 0.55 * Math.sin(r * 4.2) * Math.exp(-r * 0.55) * sstep(0, 0.15, r);
+    rippleTick(yardRipples, _ta.set(YB.x + 0.58, 2.0, YB.z), r - 0.2, 0.42);
+    yardSnow.uniforms.uT.value = r - 0.15;
+    if (r > 7) { talk.ring = -1; yard.swing.rotation.z = 0; yardSnow.uniforms.uT.value = -1; rippleTick(yardRipples, _ta, -1); } }
+}
+addEventListener('keydown', e => { if (talk.mode !== 'on' && talk.mode !== 'in' && talk.mode !== 'away') return; if (e.key === 'Escape') { e.preventDefault(); closeTalk(); } else talk.surf && talk.surf.trap(e); });
+window.__talkScene = { open: o => { openTalk(o); } };
+
+/* =====================================================================
+   SCROLL → WHAT HAPPENS: the order is ringed on the slate; the cart brings four old bells in out of the snow; the board sweeps
+   the core and the mould comes down over it; the old bells glow and slump, the ladle carries the melt over and pours; the new
+   bell turns on the lathe as the voice is ticked off; it's hoisted into the frame as the plate fills in; the slate says done;
+   out in the yard, the new bell rings. Snow, smoke, fire and dust run all the time.
+   ===================================================================== */
+let slateSt = -1, easelTicks = -1, plateBlocks = -1, poured = false;
+const _p = V(0, 0, 0), _q = V(0, 0, 0), ringAt = V(0, 0, 0);
+const frameRipples = ripples(4), eaveSnow = snowBurst(160);
+eaveSnow.uniforms.uO.value.set(0, R.ridge - 0.6, R.z1 + R.t + 0.5); eaveSnow.uniforms.uSpread.value.set(3.6, 0.6, 0.25);
+const steam = plume(PIT.x, COPE.lowY + 1.3, PIT.z, { n: 14, spread: 0.18, rise: 2.2, speed: 0.11, size: 0.9, color: 0xd8d4d0, alpha: 0.35, wind: 0.2 }); steam.k = 0;
+const SH = shavings.seeds.map(() => ({ t: -1 })); let shEmit = 0;
+function update(t, dt, p) {
+  beamM.uniforms.uTime.value = t; dust.uniforms.uTime.value = t; snowfall.uniforms.uTime.value = t; fireM.uniforms.uTime.value = t;
+  moltenM.uniforms.uTime.value = t; streamM.uniforms.uTime.value = t; sparks.uniforms.uTime.value = t; plumeTick(t);
+  const flick = 0.82 + 0.1 * Math.sin(t * 7.3) + 0.08 * Math.sin(t * 13.1 + 1.3);
+  fireLight.intensity = 26 * flick; mouthGlow.material.opacity = 0.42 + 0.12 * flick;
+
+  // 01: the order book; the row's YES gets its ring.  07: that row is done, the ring moves to the next
+  const ring = SNAP ? (p > 0.08 ? 1 : 0) : sstep(0.065, 0.11, p), st = p > 0.775 ? 2 : ring > 0 ? 1 : 0, key = st * 100 + (st === 1 ? Math.round(ring * 16) : 0);
+  if (key !== slateSt) { slateSt = key; slate.orderTex.userData.redraw(st, st === 1 ? Math.round(ring * 16) / 16 : 1); }
+
+  // 02: the cart comes in out of the snow; then over to the furnace. The snow on the bells melts in the warm
+  const inn = SNAP ? (p > 0.21 ? 1 : 0) : sstep(0.17, 0.245, p), over = SNAP ? (p > 0.3 ? 1 : 0) : sstep(0.265, 0.325, p);
+  let dist;
+  if (over <= 0) { cart.g.position.set(CART.x, 0, lerp(CART.zOut, CART.zIn, easeIO(inn))); cart.g.rotation.y = 0; dist = easeIO(inn) * (CART.zOut - CART.zIn); }
+  else { const e = easeIO(over); cartPath.getPointAt(e, _p); cart.g.position.copy(_p); cartPath.getTangentAt(Math.min(0.999, e), _q); cart.g.rotation.y = Math.atan2(-_q.x, -_q.z); dist = (CART.zOut - CART.zIn) + e * cartPath.getLength(); }
+  for (const w of cart.wheels) w.rotation.x = -dist / 0.17;
+  const thaw = 1 - sstep(0.25, 0.4, p);
+
+  // 03: the board sweeps round the core, and stops with its chalk to us; then it's lifted off and the mould comes down
+  const sweep = SNAP ? (p > 0.36 ? 1 : 0) : sstep(0.3, 0.37, p), lift = SNAP ? (p > 0.4 ? 1 : 0) : sstep(0.385, 0.405, p), down = SNAP ? (p > 0.43 ? 1 : 0) : sstep(0.4, 0.432, p);
+  strickle.rotation.y = STRICKLE_FACE - (1 - easeIO(sweep)) * Math.PI * 2.5;
+  strickle.position.y = RING.y + lift * 1.8; strickle.visible = lift < 0.999; spindle.visible = lift < 0.999; spindle.position.y = RING.y + 1.05 + lift * 1.8;
+  cope.g.position.y = lerp(COPE.upY, COPE.lowY, easeIO(down)); core.visible = down < 0.999;
+  copeTrolley.position.set(PIT.x, GY - 0.26, PIT.z);
+  const eyeY = cope.g.position.y + 0.86;
+  copeChains.forEach((c, i) => { const a = i * Math.PI / 2 + 0.4; c.set(_p.set(PIT.x + Math.cos(a) * 0.6, GY - 0.55, PIT.z + Math.sin(a) * 0.6), GY - 0.58 - eyeY); });
+
+  // 04: the old bells go red, then orange, and slump; the ladle fills, is lifted, carried over and tipped into the cup
+  cart.bells.forEach((b, i) => {
+    const glow = SNAP ? (p > 0.44 ? 1 : 0) : sstep(0.415 + i * 0.006, 0.452 + i * 0.006, p), slump = SNAP ? (p > 0.47 ? 1 : 0) : sstep(0.446 + i * 0.005, 0.47 + i * 0.004, p);
+    b.m.emissive.setRGB(1.0, 0.12 + 0.36 * glow, 0.02 + 0.08 * glow); b.m.emissiveIntensity = glow * (0.5 + 1.0 * glow);   // dull red, then orange
+    b.b.scale.set(1 + slump * 0.35, Math.max(0.02, 1 - slump * 0.95), 1 + slump * 0.35); b.b.visible = slump < 0.995;
+    b.cap.visible = thaw > 0.01; b.cap.scale.set(1.04, Math.max(0.01, thaw), 1.04); b.tg.visible = glow < 0.2;
+  });
+  const fill = SNAP ? (p > 0.46 ? 1 : 0) : sstep(0.43, 0.466, p), raise = SNAP ? (p > 0.47 ? 1 : 0) : sstep(0.462, 0.474, p), carry = SNAP ? (p > 0.485 ? 1 : 0) : sstep(0.47, 0.486, p);
+  const tip = SNAP ? (p > 0.5 && p < 0.52 ? 1 : 0) : sstep(0.484, 0.496, p) * (1 - sstep(0.518, 0.534, p));
+  const pour = SNAP ? (p > 0.497 && p < 0.52 ? 1 : 0) : sstep(0.49, 0.498, p), stop = SNAP ? (p > 0.52 ? 1 : 0) : sstep(0.514, 0.524, p);
+  ladle.melt.visible = fill > 0.01 && stop < 0.99; moltenM.uniforms.uK.value = fill * (1 - stop);
+  const lx = lerp(LADLE.xFurn, LADLE.xPour, easeIO(carry)), ly = lerp(1.3, 2.16, easeIO(raise));
+  ladle.pivot.position.set(lx, ly, PIT.z); ladle.pivot.rotation.z = -1.1 * easeIO(tip);
+  ladle.bail.position.set(lx, ly, PIT.z); ladleTrolley.position.set(lx, GY - 0.26, PIT.z);
+  ladleChain.set(_p.set(lx, GY - 0.5, PIT.z), GY - 0.5 - (ly + LADLE.r + 0.09));
+  if (!stream && pour > 0) { const was = ladle.pivot.rotation.z; ladle.pivot.rotation.z = -1.1; ladle.pivot.position.set(LADLE.xPour, 2.16, PIT.z); shapeStream(); ladle.pivot.rotation.z = was; ladle.pivot.position.set(lx, ly, PIT.z); }
+  if (stream) { stream.visible = pour > 0 && stop < 1; streamM.uniforms.uLen.value = pour; streamM.uniforms.uEnd.value = stop; }
+  sparks.uniforms.uOn.value = pour * (1 - stop);
+  const hot = pour > 0 ? 1 - sstep(0.53, 0.7, p) * 0.75 : 0;   // the cup glows on as the bronze cools
+  cope.fill.visible = pour > 0.6; moltenM.uniforms.uK.value = Math.max(moltenM.uniforms.uK.value, 0); cupGlow.material.opacity = 0.6 * hot * (0.85 + 0.15 * flick);
+  steam.k = pour > 0 ? (1 - sstep(0.62, 0.8, p)) : 0;
+  meltLight.intensity = 14 * Math.max(pour * (1 - stop), fill * (1 - raise) * 0.35, hot * 0.35);
+  if (pour > 0 && stop < 1) meltLight.position.set(lerp(LADLE.xPour, PIT.x, 0.5), 1.8, PIT.z); else if (pour > 0) meltLight.position.set(PIT.x, COPE.lowY + 1.5, PIT.z); else meltLight.position.set(lx, ly + 0.5, PIT.z + 0.3);
+  dust.uniforms.uHeat.value = Math.max(fill, hot);
+
+  // 05: on the lathe: the table turns, curls of bronze come off the cutter, the voice is ticked off
+  lathe.bell.visible = p > 0.515 && p < 0.655;
+  const turning = p > 0.53 && p < 0.665 ? 1 : 0;
+  lathe.table.rotation.y += (reduce ? 0.3 : 1) * dt * 1.6 * turning;
+  const ticks = SNAP ? (p > 0.6 ? 8 : 0) : Math.floor(sstep(0.548, 0.622, p) * 8 + 1e-4);
+  if (ticks !== easelTicks) { easelTicks = ticks; easelTex.userData.redraw(ticks); }
+  shEmit += dt * (p > 0.548 && p < 0.64 && !reduce ? 7 : 0);
+  { const M = new THREE.Matrix4(), q = new THREE.Quaternion(), tip0 = V(LATHE.x + 0.37, 1.25, LATHE.z + 0.1); let n = 0;
+    for (let i = 0; i < shavings.N; i++) { const sv = SH[i];
+      if (sv.t < 0 && shEmit >= 1) { shEmit -= 1; sv.t = 0; }
+      if (sv.t >= 0) { sv.t += dt; const [a, b, c] = shavings.seeds[i], u = Math.min(sv.t, 1.4), fallY = Math.max(0.69, 1.25 - 0.4 * u - 2.4 * u * u);
+        q.setFromEuler(new THREE.Euler(a * 6 + sv.t * 3, b * 6 + sv.t * 2, c * 6));
+        M.compose(V(tip0.x + (a - 0.5) * 0.12 + u * 0.18 * (b - 0.2), fallY, tip0.z + (c - 0.5) * 0.25 + u * 0.15), q, V(1, 1, 1)); shavings.im.setMatrixAt(n++, M);
+        if (sv.t > 14) sv.t = -1; } }
+    shavings.im.count = n; shavings.im.instanceMatrix.needsUpdate = true; }
+
+  // 06: the bell is hoisted into the frame, a hundred blocks at a time, and the plate fills in
+  belfry.bell.parent.visible = p > 0.655;
+  const steps = SNAP ? (p > 0.74 ? 3 : 0) : [sstep(0.668, 0.688, p), sstep(0.692, 0.712, p), sstep(0.716, 0.738, p)];
+  const up = SNAP ? (steps === 3 ? 1 : 0) : (easeIO(steps[0]) + easeIO(steps[1]) + easeIO(steps[2])) / 3;
+  const lowY = 0.12 + 0.11 + NB * (BELL_H + 0.2);
+  belfry.swing.position.y = lerp(lowY, FR.pivot, up);
+  frameChain.set(_p.set(FRAME.x, FR.top + 0.02, FRAME.z), FR.top + 0.02 - (belfry.swing.position.y + 0.12));
+  frameChain.im.visible = up < 0.999;
+  const blocks = SNAP ? (p > 0.74 ? 3 : 0) : steps.filter(s => s > 0.5).length;
+  if (blocks !== plateBlocks) { plateBlocks = blocks; plateTex.userData.redraw(blocks); }
+
+  // the end: the new bell rings in its frame; the eaves let go of their snow
+  const rings = p > 0.9 && !reduce ? sstep(0.9, 0.95, p) : 0;
+  if (rings > 0) { if (endRing < 0) endRing = 0; endRing += dt; } else if (endRing >= 0 && p < 0.88) endRing = -1;
+  belfry.swing.rotation.z = endRing >= 0 ? 0.42 * Math.sin(endRing * 2.4) * sstep(0, 0.8, endRing) : 0;
+  ringAt.set(FRAME.x, FR.pivot - 0.4, FRAME.z); rippleTick(frameRipples, ringAt, endRing >= 0 ? (endRing % 2.6) : -1, 0.9);
+  eaveSnow.uniforms.uT.value = endRing >= 0 ? endRing - 0.6 : -1;
+
+  talkUpdate(t, dt);   // Let's talk: the slate, the yard bell
+}
+let endRing = -1;
+
+/* ---- camera stations: from the yard in at the doors, round the hall, back out into the snow ---- */
+const KEY = {
+  hero:    { pos: [9.0, 2.3, 20.8], look: [-1.9, 3.2, 3.4], m: { pos: [3.4, 3.4, 28.5], look: [0.2, 1.2, 3.0] } },
+  ask:     { pos: [-1.25, 1.75, 2.0], look: [SLATE.x, 1.58, SLATE.z + 0.6], m: { pos: [0.6, 1.6, 2.35], look: [SLATE.x, 0.9, SLATE.z + 0.05] } },
+  bells:   { pos: [0.75, 1.55, 0.55], look: [0.45, 0.75, 3.7], m: { pos: [0.85, 1.85, -0.2], look: [-0.25, 0.85, 3.6] } },
+  pattern: { pos: [1.55, 1.85, -0.6], look: [PIT.x + 0.2, 0.98, PIT.z - 0.1], close: 1, pb: 1.25 },
+  recast:  { pos: [1.9, 2.5, 1.55], look: [-1.6, 0.95, -2.0], m: { pos: [1.5, 3.1, 3.0], look: [-1.45, 0.35, -1.7] } },
+  tuned:   { pos: [1.35, 1.95, -0.35], look: [3.95, 1.0, -1.95], close: 1, pb: 1.3 },
+  notion:  { pos: [-0.95, 1.75, -1.0], look: [2.75, 1.85, 1.95], m: { pos: [-1.2, 1.9, -1.8], look: [2.8, 1.95, 1.9] } },
+  done:    { pos: [-1.45, 1.7, 2.85], look: [SLATE.x, 1.58, SLATE.z + 0.5], m: { pos: [0.5, 1.6, 2.6], look: [SLATE.x, 0.9, SLATE.z - 0.1] } },
+  end:     { pos: [-4.4, 2.1, 15.6], look: [0.5, 2.4, 3.8], m: { pos: [-4.6, 2.3, 19.5], look: [0.3, 2.8, 3.8] } },
+};
+const STRICKLE_FACE = Math.atan2(KEY.pattern.pos[0] - PIT.x, KEY.pattern.pos[2] - PIT.z);   // the board's chalk turned to stop 03's camera
+const STATIONS = [
+  { p: 0.00, ...KEY.hero }, { p: 0.03, ...KEY.hero },
+  { p: 0.08, ...KEY.ask, via: [[2.4, 2.1, 10.5], [0.6, 1.95, 6.6], [0.1, 1.9, 4.0]] }, { p: 0.15, ...KEY.ask },   // in at the doors
+  { p: 0.20, ...KEY.bells }, { p: 0.27, ...KEY.bells },
+  { p: 0.32, ...KEY.pattern }, { p: 0.39, ...KEY.pattern },
+  { p: 0.44, ...KEY.recast }, { p: 0.51, ...KEY.recast },
+  { p: 0.56, ...KEY.tuned }, { p: 0.63, ...KEY.tuned },
+  { p: 0.68, ...KEY.notion }, { p: 0.74, ...KEY.notion },
+  { p: 0.79, ...KEY.done }, { p: 0.86, ...KEY.done },
+  { p: 0.93, ...KEY.end, via: [[0.1, 1.9, 3.8], [0.3, 1.95, 6.8], [-1.0, 2.0, 11.0]] }, { p: 1.00, ...KEY.end },   // out at the doors
+];
+const _d = new THREE.Vector3();
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), tgtPos = new THREE.Vector3(), tgtLook = new THREE.Vector3();
+const viaCurves = new Map();
+function poseOf(s, por) {   // a station's pose on this screen: its own phone framing, or the close-up stepped back (inside the hall)
+  const P = V(...(por && s.m ? s.m.pos : s.pos)), L = V(...(por && s.m ? s.m.look : s.look));
+  if (por && !s.m) { const was = inHall(P); _d.copy(P).sub(L).multiplyScalar(s.close ? (s.pb || 1.4) - 1 : 0.12); P.add(_d);
+    if (was) { P.x = clamp(P.x, R.x0 + 0.3, R.x1 - 0.3); P.z = clamp(P.z, R.z0 + 0.3, R.z1 - 0.3); P.y = clamp(P.y, 0.5, R.h - 0.4); } }
+  return [P, L];
+}
+function cameraAt(p) {
+  let a = STATIONS[0], b = STATIONS[1];
+  for (let i = 0; i < STATIONS.length - 1; i++) if (p >= STATIONS[i].p) { a = STATIONS[i]; b = STATIONS[i + 1]; }
+  const t = easeIO(clamp((p - a.p) / Math.max(1e-4, b.p - a.p), 0, 1)), por = W / H < 0.85;
+  const [A, AL] = poseOf(a, por), [B, BL] = poseOf(b, por);
+  if (b.via && t > 0 && t < 1) {
+    const key = b.p + (por ? 'p' : 'l'); let c = viaCurves.get(key);
+    if (!c) { c = new THREE.CatmullRomCurve3([A, ...b.via.map(v => V(...v)), B], false, 'centripetal'); viaCurves.set(key, c); }
+    tgtPos.copy(c.getPointAt(t)); _d.copy(c.getPointAt(Math.min(1, t + 0.08)));
+    tgtLook.copy(AL).lerp(_d, sstep(0.05, 0.3, t) * (1 - sstep(0.6, 0.92, t))).lerp(BL, sstep(0.6, 0.95, t));   // look where it's going, then at what it came for
+  } else { tgtPos.copy(A).lerp(B, t); tgtLook.copy(AL).lerp(BL, t); }
+}
+
+/* ---- pointer parallax ---- */
+const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
+addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty = (e.clientY / H) * 2 - 1; }, { passive: true });
+function resize() {
+  const r = canvas.getBoundingClientRect();   // the canvas's own box (on iPhones a fixed 100%-high box is taller than innerHeight)
+  W = Math.round(r.width) || innerWidth; H = Math.round(r.height) || innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); bloom.resolution.set(W / 2, H / 2);
+  camera.aspect = W / H; camera.fov = W / H < 0.85 ? 62 : 42; camera.updateProjectionMatrix(); viaCurves.clear();
+  for (const m of [dust, snowfall, sparks, yardSnow, eaveSnow]) m.uniforms.uScale.value = H * DPR;
+  if (talk.cssR) talk.cssR.setSize(W, H);
+  if (talk.group) fitTalk();
+}
+addEventListener('resize', resize);
+
+/* ---- frame loop ---- */
+let last = performance.now(), t0 = last, progL = 0;
+function frame(now) {
+  const dt = Math.min(SNAP ? 0.5 : 0.05, (now - last) / 1000); last = now; const t = (now - t0) / 1000 * (reduce ? 0.5 : 1);
+  progL = SNAP ? stage.prog : lerp(progL, stage.prog, 1 - Math.exp(-dt * 5));
+  ptr.x = lerp(ptr.x, ptr.tx, 0.05); ptr.y = lerp(ptr.y, ptr.ty, 0.05);
+  if (!talkFrame(dt)) {
+    cameraAt(progL);
+    const kc = SNAP ? 1 : 1 - Math.exp(-dt * 3.4); camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc);
+    const pk = inHall(camPos) ? 0.02 : 0.06;   // less sway in the close-ups
+    camera.position.set(camPos.x + ptr.x * pk, camPos.y - ptr.y * pk * 0.6, camPos.z); camera.lookAt(camLook);
+  }
+  if (window.__camDbg) { camera.position.fromArray(window.__camDbg[0]); camera.lookAt(...window.__camDbg[1]); }   // QA hook
+  update(t, dt, progL);
+  composer.render(dt);
+  if (talk.cssR && talk.mode !== 'off') talk.cssR.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+resize(); cameraAt(stage.prog); camPos.copy(tgtPos); camLook.copy(tgtLook); progL = stage.prog;
+requestAnimationFrame(frame);
+window.__foundry = { scene, camera, renderer, STATIONS, KEY, talk, talkPose, slate, cart, ladle, belfry, lathe, cameraAt, tgtPos, tgtLook };
+</script>
+<script src="../site.js" defer></script>
