@@ -1,6 +1,6 @@
 # Vasant Suraj — portfolio: project documentation
 
-_Status as of 3 Nov 2026, version **v59-voice-talk** (page and docs). Nine pages are live: the home page and eight automation pages (Reddit Keyword Alerts, Notion to Webflow, SEO Pre-Live Checks, Auto Internal Linking, AI Blog Drafts, Webinar to Webflow, Video to Blog, Voice to Blog). Every page has a Let's talk form that sends to WhatsApp, drawn in that page's own world. Eleven automations still use the slide-in panel._
+_Status as of 3 Nov 2026, version **v60-podcast** (page and docs). Ten pages are live: the home page and nine automation pages (Reddit Keyword Alerts, Notion to Webflow, SEO Pre-Live Checks, Auto Internal Linking, AI Blog Drafts, Webinar to Webflow, Video to Blog, Voice to Blog, Podcast to CMO Brief). Every page has a Let's talk form that sends to WhatsApp, drawn in that page's own world. Ten automations still use the slide-in panel._
 
 This file says **what** each part is and what it means. `BUILD.md` says how it is built. `HANDOFF.md` says how to continue the work.
 
@@ -51,11 +51,13 @@ Runtime dependencies:
 │   ├── webinar-to-webflow.html              page 6: recording studio at night
 │   ├── video-to-blog.html                   page 7: The Projection Booth (old cinema booth before the show)
 │   ├── voice-to-blog.html                   page 8: The Tracking Station (desert at dusk)
+│   ├── podcast-to-cmo-brief.html            page 9: The Bento Counter (lunch counter at noon)
 │   ├── city/                                45 files: textures + packed models (page 4)
 │   ├── greenhouse/                          23 files: textures, packed models, dawn HDRI (page 5)
 │   ├── studio/                              34 files: textures, packed models, studio HDRI (page 6)
 │   ├── booth/                               35 files, 6.0 MB: textures, packed models, booth light (page 7)
-│   └── station/                             52 files, 7.1 MB: textures, packed models and scans, dusk light (page 8)
+│   ├── station/                             52 files, 7.1 MB: textures, packed models and scans, dusk light (page 8)
+│   └── counter/                             55 files, 7.2 MB: textures, packed models, room light (page 9)
 ├── portrait/
 │   ├── portrait-color.webp                  hero portrait, cut out, real photo colours
 │   ├── portrait-depth.png                   depth map (bright = near) for the particles' 3D relief
@@ -190,8 +192,9 @@ Every automation page follows one pattern, so they feel like one portfolio while
 | 6 | Webinar to Webflow | a recording studio control room at night | warm practical lamps, screen glow, booth light; shadows, light bloom | 1300svh | 7 |
 | 7 | Video to Blog ("The Projection Booth") | an old cinema projection booth before the first show | late-afternoon sun through one window, warm shade, a pendant lamp; amber, green-grey steel; shadows, light bloom | 1300svh | 7 |
 | 8 | Voice to Blog ("The Tracking Station") | a radio tracking station in the desert at dusk | a painted dusk sky going from sunset to first stars with the scroll, low orange sun, the hut lit from inside; signal amber, scope green; shadows, bloom | 1300svh | 7 |
+| 9 | Podcast to CMO Brief ("The Bento Counter") | a small Japanese lunch counter at noon | low sun through the shop window, lattice light on a pale counter, steam, paper lanterns; hinoki, white tile, indigo, vermilion; shadows, light bloom | 1300svh | 7 |
 
-"Next automation" links: The Press → SEO Pre-Live Checks (**wired**). All others are still `#`: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog, Video to Blog → Voice to Blog, Voice to Blog → Podcast to CMO Brief. (Five of these targets exist now and could be wired; ask first.)
+"Next automation" links: The Press → SEO Pre-Live Checks (**wired**). All others are still `#`: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog, Video to Blog → Voice to Blog, Voice to Blog → Podcast to CMO Brief, Podcast to CMO Brief → Cluster to Pillar Post. (Six of these targets exist now and could be wired; ask first.)
 
 ---
 
@@ -535,19 +538,62 @@ Look test of the station (9c48f06, 47d7d46, `voice-look`) → the black half of 
 
 ---
 
-## 13. Pending items
+## 13. Page 9: Podcast to CMO Brief, "The Bento Counter" (`automations/podcast-to-cmo-brief.html`)
+
+### 13.1 Concept
+**A small Japanese lunch counter at noon.** The sun comes in low through the shop window and lays the lattice across a pale wooden counter; steam rises from the stock pot and the rice cooker; white tile behind the stove, paper lanterns over the stools, an indigo curtain in the door, the street bright outside. It is the site's first bright, daytime interior. The automation is a ticket-and-collect job, so the world is a counter where you take a ticket, the kitchen works, and the board calls your number. The brief is a **bento**: a compartment for each part of it.
+
+What it explains is the real, on-demand flow from the workflow JSON (three files): you paste a YouTube link or an episode's audio link into Claude and ask for a CMO analysis; the tool runs on an MCP server, answers at once with a job number, and Claude collects the brief with that number. Vasant mentioned a further idea (a list of regular podcasts whose new episodes are briefed automatically); it is **not** in the workflows he sent, so the page doesn't show it. Add it when he sends that workflow (a "regulars" board, the morning delivery taken in without a ticket).
+
+### 13.2 What is at the counter
+- **The shop:** front wall with the door and a long six-pane shop window (cedar frames standing 1 cm proud of the openings), the counter (a pale scrubbed top, a raised pass on the kitchen side, a brass foot rail), five stools (Poly Haven bar_chair_round_01), three paper lanterns, beams across the ceiling, sunbeams with dust, the curtain in the door, the street and the houses across it.
+- **The kitchen:** the prep table, the stove with the brass stock pot (brass_pot_01) and the rice cooker, the hood, a fridge, white tile (long_white_tiles), shelves with wooden bowls (wooden_bowl_01, _02) and a basket (wicker_basket_01), crates (wooden_crate_01), the cutting board (wooden_cutting_board). A plant by the door (potted_plant_02).
+- **The story's things, built in code:** the ticket machine by the door (BRIEF · AUDIO LINK, BRIEF · YOUTUBE LINK, and a few joke buttons: MISO SOUP, TAMAGO SOLD OUT), the split-flap board over the pickup end, the order rail with its tickets, the caption trays and the sushi press, the rolling mat and the roll (its seaweed printed with the transcript), the bento with eight flags, the pickup cubbies with brass number plates, the wrapped boxes, the bell, and the order board for Let's talk.
+
+All numbers and titles are illustrative: ticket 4127, episode 112, 58:40, "host + 2 guests". Textures: japanese_cedar_planks (paled in the shader, so the shop reads as plain hinoki rather than red cedar), long_white_tiles, smooth_concrete_floor, rough_linen, beige_wall_001. Light: Lythwood Room (HDRI).
+
+### 13.3 The stations
+| # | Caption | What you see |
+|---|---|---|
+| 1 | **01 · Ask** — "Ask Claude for a CMO analysis." Paste a YouTube link, or an episode's audio link, into Claude; the tool lives on an MCP server, so any connected assistant can do the same | The ticket machine: BRIEF · YOUTUBE LINK lit, ticket 4127 drops into the tray, LINK RECEIVED |
+| 2 | **02 · A number back** — "A job number, straight away." The link is tidied and sorted; the reply is a job number, "processing", come back in about 90 seconds | Ticket 4127 joins the order rail; the board flips to PREPARING 4127 |
+| 3 | **03 · Two ways in** — "Video skips a step." YouTube captions come ready-made; audio goes through CloudConvert (mono, 16 kHz, 32 kbps) | The caption trays (VIDEO) and the sushi press coming down (AUDIO) |
+| 4 | **04 · The words** — "The whole episode, word for word." Groq Whisper (large-v3 Turbo) | The roll on the bamboo mat, its seaweed printed with the transcript; slices on the board |
+| 5 | **05 · The brief** — "Boxed for a marketing leader." Claude, as an analyst briefing a CMO or head of demand gen, using only what was said | The lid comes off the bento: SUMMARY (rice), LEARNINGS (six tamago), QUOTES (roll slices), TOPICS, THEMES, COMPANIES (pickles), POSTS (three tomatoes), BLOG IDEAS; the band on the lid reads EPISODE 112 · 58:40 / HOST + 2 GUESTS |
+| 6 | **06 · Filed** — "Two files in Drive." The transcript (.txt, headed with show, episode, link, date) and the brief (job number.json) | Cubby 4127: a wrapped box tagged BRIEF 4127.json and a scroll tagged TRANSCRIPT .txt |
+| 7 | **07 · Pick up** — "Come back with the number." "Not ready, try again in about 30 seconds" until the brief is in Drive, then it comes back into the chat | The board flips to NOW SERVING 4127; the box comes out at the pickup end |
+| 8 | End | "Paste a link. Get a brief." · "Any podcast or YouTube episode becomes a brief for a B2B marketing leader, back in the chat a few minutes later, with no one listening." Out under the curtain into the street |
+
+The hero text is white like every page's (the template's light ink). On this bright world it has less contrast; Vasant asked about it and chose to keep it as it is (no dark fade).
+
+### 13.4 Let's talk
+**The order board.** A big split-flap board on the shop's right wall. "Let's talk" turns the camera to it (in under the curtain first if the camera is out in the street). The words flip into place character by character in amber and cream, the header row reads ORDERS with the date and time, and each field is a row of blank flaps to type into. Errors flip up in red. Send: every flap spins and settles on **MESSAGE RECEIVED**, with the time in big flaps; the brass bell on the board's ledge rings; and the pickup board over the counter flips to MESSAGE IN · RECEIVED and the time (it stays until the visitor scrolls on). Escape or ✕ goes back to wherever the scroll left the camera.
+
+### 13.5 The runbook
+Facts: **Trigger** An AI assistant, through an MCP server with two tools · **Runs** On demand; the brief is ready in a few minutes · **Stack** n8n · CloudConvert · Groq · Claude · Google Drive · **Output** A structured brief (JSON) and the transcript, in Google Drive.
+Sections: 01 Problem · 02 Running it (five steps and an illustrative job ticket) · 03 Flow (seven steps across the two workflows: Webhook · Code, Respond, Switch · the YouTube transcript API · CloudConvert and Groq · Claude · Google Drive × 2 · the result workflow) · 04 The brief (eight groups of fields, each mapped to a part of the bento) · 05 If something fails · 06 Outcome · 07 Operating it.
+Stats: **~90 s** until the assistant first checks back · **5–7** learnings, each with what to do · **2 files** in Drive per episode.
+Note: "Addresses, the Drive folder, credentials and the prompt's wording are left out on purpose. The episode, job number and brief in the scene are illustrative." The page names no transcript-API vendor, no workflow names and no Drive folder name.
+
+### 13.6 Versions
+Look test (062e240, `podcast-look`) → his fixes: the flicker at the door frame (frames flush with the wall's openings), the AUDIO card's small line, the band on the bento lid, stop 01 names Claude (2111951, `pre-counter-fixes` before it) → the order board Let's talk (fbf63a8, `podcast-talk`) → home card wired and these docs (**`v60-podcast`**, current; pull request #4). Not built: the per-station animations beyond the basic ones (ticket, rail, press, roll, lid, cubby, pickup), and the "regular podcasts" idea (§13.1).
+
+---
+
+## 14. Pending items
 - **Real testimonials** to replace the six samples (`sample: false`).
 - **Thumbnails** for the 5 Factors.ai pages and 3 personal projects: `thumbs/benchmarks.jpg, campaign-offer.jpg, microsoft.jpg, prove-roi.jpg, routines.jpg, nike.jpg, ilish.jpg, leaderboard.jpg`. A missing file falls back to the card's tint. There is no `thumbs/` folder in the live repo yet.
-- **Eleven automation pages** still to build, each with its own world: Podcast to CMO Brief, Cluster to Pillar Post, Blog Refresh Engine, Blog to Social and Ads, Organic Social Engine, Slack to Post Idea, LinkedIn ICP Leaderboard, Competitive Intel System, Marketing Ticket Desk, Dev Tasks from Slack, Docs to Notion Sync. Set each entry's `url`.
+- **Ten automation pages** still to build, each with its own world: Cluster to Pillar Post, Blog Refresh Engine, Blog to Social and Ads, Organic Social Engine, Slack to Post Idea, LinkedIn ICP Leaderboard, Competitive Intel System, Marketing Ticket Desk, Dev Tasks from Slack, Docs to Notion Sync. Set each entry's `url`.
 - **Voice to Blog:** the story animations; whether the recorder's name (Voxlog) may appear on the page.
 - **Video to Blog:** the per-station story animations (§11.6).
+- **Podcast to CMO Brief:** the "regular podcasts, new episodes briefed automatically" idea, once its workflow exists (§13.1). Issues in its three workflow files were reported to Vasant in chat (a transcript-API key pasted in a node's header: rotate it and move it to a credential; RSS links go down the audio path and fail; a CloudConvert failure leaves the result "not ready" for good; a 4,000-token limit can cut a long brief; an unused prompt node; the instructions sent as an assistant message). They are his to fix.
 - **"Next automation" links** still `#` on seven pages (§4); five could be wired now.
 - Issues found in the two workflow JSON files were reported to Vasant in chat; they are workflow fixes, not site work.
 - **Mic and cassette models** were never supplied; the studio uses procedural ones.
 - Replace the slide-in panel once every automation has a page.
 - Optional: Pangram Sans Rounded, if the font files are supplied (Elms Sans is the current UI face).
 
-## 14. Decisions log (what was tried and dropped)
+## 15. Decisions log (what was tried and dropped)
 
 **Hero:**
 - Rejected name reveals: falling letters, an outline name with hover fill, particles morphing into the name, letter-by-letter over a long scroll, a bubble font, a glass "Projects" title, a liquid "pour" into the name. The name moved to the footer, and the hero stays portrait → dissolve → rain.
@@ -579,7 +625,7 @@ Look test of the station (9c48f06, 47d7d46, `voice-look`) → the black half of 
 - v50 started with one shared dialog on every page; talk-* made each world its own form; the forest got the hanging board, the hero the particles, the beach the bottle. "Lets talk is not related to the world" is a rejection reason: each new page needs a form that belongs to it and only appears on click.
 - **The WhatsApp number must never be in the site**: "i dont wanna share my wp contact with anyone". It lives only in Vercel env vars.
 
-## 15. Versioning
+## 16. Versioning
 Every approved state is a git tag in the working repo, usually with copies in `backups/`.
 
 **Home page:**
@@ -599,11 +645,12 @@ Every approved state is a git tag in the working repo, usually with copies in `b
 - Webinar to Webflow: `pre-webinar`, `pre-webinar-fix1`, `pre-webinar-home`, **`v54-webinar`**
 - Docs: `pre-docs`, `v55-docs`; `v58-docs` (these)
 - Video to Blog: `pre-video`, `video-look`, `pre-video-talk`, `video-talk-v1`, `pre-video-handover`, `video-handover` = **`v56-video-to-blog`**
-- Voice to Blog: `pre-voice-card`, `pre-voice`, `voice-look`, `voice-look-2`, `pre-voice-home`, `v57-voice-to-blog`, `pre-voice-talk`, **`v59-voice-talk` (current)**
+- Voice to Blog: `pre-voice-card`, `pre-voice`, `voice-look`, `voice-look-2`, `pre-voice-home`, `v57-voice-to-blog`, `pre-voice-talk`, `v59-voice-talk`, `pre-ios-fix`, `v59.1-ios-fields` (the iPhone fields fix)
+- Podcast to CMO Brief: `podcast-look`, `pre-counter-fixes`, `podcast-talk`, **`v60-podcast` (current)**
 
-BUILD.md §16 and PORTFOLIO-HANDOFF.md have the full table. The repo with all tags lives in the AI workspace and is handed over as a history zip when asked.
+BUILD.md §17 and PORTFOLIO-HANDOFF.md have the full table. The repo with all tags lives in the AI workspace and is handed over as a history zip when asked.
 
-## 16. Running locally
+## 17. Running locally
 ```
 npx serve .          # or: python3 -m http.server 8765
 ```

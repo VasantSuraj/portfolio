@@ -1,6 +1,6 @@
 # How it is built — technical documentation
 
-_Companion to `DOCS.md`, which says what the site is and what each part means. This file is the engineering view: tools, techniques, data flow, and the reasoning behind each choice. Current as of 3 Nov 2026, version **v59-voice-talk** (page and docs)._
+_Companion to `DOCS.md`, which says what the site is and what each part means. This file is the engineering view: tools, techniques, data flow, and the reasoning behind each choice. Current as of 3 Nov 2026, version **v60-podcast** (page and docs)._
 
 Contents:
 0. Stack at a glance
@@ -73,7 +73,7 @@ All tools are free. No paid services or licensed assets are used.
 <script module>     (≈967–3294) EZ-Tree (vendored) → renderer/moods/fog/sky → ground → trees + billboards + LOD → ferns, light, shafts,
                     fireflies, falling leaves → beach (sand, rock, waterfall, spray, sea) → lanterns + banners → CSS3D
                     → fit() (sizes + camera poses) → camera path → applyMood() → the beach bottle Let's talk → tick()
-<script src="site.js" defer>   Let's talk on every page (§11)
+<script src="site.js" defer>   Let's talk on every page (§12)
 ```
 
 **Layers:** forest 1 < particles 2 < cards and `main` 3 < UI 4 < loader 6 < butterfly 9 < panel 20 < fps readout 30. The hanging board and the plain card sit above everything (z 2147483000 / a modal `<dialog>`).
@@ -463,7 +463,7 @@ window.__talkScene = { open: o => {
   return false;                                                                                      // forest: site.js → board
 } };
 ```
-`site.js` calls this first; `false` makes it open the hanging board (§11.3).
+`site.js` calls this first; `false` makes it open the hanging board (§12.3).
 
 ### 1.22 Returning from an automation page (v47, v48)
 - At the top of the classic script: `RETURN_SLUG` from `location.hash` `#from-<slug>`, or from `sessionStorage.returnTo` (read once, then removed; also cleared on a `pageshow` from the back-forward cache). If set, `html.returning` is added.
@@ -499,9 +499,9 @@ Every page in `automations/` has the same skeleton. Copy it for a new page; chan
 - **Portrait screens** (`W/H < 0.85`): fov 58° instead of 40° (Reddit 54°/40°, The Press 50°/36°, SEO 56°/38°); close-ups (`close: 1`) step straight back along the view by `pb` (default 1.4), wide shots step back 25 %, clamped to stay inside the room; a key can carry its own phone framing `m: { pos, look }`, which then replaces it.
 - **Pointer parallax:** a small offset from the pointer, eased.
 - **Renderer:** `WebGLRenderer`, ACES filmic, sRGB output, DPR `min(1.5, dpr)` (1.25 on coarse pointers), pixel-ratio-aware composer, `resize()` sets fov per aspect.
-- **Loading:** a `THREE.LoadingManager`; the scene shows when everything has arrived. Textures go through a `tex(name, srgb, repeat)` helper with anisotropy; models through `loadPacked(file)` (§12.2).
+- **Loading:** a `THREE.LoadingManager`; the scene shows when everything has arrived. Textures go through a `tex(name, srgb, repeat)` helper with anisotropy; models through `loadPacked(file)` (§13.2).
 - **Canvas textures** (`canvasTex(w, h, draw)`) for anything with words: labels, screens, sheets, boards. They redraw once when the web fonts arrive.
-- **Let's talk:** a `talk` object with `mode` (`off` / `in` / `on` / `out`), its own camera path (`talk.P`, eased over ~1.8 s) that takes over from the scroll camera while it is in charge (the scroll stays where it was), a `CSS3DRenderer` (`talk.cssR`) for the live form over the painted texture, and `window.__talkScene = { open }`. Escape closes. The surface comes from `../talk/surface.js` (§11.2).
+- **Let's talk:** a `talk` object with `mode` (`off` / `in` / `on` / `out`), its own camera path (`talk.P`, eased over ~1.8 s) that takes over from the scroll camera while it is in charge (the scroll stays where it was), a `CSS3DRenderer` (`talk.cssR`) for the live form over the painted texture, and `window.__talkScene = { open }`. Escape closes. The surface comes from `../talk/surface.js` (§12.2).
 - **The butterfly cursor**, the same code as the home page.
 
 ---
@@ -707,7 +707,7 @@ Camera keys (v2: each item close up, then pull back): `hero, arrive, label, post
 - **Buildings:** brick (brick_wall_10) and glass; every window decided in the shader (`onBeforeCompile`): lit or dark, warm or cool, blinds, shops at street level. Per building a vector carries a seed, a style (0 brick, 1 glass, 2 old brick), the share of lit windows and a shop colour.
 - **Sky:** a dome of low cloud lit orange from below by the city.
 - **Street lamps:** instanced poles and heads (Poly Haven street_lamp_02 textures) with instanced **light pools** on the ground. **Traffic:** headlight and tail-light points moving along every road. Red aviation lights blink on the tallest roofs.
-- **Models** (packed JSON, §12.2): wall lantern (`lamp_p.json`), street seating (`seating_p.json`), fire escape (`fire_p.json`).
+- **Models** (packed JSON, §13.2): wall lantern (`lamp_p.json`), street seating (`seating_p.json`), fire escape (`fire_p.json`).
 
 ### 6.3 The network and the lines
 - Stations: a fixed scatter of junctions (seed 4242), denser in the middle of town (`rnd() < (r < 5 ? 0.42 : 0.2)`), about 70. Junction totems (instanced poles and signs with a link glyph); the **top-100 posts are interchanges** (instanced rings).
@@ -861,23 +861,64 @@ At the origin. Pad and cable-pit lid (concrete), a tapered `CylinderGeometry` pe
 - **The camera's way** (`route(A, B)`): inside to inside is straight; inside to outside goes `DOOR_IN → DOOR_MID → DOOR_OUT`, then straight across the front if the target is in front of the door, else round the mast side through the scroll's own way points (`[12, 2.6, 16]`, and `[2, 3.4, 15]` when the target is on the dish side). `curveOf()` drops points closer than 8 cm (a repeated point makes a centripetal Catmull-Rom NaN). Long ways look along the path (a point 10 % ahead), then turn to the target over the last 30 %.
 - **Send:** `onSent` → mode `away`: 2.6 s out of the door to `VANT` (hut space `5.6, 4.4, HL + 12`, looking 12 m above the dish), 2.2 s watching, 2.6 s back. `talk.tx` eases the dish from its scroll aim to `TX` (az `SUN_AZ + 0.32`, el 62°); four additive rings in the bowl's group leave the feed along the boresight (radius 1.4 → 16 m, 28 m out, 1.6 s each, 0.45 s apart); a `PointLight` at the feed, the warning light and the beacon flash while it transmits. Before the camera leaves, the visitor's values are typed into the boxes (read from the form on submit), so the paper doesn't go blank under the camera; the reply layout is swapped in when the camera starts back. `talk.rx` lights the MESSAGE lamp until close.
 - **Hooks into the story:** `update()` calls `talkUpdate()` last (it overrides the dish aim and lamps with `max`); the frame loop runs `talkFrame(dt)` before the scroll camera and renders the CSS3D layer after the composer; `resize()` resizes it and refits the pose. Phones: the pose fits the width at 90 % and sits 5 % of the sheet higher, clear of the top bar.
-- **QA:** `qa/stalk.js` (see §14). `window.__station.talk.freeze = seconds` holds the Send trip at a moment.
+- **QA:** `qa/stalk.js` (see §15). `window.__station.talk.freeze = seconds` holds the Send trip at a moment.
 
 ### 10.8 Source
 `/home/claude/assets/station/`: `body.html`, and the module in six parts concatenated in order (`s_core.js`, `s_world.js`, `s_dish.js`, `s_hut.js`, `s_talk.js`, `s_story.js`). `s_talk.js` comes before `s_story.js` because `resize()` and the frame loop use `talk`; its functions use the story's `DOOR_*`, `camPos` and `cameraAt` only when called. `build.py` writes `automations/voice-to-blog.html` and refuses to if the joined module fails `node --check`. Also `conv_tex.py`, `conv_mesh.py` (with an object-name filter to take one LOD of a scan), `conv_hdr.py` (.exr or .hdr, optional `dusk` grade) and `make_tin.py`. Texture sizes: 1K for the sand, gravel, tin, planks and concrete; 512 px for props and scans (the `SMALL` set in `pbr()`).
 
 ---
 
-## 11. Let's talk: how it works
+## 11. Podcast to CMO Brief, the bento counter (`automations/podcast-to-cmo-brief.html`)
 
-### 11.1 `site.js` (every page)
+### 11.1 Renderer and light
+- The station's core, retargeted (`c_core.js`): ACES at exposure 1.15, bloom 0.22 / 0.5 / 1.05, near plane 3 cm. Reflections and fill from Lythwood Room (converted to RGBE JSON, no grade).
+- **The sun** is a `DirectionalLight` from outside the front (`sunDir (-0.42, 0.38, 0.82)`), low enough to lay the window's lattice across the counter top; a 16 m shadow box over the shop. Nothing across the street casts shadows (the houses' roof band blocked it at first).
+- A hemisphere light, a bounce light where the sun patch lands, the kitchen's lamp and tube, three paper lanterns (`PointLight`s with emissive shades).
+- **Sunbeams:** one additive quad prism per window pane, extruded along the sun and faded at the floor; 260 dust motes drifting in them (`Points` with a soft sprite). **Steam:** sprite puffs rising and fading over the pot and the rice cooker.
+
+### 11.2 The shop
+- Room `R` x −3.5…3.5, z −3 (kitchen wall) … 3 (street), 3 m high. The front wall is an `ExtrudeGeometry` with the door and window cut out, plus a plaster skin inside (`ShapeGeometry`, double-sided). **Frames stand 1 cm into the openings**: a face exactly on the wall's own edge z-fights, which Vasant saw as a stutter at the door.
+- **Wood:** the cedar scan is red; `paleWood(material, saturation)` takes some colour out of the diffuse in `map_fragment` through a uniform (`uSat`), so the shader is shared between the three wood materials (0.32 for the counter top, 0.55 and 0.7 for the panels and beams).
+- The counter `CT` (top at 1 m), the prep table `ISL`, the stove `STOVE`, shelves; the street, the houses across (a painted, blurred canvas), the neighbours and the eave.
+- Poly Haven models load through `loadPacked`, are centred and scaled by `fit(geos, size, 'h' | 'w')`, and placed by `placeAll(d, mats, spots)`.
+
+### 11.3 The story's things (`c_props.js`)
+- **Ticket machine** (`TM`): a canvas face with eight buttons, an additive glow over the lit one, a ticket that drops into the tray.
+- **Split-flap board** (`BOARD`): 2 rows × 16 cells on a 2048 × 560 canvas. `setBoard([word, num], [word, num], now)` gives each changed cell a start time; `drawBoard(now)` spins those cells through `CHARSET` for 0.5 s (staggered 35 ms across) and returns whether any are still moving, so it's only redrawn while flipping.
+- **Order rail** with four older tickets and 4127 sliding in; **trays** (VIDEO) and the **sushi press** (AUDIO), each with a folded card whose small line shrinks to fit; the **rolling mat** (36 instanced slats) and the **roll** (a cylinder: the side is seaweed printed with the transcript, the ends a sliced-roll texture); slices on the board.
+- **Bento** (`BENTO`): lacquer walls, a vermilion floor and dividers, eight compartments with food that counts (six tamago = 5–7 learnings, three tomatoes = three posts), eight paper flags leaning toward the camera (the two small corners get smaller flags), the lid with its band (a strip the right way round: its canvas has the plane's aspect).
+- **Cubbies** (`CUB`) on the kitchen's left wall, 3 × 3 with brass number plates; older orders wrapped in cloth; 4127 gets the wrapped box and the scroll with their tags.
+- The **pickup box** at the pass, the **bell**, the **curtain** (three linen-textured panels that stir).
+
+### 11.4 Scroll and camera
+- Runway 1300svh, 7 captions, the same `CUT`. Keys: `hero, ask, number, ways, words, brief, filed, pickup, end`. The end goes out under the curtain with a `via` path (the curtain hangs from 1.55 m, so the path ducks to 1.3 m).
+- `update()` drives the ticket, the rail, the board's three states (before 02, 02–06, from 07), the press, the roll, the lid and flags, the cubby and the pickup box; steam and dust run all the time.
+- Phones: `m` poses for hero, number, ways, words, brief, pickup and end; the other close-ups step back and are clamped inside the shop.
+- **Canvas size:** `resize()` takes W and H from the canvas's own box (`getBoundingClientRect`), not `innerWidth/innerHeight` (§14, iPhone gotcha).
+
+### 11.5 Let's talk: the order board (`c_talk.js`)
+- **The board:** `OB` on the right wall (face at x 3.45, foot at 1 m, centred at z 1.8), turned to face into the shop. `createSurface({ look: 'tb-look-flap', width: 600 (phone 344) })`; the face is 1.36 m wide (0.95 m on phones) and as tall as the form needs; `shapeBoard(PW, PH)` builds the frame, the ledge and places the bell.
+- **Type:** the form is set in the system monospace (`ui-monospace, Menlo, Consolas, monospace`, the same stack the canvas reads back from the CSS), uppercase except the inputs, so every character has the same width and can sit on its own flap. `.tb-look-flap` rules in the page's CSS (`.tb-face.tb-look-flap`, since `surface.js` injects its CSS after the page's); inputs have `transition: none`.
+- **Painting** (`paintFace`): a dark board; the header row in small flaps (ORDERS or RECEIVED, the date, the time); each field a dark slot filled with blank flaps (rows of them in the message box); every character of `layout()` on its own flap at its slot in the word (word width ÷ letters), blank flaps in the gaps between words on a line; sent: the time in big amber flaps where the form's seal goes. Characters not yet in place are blank; the nine after the last placed one spin (random letters), so the words flip in at 230 a second. Before the flip starts (while the camera is still on its way) the board is all blank.
+- **Camera:** `route(A, B)` goes straight inside the shop, or in and out under the curtain (`DOOR_OUT` → `DOOR_IN`) from the street. Long ways look ahead along the path, then turn to the board. The flip starts 0.9 s before the camera arrives; the live fields fade in once every flap has settled.
+- **Send:** `onChange('state')` with `sent`: the time is taken, the live fields hide at once, the face flips again into the sent layout, the bell rings (`ringBell`: the knob dips, the dome shivers, an additive ring spreads) and `boardSays()` flips the pickup board to MESSAGE IN / RECEIVED HHMM (it sets `boardStage` to the current stage, so the story only changes it again when the visitor scrolls on).
+- **QA:** `qa/talk2.js` (§15).
+
+### 11.6 Source
+`/home/claude/assets/counter/`: `body.html`, and the module in five parts concatenated in order (`c_core.js`, `c_room.js`, `c_props.js`, `c_talk.js`, `c_story.js`). `build.py` writes `automations/podcast-to-cmo-brief.html` and refuses if the module fails `node --check`. Conversions: `conv_tex.py` (props at 512 px, written as `_512`), `conv_mesh.py`, `conv_hdr.py`. `src/` holds the unpacked zips (it also has earlier pages' assets from the shared attachments folder; only the 13 listed in DOCS.md §13.2 are used).
+
+---
+
+## 12. Let's talk: how it works
+
+### 12.1 `site.js` (every page)
 - An IIFE, guarded by `window.__contactReady`. `CONTACT = { endpoint, email, title, intro, board, simulate }` (CONTACT-SETUP.md §1). `BASE` is the folder of `site.js` itself, so `talk/board.js` resolves from any page depth.
 - **`send(data)`** adds `data.page = location.pathname` and posts JSON to the endpoint. It returns `{ kind: 'ok' }`, `{ kind: 'field', field, error }` (400 with a field), or `{ kind: 'fail', detail }` (429 → wait a minute; other → "Something went wrong on my side."; network → "could not be sent from this connection"). With `simulate: true` it waits 0.9 s and returns ok.
 - **The plain card:** a modal `<dialog class="ct-dialog">` built on first use, with name, contact number, email, message, a honeypot (`company`, hidden, `tabindex=-1`), a note "Your details are only used to reply to you." and "Send message". Blur-first validation, errors clear on input, focus returns to the opener, Lenis stopped and page scroll locked while open, backdrop click closes. Success: a tick and close; failure: "That didn't go through" with the email, **Copy** and **Try again**.
 - **`openAny(e)`:** `window.__talkScene.open({ config, send, opener, fallback })` if the page has a scene and WebGL works, unless it returns `false`; else `import(BASE + 'talk/board.js').then(m => m.open(CONTACT, { opener, send }))`; else (no WebGL, `board: false`, or the import fails) the plain card.
 - A delegated click listener catches every `[data-contact]` (including ones added later); `window.openContact()` opens it from code.
 
-### 11.2 `talk/surface.js` (the form for any surface)
+### 12.2 `talk/surface.js` (the form for any surface)
 No three.js. `createSurface(o)`:
 - **Options:** `config` (CONTACT), `send`, `width` (CSS px), `mobile`, `look` (a `tb-look-*` class), `pad` (`[top, x, bottom]`), `copy` (`sentTitle`, `sentText`, optional `knob` markup for the close button), `minHeight`, `onChange(reason)` (`'state'` | `'messages'`), `onClose`, `onSent`.
 - **Faces:** `form` (title, intro, name, contact number + email in a row, message with "What are you building, and where can I help?", honeypot, note, Send message, a round ✕), `sent` (a seal, `sentTitle`, `sentText`, Close), `error` ("That didn't go through", the detail, "Try again, or email me directly:", the email as a tag, Copy email, Try again). The face height is fixed to the form's measured height, so the surface never resizes between states.
@@ -885,15 +926,15 @@ No three.js. `createSurface(o)`:
 - **`layout()`:** measures an untransformed copy in an off-screen host and returns, in CSS px from the face's top-left: `texts` (every `[data-paint]` element: `kind` = title / intro / label / msg / note, `glow`, `words: [{ w, x, y, h }]`, `size`, `font(k)`, letter spacing), `fields` (the input boxes), `seals`, `buttons`. The page paints these into its own texture in its own style; the live element (`.tb-live`, whose painted words are transparent) sits exactly over it in a `CSS3DObject`, so typing, focus and caret are real.
 - `drawWords(ctx, t, k, fn)` is a shared helper for painting a text block at scale `k`.
 - Typed values survive closing and reopening (cleared after a successful send). Validation matches the server. `elapsed` is sent for the timing check.
-- **Looks in use:** `tb-look-particles` (hero), `tb-look-letter` (beach), `tb-look-glass` (Reddit), `tb-look-print` (Press), `tb-look-paint` (SEO), `tb-look-kiosk` (city), `tb-look-order` (greenhouse), `tb-look-lyric` (studio), `tb-look-reel` (Video to Blog), `tb-look-telex` (Voice to Blog). The board uses its own markup.
+- **Looks in use:** `tb-look-particles` (hero), `tb-look-letter` (beach), `tb-look-glass` (Reddit), `tb-look-print` (Press), `tb-look-paint` (SEO), `tb-look-kiosk` (city), `tb-look-order` (greenhouse), `tb-look-lyric` (studio), `tb-look-reel` (Video to Blog), `tb-look-telex` (Voice to Blog), `tb-look-flap` (Podcast to CMO Brief). The board uses its own markup.
 
-### 11.3 `talk/board.js` (the hanging board)
+### 12.3 `talk/board.js` (the hanging board)
 - Its own three.js 0.169 scene in a full-screen overlay (`.tb-root`, z 2147483000): a `WebGLRenderer` canvas, a `CSS3DRenderer` layer for the live form, and a veil that blurs and dims the page (`backdrop-filter: blur(11px) brightness(.74)`) over 1 s.
 - A weathered plank board (Poly Haven **wood_shutter**, 2k colour and normal, 1k roughness; weathered grey-brown tint) hanging on **brass chains** (chain links from **brass_diya_lantern**, `chain.json` + brass textures), lit by a `RoomEnvironment`. It drops in and swings to rest.
 - The form is baked into the wood: words burned into the grain, fields carved in, brass buttons; "Message sent" (`data-bake data-glow`) glows.
 - `open(config, { opener, send })` / `close()`. Loaded only on the first click. If it fails, site.js uses the plain card from then on.
 
-### 11.4 `api/contact.js` (the function)
+### 12.4 `api/contact.js` (the function)
 CommonJS `module.exports = async (req, res)`, `Cache-Control: no-store`.
 1. `POST` only (405 otherwise); origin check (`ALLOWED_ORIGINS` list, or same host; 403).
 2. Parse JSON. **Honeypot** (`company`) filled or `elapsed < 1500` → 200 `{ ok: true }` and nothing sent.
@@ -904,16 +945,16 @@ CommonJS `module.exports = async (req, res)`, `Cache-Control: no-store`.
 
 ---
 
-## 12. Asset pipeline (Poly Haven → the web)
+## 13. Asset pipeline (Poly Haven → the web)
 
 All source assets are Poly Haven CC0, downloaded by Vasant and attached to the chat (Blender `.blend` zips and `.exr` HDRIs). The conversion scripts live in the AI workspace (`/home/claude/assets/{city,green,studio}/`), not in the repo; this section is enough to recreate them.
 
-### 12.1 Textures (`conv_tex.py`)
+### 13.1 Textures (`conv_tex.py`)
 - Run Blender as a Python module: **`python3 -I conv_tex.py`** (the `-I` flag stops Python importing stray files from the working folder).
 - For each job `(source, out name, size, colour?)`: load the image with `bpy`, read the pixels, resize, and write JPEG (PNG for an opacity map). Colour maps are sRGB; **normal maps come from the `nor_gl` EXR** (OpenGL convention, matching three.js), roughness and metal maps are linear.
 - Sizes: 1k for nearly everything, 2k for big surfaces seen up close (the city's aerial asphalt, the board's wood). File names: `<short>_{diff,nor,rough,metal}_<1k|2k>.jpg`.
 
-### 12.2 Models (`conv_mesh.py` → `pack_mesh.py`)
+### 13.2 Models (`conv_mesh.py` → `pack_mesh.py`)
 1. `conv_mesh.py src dst prefix` (bpy): open the `.blend`, take each mesh object's evaluated mesh, apply its world matrix, triangulate (bmesh), and export per object and per material the positions, split normals and UVs, **converted from Blender's Z-up to Y-up** (`x, z, −y`).
 2. `pack_mesh.py src dst [keep]`: de-duplicates vertices (key: position ×2000, normal ×100, UV ×4000, rounded) and writes compact JSON:
    ```
@@ -927,14 +968,14 @@ All source assets are Poly Haven CC0, downloaded by Vasant and attached to the c
 - Files: `city/lamp_p.json`, `seating_p.json`, `fire_p.json`; `greenhouse/potted_plant_04_p.json`, `wooden_picnic_table_p.json`, `watering_can_metal_01_p.json`; `studio/metal_office_desk_p.json`, `modern_arm_chair_01_p.json`, `Television_01_p.json`, `boombox_p.json`; `booth/table_p.json`, `desk_p.json`, `stool_p.json`, `chest_p.json`; `station/boulder2_p.json`, `boulder4_p.json`, `rocks_p.json`, `quiver_p.json`, `rooibos_p.json`, `table_p.json`, `chair_p.json`, `barrel_p.json`; `talk/chain.json`.
 - **Scans come with LODs** (the Namaqualand rocks and trees have four detail levels as separate objects, up to 98k triangles): `conv_mesh.py SRC OUT PREFIX '<regex>'` keeps only the objects whose names match (e.g. `_LOD3$`). The normal map carries the detail.
 
-### 12.3 HDRIs (`conv_hdr.py`)
+### 13.3 HDRIs (`conv_hdr.py`)
 - Load the EXR with bpy, flip to top-row-first, find the sun as the brightest point of a blurred luminance map (stored as `sun: [u, v]`).
 - **Lighting copy:** resize to 512×256 and pack as **RGBE** (shared exponent per pixel) → `{ w, h, sun, d: base64 }` JSON (`sky_env.json`, `studio_env.json`, `booth_env.json`, `station_env.json`). Decoded in JS to a `HalfFloatType` `DataTexture`, then `pmrem.fromEquirectangular`. The booth and station scale it (`ENVK`) and clamp each pixel (`ENVMAX`) while decoding.
 - The station's script also reads Radiance `.hdr` (via `cv2`) and has a `dusk` grade; its visible sky is painted in a shader instead (BUILD §10.1).
 - **Visible backdrop** (greenhouse only, `conv_sky2.py`): 2048×1024, scaled by `k = 1/98th-percentile`, clipped, sRGB, JPEG q88 (`sky_2k.jpg`); the shader undoes `k` (`SKYK`).
 - Studio: the colour was desaturated and warmed in the conversion (§8.1).
 
-### 12.4 Sources used
+### 13.4 Sources used
 | Page | Poly Haven assets |
 |---|---|
 | Home | mud_forest, aerial_beach_01, damp_beach_sand_02, aerial_rocks_02, crepe_satin (rocky_terrain_03 sent, unused); bark/leaves from EZ-Tree |
@@ -949,7 +990,7 @@ The Reddit, Press and SEO pages use no downloaded assets.
 
 ---
 
-## 13. Shared conventions
+## 14. Shared conventions
 
 **Colour tokens** live in `:root` on every page (`--bg, --ink, --ink-soft, --ink-mid, --pill, --pill-ink, --line, --card`, plus the page's accents, `--font`, `--mono`, `color-scheme`):
 
@@ -983,11 +1024,15 @@ No two automation pages share a world.
 
 **Shader gotcha (NaN):** `pow(x, y)` with `x` even a hair below 0 is NaN on Apple GPUs, and the bloom spreads one NaN pixel into a black block. The QA renderer (SwiftShader) doesn't show it. Clamp before every `pow()` in a custom shader, and guard a `ShaderMaterial`'s output yourself: the `dithering_fragment` guard only covers built-in materials. It hit the booth (beam shader, a model normal) and the station's sky (half the screen black on Vasant's Mac).
 
+**iPhone gotcha (canvas size):** a `position:fixed; height:100%` canvas on iPhone Safari is as tall as the large viewport, taller than `innerHeight`. Drawing the 3D for `innerHeight` stretched the picture about 14% downward under the CSS3D layer, so the live fields sat above their painted boxes (v59.1). Size the renderer, the camera's aspect and the CSS3D renderer from `canvas.getBoundingClientRect()`, and fit a Let's talk surface inside `innerHeight / H` of the frame (the part that shows above the browser's bottom bar). The station and the counter do this; the booth and the earlier pages don't yet.
+
+**Flicker gotcha (coplanar faces):** a frame whose face lies exactly on a wall's cut edge (a door or window opening) z-fights; on a Mac it reads as a stutter. Stand frames a centimetre into the opening.
+
 **Source of truth:** the five newest pages are built from source parts in the workspace by a `build.py` that writes the final page into `automations/`: `/home/claude/assets/<city|green|studio>/part1.html` + `shared.css` + `part2.js` (the studio's `part2.js` assembled from `head.js` + `body.js` + `tail.js`); `/home/claude/assets/booth/` `body.html` + `part2.js`; `/home/claude/assets/station/` `body.html` + `s_core.js … s_story.js`. The booth and station builds take the head CSS and the UI script from `ai-blog-drafts.html` and retint the tokens. Patch the source parts, not only the built page, or the fix is lost on the next build. If the workspace is gone, the built page in the repo **is** the source.
 
 ---
 
-## 14. QA harness (not shipped; lives in the AI workspace scratchpad `qa/`)
+## 15. QA harness (not shipped; lives in the AI workspace scratchpad `qa/`)
 
 Playwright launches headless Chromium with `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist`, usually with `reducedMotion: 'reduce'` so transitions settle quickly. Pages load from a local static server: `cd repo; nohup python3 -m http.server 8765 --bind 127.0.0.1` (it stops when background commands time out; restart it).
 
@@ -997,7 +1042,7 @@ The sandbox can't reach jsDelivr or Google Fonts, so requests are routed:
 - `fonts.googleapis.com` → a small CSS with `@font-face` rules, and `fonts.gstatic.com` → woff2 files from npm `@fontsource-variable/elms-sans`, `@fontsource/limelight` and `@fontsource/courier-prime` (since 3 Nov; older scripts still return an empty body)
 - `/api/contact` → `{"ok":true}` (or a mock that fails, to test the error face)
 
-Screenshots from the newer scripts show the real Elms Sans and Limelight; older ones use fallback fonts. The fps readout (0–3 fps) means nothing: compare triangles and JS ms instead, and ask for real fps on Vasant's machine. **SwiftShader also rounds differently from real GPUs**, so a shader NaN can be invisible in QA and a black block on a Mac (§13).
+Screenshots from the newer scripts show the real Elms Sans and Limelight; older ones use fallback fonts. The fps readout (0–3 fps) means nothing: compare triangles and JS ms instead, and ask for real fps on Vasant's machine. **SwiftShader also rounds differently from real GPUs**, so a shader NaN can be invisible in QA and a black block on a Mac (§14).
 
 **Scripts** (environment variables drive them):
 - `shoot.js LABEL W H targets…` (home): targets `key=N`, `s=N`, `card=N`, `title=N`, `y=N`; `night` in the label for night mode; `phone…` for mobile.
@@ -1005,6 +1050,7 @@ Screenshots from the newer scripts show the real Elms Sans and Limelight; older 
 - `click.js`, `back.js`, `ret.js`: card clicks, the back arrow and the return-to-card.
 - `city.js`, `gh.js`, `st.js` (and the older per-page ones), and `shot.js` for the booth and station (`PAGE=automations/<page>.html`): `V=w,h,tag,mobile` viewport, `P=0,0.1,…` runway progress values to shoot, `WAIT` seconds per shot, `BOOT` seconds to wait first, `EVAL` an expression to print. They load the page with `?snap`. `sheet.py tag p-list cols` tiles the shots into one contact sheet.
 - `talk.js` (booth): opens Let's talk, can freeze the flight at given fractions (`FLY=0.15,0.3`), shows errors, filled, the splice and "Message received", then Escape.
+- `talk2.js`: `stalk.js` for any page with a `talk` object on `window.__station` or `window.__counter` (`PAGE=automations/<page>.html`); used for the counter's order board.
 - `stalk.js` (station): the same for the teleprinter, plus `SEQ=1.6,3.4,…` to hold the Send trip at those seconds (through `talk.freeze`), `ONLY_OPEN=1` to stop after opening and `PRE=1` for a shot before. It clicks with `element.click()` and scrolls with `behavior: 'instant'`: the automation pages have `scroll-behavior: smooth`, and a plain `scrollTo` crawls under SwiftShader.
 - Under SwiftShader, CSS transitions on the live fields can hang at their start values for seconds (a red box that should have faded). That's why the teleprinter's inputs have `transition: none`.
 - `nan.js`: bisects which mesh makes a black (NaN) block at a pixel.
@@ -1020,7 +1066,7 @@ Screenshots from the newer scripts show the real Elms Sans and Limelight; older 
 - SwiftShader draws the UI captions a frame or two late in screenshots (sometimes a whole station behind); it's an artefact, not a bug.
 - Poly Haven: the shell can't reach it (the workspace allowlist), but the web-fetch tool can read `api.polyhaven.com/assets?…` (e.g. `type=all&collection=namaqualand`) to check asset names. Allowing `api.polyhaven.com` and `dl.polyhaven.org` in claude.ai's capability settings would let a session download assets itself.
 
-## 15. Claude artifact previews
+## 16. Claude artifact previews
 
 Previews are private Claude artifacts. They are copies; **the repo files are the deliverable.**
 
@@ -1028,11 +1074,12 @@ How a page is published as a preview:
 1. Copy the page and strip its first three lines (the artifact wrapper adds its own doctype and head).
 2. Rewrite `../site.js` → `site.js`, `../talk/surface.js` → `./talk/surface.js`, and the back link → `#top`.
 3. Copy `site.js` with `simulate: true` (previews have no `/api/contact` and block outside requests).
-4. Publish with a files map and `root`, so `site.js`, `talk/surface.js` and the page's asset folder (`city/…`) are served next to it. (The booth preview's `site.js` and `talk/surface.js` were copied from the greenhouse preview, since the workspace copy of the repo didn't have them. The station preview got them on 3 Nov with its Let's talk.)
+4. Publish with a files map and `root`, so `site.js`, `talk/surface.js` and the page's asset folder (`city/…`) are served next to it. (The booth preview's `site.js` and `talk/surface.js` were copied from the greenhouse preview, since the workspace copy of the repo didn't have them. The station preview got them on 3 Nov with its Let's talk; the counter's preview also carries the whole `talk/` folder, so the hanging board works there too.)
 5. The preview's Content-Security-Policy is `connect-src 'self'`: never `fetch()` a `data:` URI. Packed models are separate files fetched from the same origin and decoded with `atob`.
 
 | Preview | Link |
 |---|---|
+| Podcast to CMO Brief (counter) | `claude.ai/artifact/91e67pX6qn79coyPEoLRjf` |
 | Voice to Blog (station) | `claude.ai/artifact/6kcvmuwi1y1TP5MoHbDGV8` |
 | Video to Blog (booth) | `claude.ai/artifact/8KA5G2aVZ7Gf7Sj9YQ5c5o` |
 | Webinar to Webflow (studio) | `claude.ai/artifact/HG9oAuutrDeNuMnJfKzZsp` |
@@ -1048,7 +1095,7 @@ How a page is published as a preview:
 
 ---
 
-## 16. Version history (tags)
+## 17. Version history (tags)
 
 **Home, first sessions (old working repo):** `v4-outline-name, v5-morph-name, v6-letter-by-letter, v7-ribbon-pour, v8-thread, v9-stream-slider, v10-deck-showcase, v11-dissolve-rain, v12-glass-title, v13-funnel, v14-simple-rain, v15-persistent-field, v16-hoodie-palette, v17-responsive, v18-content, v31-thread-exit`.
 
@@ -1127,7 +1174,12 @@ How a page is published as a preview:
 | `voice-look-2`, `pre-voice-home` | acfb13a | the sky's black half on Mac GPUs fixed; runbook and captions from the workflow JSON |
 | `v57-voice-to-blog` | 538eb0d | home card opens Voice to Blog |
 | `v58-docs`, `pre-voice-talk` | 21f593c | the docs of 3 Nov (on GitHub through pull request #1) |
-| **`v59-voice-talk`** | | the teleprinter Let's talk, and these docs (pull request #2). **Current** |
+| `v59-voice-talk`, `pre-ios-fix` | 30cc5a9 | the teleprinter Let's talk and the docs (pull request #2) |
+| `v59.1-ios-fields` | | Voice to Blog: on iPhone the live fields sat off the typed boxes; render at the canvas's own size (pull request #3) |
+| `podcast-look` | 062e240 | Podcast to CMO Brief: the bento counter look test |
+| `pre-counter-fixes` → | 2111951 | the door frame's flicker, the card and band text, stop 01 names Claude |
+| `podcast-talk` | fbf63a8 | the split-flap order board Let's talk |
+| **`v60-podcast`** | | home card opens Podcast to CMO Brief; these docs (pull request #4). **Current** |
 
 **Reddit page:** `auto-reddit-v1` → `v2` (CDN fix, early captions) → `v3` (bloom, env, atlas cards, sparks, runbook) → `v3.1` (panel z-fight) → `v4` (ridge, haze, fog) → `v4.1` (stars, shooting stars) → `v5` (water + mist) → `v6` (Slack window, five alerts) → `v6.1` (perf) → `v7` (courier, plain labels) → `v7.1` (seen-gate label) → v45 (doctype, viewport, back link, mailto) → v47 (back to card) → v48 (history back) → v50 (shared form) → talk-reddit-v1.
 
@@ -1135,12 +1187,12 @@ How a page is published as a preview:
 
 ---
 
-## 17. Adding the next automation page
+## 18. Adding the next automation page
 
-1. **Concept first.** Offer 2–3 worlds with a recommendation and wait (or, if Vasant says "go with your pick", explain the chosen scene and wait for approval). It must not repeat any existing world (the table in DOCS.md §4), should be realistic like the forest, and needs a Let's talk that belongs to it. Ask for the workflow JSON and its "How to use" doc too: the stations should follow the real steps.
-2. **Assets.** List the Poly Haven assets you'd like (textures, models, an HDRI) and ask Vasant to send them; convert with §12. If something isn't sent (like the mic and cassette for the studio), build it in code and say so.
+1. **Concept first, Let's talk included.** Every new scene ships with its own Let's talk, built together with the scene and shown in the same preview (Vasant, 3 Nov: "always build the lets talk section along with the scene itself"). Offer 2–3 worlds with a recommendation and wait (or, if Vasant says "go with your pick", explain the chosen scene and wait for approval). It must not repeat any existing world (the table in DOCS.md §4), should be realistic like the forest, and needs a Let's talk that belongs to it. Ask for the workflow JSON and its "How to use" doc too: the stations should follow the real steps.
+2. **Assets.** List the Poly Haven assets you'd like (textures, models, an HDRI) and ask Vasant to send them; convert with §13. If something isn't sent (like the mic and cassette for the studio), build it in code and say so.
 3. **Copy the template** (§2): doctype and viewport, the UI script with `CUT`, `__stage`, the back-link/history logic and in-page link handler, the import map (three@0.158.0), the runbook skeleton, the Let's talk `talk` object, the butterfly, `../site.js` last. Back mark → `../index.html#from-<slug>`.
 4. **Content** comes from Vasant's runbook for that automation. Keep only cleared facts: no keys, webhook URLs, credential names, internal IDs, channel/sheet/workflow names, people's names, real post titles, domains. Write a "left out on purpose" note under the TOC. No invented metrics.
-5. **Build in stages:** a look test of the world first, show screenshots (desktop + phone), then the full story, then fixes. Back up (tag `pre-<name>`) before each change. If the camera has to go through a wall (into a building and out again), give the station a `via` path through the door (§10.6). Clamp before every `pow()` in a custom shader (§13).
+5. **Build in stages:** a look test of the world first, show screenshots (desktop + phone), then the full story, then fixes. Back up (tag `pre-<name>`) before each change. If the camera has to go through a wall (into a building and out again), give the station a `via` path through the door (§10.6). Clamp before every `pow()` in a custom shader (§14).
 6. **Wire it:** add the page (and its asset folder) under `automations/`, set `url: 'automations/<page>.html'` on the matching `AUTOMATIONS` entry in `index.html`, and set the previous page's "Next automation" link if Vasant wants it.
-7. Review at 1440×900 and 390×844, publish the preview artifact (§15), deliver the files (page, asset zip, `index.html`), and tag the version.
+7. Review at 1440×900 and 390×844, publish the preview artifact (§16), and tag the version. **Delivering:** since 3 Nov the session can push to `github.com/VasantSuraj/portfolio` (the Claude GitHub App is installed). When he says "push": a branch, a pull request (`gh api repos/VasantSuraj/portfolio/pulls`; GraphQL isn't available), wait for Vercel's preview build; when he says "merge": merge it (`gh api -X PUT …/pulls/<n>/merge`) and wait for the live build. Files and zips as a hand-over still work if he asks.

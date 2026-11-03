@@ -1,6 +1,6 @@
 # HANDOFF — read this first if you are continuing the work
 
-_For a new collaborator or a new AI session. Updated 3 Nov 2026, current version **v59-voice-talk** (page and docs)._
+_For a new collaborator or a new AI session. Updated 3 Nov 2026, current version **v60-podcast** (page and docs)._
 
 Read in this order:
 1. `HANDOFF.md` (this file)
@@ -20,7 +20,7 @@ Read in this order:
 - **Repo:** `github.com/VasantSuraj/portfolio`, branch `main`, deployed on **Vercel** (`cleanUrls`). Until 3 Nov Vasant pushed files himself through GitHub's "Add files via upload", so a hand-over was a set of files (and zips for asset folders) with the exact folder each goes in. **Since 3 Nov the Claude GitHub App is installed on the repo**, so a session can push: changes go on a branch, a pull request is opened, Vercel builds a preview of the branch, and merging into `main` makes it live. Push only when he says "push"; merge only when he says "merge" (pushing a branch doesn't change the live site). Files as a hand-over still work if he asks for them. The repo also shows GitHub Pages deployments; Vercel is the one that runs the contact function.
 - **Live now:**
   - the **home page**: particle portrait → rain → 3D projects forest → cliff and fall → beach with testimonial lanterns → footer under the stars
-  - **eight automation pages**: Reddit Keyword Alerts, Notion to Webflow ("The Press"), SEO Pre-Live Checks ("Opening Night"), Auto Internal Linking (night city), AI Blog Drafts (greenhouse at dawn), Webinar to Webflow (recording studio), Video to Blog ("The Projection Booth"), Voice to Blog ("The Tracking Station", a look test with the story's basic motion; its own Let's talk is next)
+  - **nine automation pages**: Reddit Keyword Alerts, Notion to Webflow ("The Press"), SEO Pre-Live Checks ("Opening Night"), Auto Internal Linking (night city), AI Blog Drafts (greenhouse at dawn), Webinar to Webflow (recording studio), Video to Blog ("The Projection Booth"), Voice to Blog ("The Tracking Station"), Podcast to CMO Brief ("The Bento Counter", a lunch counter at noon); the two newest have the story's basic motion, not every animation
   - **Let's talk** on every page, in each world's own form, sending to WhatsApp through `api/contact.js`
 - **Development** happens in Claude sessions with artifacts as previews; the repo files are the deliverable. The working git repo with every tag lives in the AI workspace (`/home/claude/history/portfolio`, branch `master`). Since 28 Oct it is a fresh copy started from the v54 files Vasant supplied (`284bc58`), so its hashes differ from GitHub's.
 
@@ -36,9 +36,9 @@ Read in this order:
 5. **Only the requested change.** "Only these changes", "fix those alone": touch nothing else. Mention other issues instead of fixing them.
 6. **Smoothness is non-negotiable.** "smoothernesss is more important". Smooth camera travel beats a higher frame rate, and a small flicker is more tolerable than heavier scrolling. He wants 60 fps throughout (hero 60; forest about 30–45). Reduce cost before adding anything.
 7. **Lighting:** "brighter" changes were rejected twice (shadows shifted, night too white). Change lighting only on request, in small steps.
-8. **No repeats across pages.** Each automation page has its own world, palette, props and motion language. Type and UI chrome (Elms Sans, pills, captions, runbook layout, butterfly) stay the same so it reads as one portfolio. Worlds used so far: night machine over water · paper studio in daylight · museum gallery · night transit city · dawn greenhouse · night recording studio · cinema projection booth · desert tracking station at dusk.
+8. **No repeats across pages.** Each automation page has its own world, palette, props and motion language. Type and UI chrome (Elms Sans, pills, captions, runbook layout, butterfly) stay the same so it reads as one portfolio. Worlds used so far: night machine over water · paper studio in daylight · museum gallery · night transit city · dawn greenhouse · night recording studio · cinema projection booth · desert tracking station at dusk · lunch counter at noon.
 9. **Realistic worlds, like the forest**, not cartoonish like the Press. For each new page, ask him for Poly Haven assets (he downloads them and attaches the zips/EXRs); say exactly which you'd like, and offer a pick when he asks "which one to pick".
-10. **Every page's Let's talk must belong to its world** and appear only when clicked. "lets talk is not related to the world fix it" was a rejection.
+10. **Every page's Let's talk must belong to its world** and appear only when clicked. "lets talk is not related to the world fix it" was a rejection. **Build it together with the scene, always** (3 Nov: "always build the lets talk section along with the scene itself"): the first preview of a new page already has its Let's talk.
 11. **Explain it visually.** He wants the automation's logic readable from the scene (e.g. the city: orange inbound and blue outbound lines, "Inbound linking done" / "Outbound linking done" messages, the sheet's three tabs on a board; the studio: the full YouTube → captions → transcript → Google Doc → Conversation → Webflow CMS journey). Text in the scene must be readable on screen (he asked for the greenhouse ledger to be filmed from straight above, and for darker ink when a sheet was white on white).
 12. **Security of content.**
     - Automation docs are internal company material: only cleared summaries.
@@ -97,6 +97,7 @@ Read in this order:
 - Greenhouse: generic writers ("any writer with a style file"); Claude (not Gemini); ledger filmed from above; pots read left to right; failed run = brief not shared.
 - Studio: the full journey on a strip and a wall sign; transcript written into the Doc on screen; readable printed transcript; the record comes **out of** the cabinet; host's name removed.
 - Video to Blog: the projection booth; video → blog only; the request shot looks **down** at the hatch ledge (sideways was hard to read); Let's talk = a silent-film title card on the auditorium screen of a 1930s picture house.
+- Podcast to CMO Brief: the bento counter at noon; it explains the on-demand flow (paste a YouTube or audio link into Claude, ask for a CMO analysis, a job number, the brief comes back); his idea of a list of regular podcasts whose new episodes are briefed automatically is **not** in the workflows he sent, so it isn't shown (add it when he sends that workflow); the hero text stays white like every page (he declined a dark fade behind it); Let's talk = a split-flap order board on the right wall.
 - Voice to Blog: the tracking station in the desert at dusk; the light follows the scroll (sunset → first stars); the camera goes into the hut through the door and back out; no "founder"; the draft is 5,000–7,000 words in "the house voice"; the recorder isn't named until he OKs "Voxlog".
 
 **Fonts:** Elms Sans (UI) with an Archivo fallback. Pangram Sans Rounded was wanted but is unavailable unless he supplies the files.
@@ -117,8 +118,8 @@ Read in this order:
 | Let's talk router (home) | `window.__talkScene` in the classic script; beach bottle `window.__beachTalk` in the module |
 | Card thumbnails | `thumbs/` (names in README; none in the live repo yet) |
 | Versions | git tags + `backups/` in the working repo (AI workspace) |
-| Build sources of the newest pages | `/home/claude/assets/{city,green,studio,booth,station}/` in the AI workspace (`part1.html`, `shared.css`, `part2.js` or `head/body/tail.js`; the booth `body.html` + `part2.js`; the station `body.html` + `s_*.js`; each with `build.py` and `conv_*.py`) |
-| QA harness | Playwright scripts in the AI workspace scratchpad `qa/` (BUILD.md §14) |
+| Build sources of the newest pages | `/home/claude/assets/{city,green,studio,booth,station,counter}/` in the AI workspace (`part1.html`, `shared.css`, `part2.js` or `head/body/tail.js`; the booth `body.html` + `part2.js`; the station `body.html` + `s_*.js`; each with `build.py` and `conv_*.py`) |
+| QA harness | Playwright scripts in the AI workspace scratchpad `qa/` (BUILD.md §15) |
 | Portrait tooling | `tools/portrait.py` in the old working repo; u2net_human_seg and Depth Anything V2 small (ONNX) |
 | Hand-over folders | `/home/claude/out/{linking,drafts,webinar,video,voice,docs}/` (page, asset zip, `index.html`; the docs zip) |
 
@@ -126,19 +127,20 @@ The content source for each automation is a runbook Vasant pastes (or his Google
 
 ## 5. Next up
 
-Open on the two newest pages: **Voice to Blog's story animations** (the slip arriving, the tape and the teleprinter printing, the card being punched; DOCS.md §12.6) and **Video to Blog's per-station animations** (DOCS.md §11.6). Both pages' Let's talk scenes are built.
+Open on the newest pages: **Podcast to CMO Brief's** further animations and the "regular podcasts" idea once its workflow exists (DOCS.md §13), **Voice to Blog's story animations** (the slip arriving, the tape and the teleprinter printing, the card being punched; DOCS.md §12.6) and **Video to Blog's per-station animations** (DOCS.md §11.6). All three pages' Let's talk scenes are built.
 
-The remaining **11 automations** need pages, each with its own world (concepts first, then his Poly Haven assets and the workflow JSON):
-Podcast to CMO Brief · Cluster to Pillar Post · Blog Refresh Engine · Blog to Social and Ads · Organic Social Engine · Slack to Post Idea · LinkedIn ICP Leaderboard · Competitive Intel System · Marketing Ticket Desk · Dev Tasks from Slack · Docs to Notion Sync.
+The remaining **10 automations** need pages, each with its own world and its Let's talk (concepts first, then his Poly Haven assets and the workflow JSON):
+Cluster to Pillar Post · Blog Refresh Engine · Blog to Social and Ads · Organic Social Engine · Slack to Post Idea · LinkedIn ICP Leaderboard · Competitive Intel System · Marketing Ticket Desk · Dev Tasks from Slack · Docs to Notion Sync.
 
-The natural next one is **Podcast to CMO Brief** (Voice to Blog's "Next automation" points to it) or **Competitive Intel System** (Reddit's points to it). Worlds already used are listed in §2 rule 8. Process: BUILD.md §17.
+The natural next one is **Cluster to Pillar Post** (Podcast to CMO Brief's "Next automation" points to it) or **Competitive Intel System** (Reddit's points to it). Worlds already used are listed in §2 rule 8. Process: BUILD.md §18.
 
 ## 6. Open items, in order
 
-1. **"Next automation" links still `#`** on seven pages: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog, Video to Blog → Voice to Blog, Voice to Blog → Podcast to CMO Brief. Five of these targets exist now; offer to wire them (don't do it unasked). The Press → SEO is wired.
+1. **"Next automation" links still `#`** on eight pages: Reddit → Competitive Intel System, SEO → Auto Internal Linking, Linking → AI Blog Drafts, Drafts → Webinar to Webflow, Webinar → Video to Blog, Video to Blog → Voice to Blog, Voice to Blog → Podcast to CMO Brief, Podcast to CMO Brief → Cluster to Pillar Post. Six of these targets exist now; offer to wire them (don't do it unasked). The Press → SEO is wired.
 2. **Real testimonials:** Vasant will send them. Replace the 6 samples and set `sample: false`.
 3. **Thumbnails** for the 5 Factors.ai pages and the 3 personal projects (`thumbs/`); none in the live repo.
 4. **Mic and cassette models** were never sent; the studio uses procedural ones. Offer to swap if he sends Poly Haven models.
+4b. **Podcast to CMO Brief:** issues in its three workflow files were reported in chat: a transcript-API key pasted in the YouTube node's header (rotate it, move it to a credential), RSS links fail down the audio path, a CloudConvert failure leaves the result "not ready" for good, a 4,000-token limit can cut a long brief, an unused prompt node, the instructions sent as an assistant message. His to fix. The "regular podcasts" idea waits for its workflow.
 4a. **Voice to Blog:** the story animations; may the recorder's name (Voxlog) appear? Workflow issues were reported to him in chat (a missing node reference and a wrong credential on the second Notion step; unescaped quotes in the Notion request), as were the Video to Blog ones (credential handling, a batch that can exceed Notion's 100-block limit, a filler regex that removes real words). They are his to fix in n8n.
 5. **Contact setup:** confirm the Vercel env vars are set and a live test message arrived (CONTACT-SETUP.md). Previews can't send.
 6. **Ideas raised earlier, not built** (suggest only): a stronger particle-portrait → forest hand-over; more forest → footer connection (the beach and sky largely cover this now).
@@ -149,14 +151,15 @@ The natural next one is **Podcast to CMO Brief** (Voice to Blog's "Next automati
 ## 7. Known constraints of the sandbox used so far
 
 - **Network:** the AI workspace can't reach jsDelivr, Google Fonts, factors.ai, Poly Haven or most websites from the shell. Tests use local copies of three.js (0.158 and 0.169) and Lenis; fonts now come from npm (`@fontsource`), so newer screenshots show Elms Sans. Poly Haven files come from Vasant as attachments; the web-fetch tool can still read `api.polyhaven.com` to check names. Allowing `api.polyhaven.com` and `dl.polyhaven.org` in claude.ai → Settings (or Organization settings) → Capabilities would let a session download them itself. The browser-side CDN loads work fine on the live site.
-- **Rendering:** the sandbox renders on the CPU (SwiftShader), so it can't measure real fps; ask Vasant to open the page with `?fps`. Captions can lag in screenshots. SwiftShader also rounds differently: a shader NaN that blacks out half the screen on a Mac can be invisible here (BUILD.md §13). Ask him for a screenshot when a page first ships.
+- **Rendering:** the sandbox renders on the CPU (SwiftShader), so it can't measure real fps; ask Vasant to open the page with `?fps`. Captions can lag in screenshots. SwiftShader also rounds differently: a shader NaN that blacks out half the screen on a Mac can be invisible here (BUILD.md §14). Ask him for a screenshot when a page first ships.
 - **The local server** (`python3 -m http.server 8765`) dies when background commands time out; restart it.
 - **Blender:** `bpy` must be run with `python3 -I`.
 - **Artifacts** block outside requests (`connect-src 'self'`) and have no `/api/contact`, so preview copies use `simulate: true`.
-- **The git repo with tags lives only in the AI workspace,** which is temporary. If a new session needs "revert to …", ask Vasant for the history zip, or rebuild tags from his GitHub history. GitHub's own history (uploads, then pull requests from 3 Nov: #1 Voice to Blog, #2 its Let's talk) has different commit hashes from the workspace copy; the files are the same.
+- **The git repo with tags lives only in the AI workspace,** which is temporary. If a new session needs "revert to …", ask Vasant for the history zip, or rebuild tags from his GitHub history. GitHub's own history (uploads, then pull requests from 3 Nov: #1 Voice to Blog, #2 its Let's talk, #3 the iPhone fields fix, #4 Podcast to CMO Brief) has different commit hashes from the workspace copy; the files are the same.
 
 ## 8. Artifact links (Claude, private previews)
 
+- Podcast to CMO Brief: `claude.ai/artifact/91e67pX6qn79coyPEoLRjf`
 - Voice to Blog: `claude.ai/artifact/6kcvmuwi1y1TP5MoHbDGV8`
 - Video to Blog: `claude.ai/artifact/8KA5G2aVZ7Gf7Sj9YQ5c5o`
 - Webinar to Webflow: `claude.ai/artifact/HG9oAuutrDeNuMnJfKzZsp`
