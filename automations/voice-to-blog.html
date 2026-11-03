@@ -1214,10 +1214,12 @@ async function buildTalk(config, send) {
 function fitTalk() {   // square on to the sheet, far enough back to see all of it
   const g = talk.group; g.updateWorldMatrix(true, false);
   const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), m = talk.mobile;
-  const d = Math.max(talk.PH / ((m ? 0.82 : 0.8) * 2 * tn), talk.PW / ((m ? 0.9 : 0.84) * 2 * tn * camera.aspect));
+  const vis = clamp(innerHeight / H, 0.6, 1);   // on iPhones the canvas runs on under the browser's bottom bar: fit the sheet in the part that shows
+  const d = Math.max(talk.PH / ((m ? 0.82 : 0.8) * 2 * tn * vis), talk.PW / ((m ? 0.9 : 0.84) * 2 * tn * camera.aspect));
   const c = g.localToWorld(V(0, talk.PH / 2, 0)), n = V(0, 0, 1).transformDirection(g.matrixWorld);
   talkPose.look.copy(c); talkPose.pos.copy(c).addScaledVector(n, d);
-  if (m) { const up = V(0, 1, 0).transformDirection(g.matrixWorld).multiplyScalar(talk.PH * 0.05); talkPose.look.add(up); talkPose.pos.add(up); }   // phone: the sheet sits a little lower, clear of the top bar
+  const lift = (m ? talk.PH * 0.05 : 0) - (1 - vis) * d * tn;   // phone: a little lower, clear of the top bar; and centred in what shows
+  if (lift) { const up = V(0, 1, 0).transformDirection(g.matrixWorld).multiplyScalar(lift); talkPose.look.add(up); talkPose.pos.add(up); }
 }
 
 /* ---- the camera's way: never through a wall. In and out by the door; outside, across the front or round the mast side ---- */
@@ -1428,7 +1430,8 @@ function cameraAt(p) {
 const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
 addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty = (e.clientY / H) * 2 - 1; }, { passive: true });
 function resize() {
-  W = innerWidth; H = innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); bloom.resolution.set(W / 2, H / 2);
+  const r = canvas.getBoundingClientRect();   // the canvas's own box: on iPhones a fixed 100%-high box is the tall viewport, taller than innerHeight, and drawing for innerHeight stretched the picture under the live fields
+  W = Math.round(r.width) || innerWidth; H = Math.round(r.height) || innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); bloom.resolution.set(W / 2, H / 2);
   camera.aspect = W / H; camera.fov = W / H < 0.85 ? 62 : 42; camera.updateProjectionMatrix(); viaCurves.clear();
   if (talk.cssR) talk.cssR.setSize(W, H);
   if (talk.group) fitTalk();
