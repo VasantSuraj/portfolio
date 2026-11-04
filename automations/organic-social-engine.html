@@ -1,0 +1,1673 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Organic Social Engine</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&family=Archivo:wdth,wght@62..125,300..700&family=Caveat:wght@500;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+/* The Rail Yard. One automation, shown as a railway goods yard at dusk: the week's posts arrive as a freight train and are sorted
+   over the hump, calls and webinars come in as specials, every idea is a row on the departure board, its van goes through its voice's
+   shed (writer, then editor), the repair shop for edits and the paint shop for its carousel, and leaves when the signal comes off. */
+:root{
+  --bg:#101219; --ink:#f1ece4; --ink-soft:#a19ba6; --ink-mid:#d8d1cc; --pill:#f1ece4; --pill-ink:#101219; --line:#272a35; --card:#161822;
+  --amber:#f2a65a; --leaf:#6fd08a; --red:#e8573f; --green:#6fd08a;
+  --font:'Elms Sans','Archivo','Helvetica Neue',Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a,button{color:inherit;font:inherit}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;transition:filter .9s ease}
+body.hush #gl{filter:blur(9px) saturate(.85) brightness(.85)}
+.hushveil{position:fixed;inset:0;z-index:2;pointer-events:none;background:rgba(16,18,25,.45);opacity:0;transition:opacity .9s ease}
+body.hush .hushveil{opacity:1}
+.scrim{position:fixed;left:0;right:0;bottom:0;height:48%;z-index:2;pointer-events:none;background:linear-gradient(to top,rgba(16,18,25,.9),rgba(16,18,25,.45) 45%,rgba(16,18,25,0))}
+.vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%)}
+.grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.08;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grain 1.6s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+
+.ui{position:fixed;inset:0;z-index:4;pointer-events:none}
+.ui > *{pointer-events:auto}
+.ui.off > :not(.mark):not(.actions){opacity:0!important;pointer-events:none!important}
+.mark{position:absolute;top:calc(28px + env(safe-area-inset-top,0px));left:max(28px,env(safe-area-inset-left,0px));font-weight:600;font-size:17px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:14px}
+.mark svg{display:block}
+.actions{position:absolute;top:calc(22px + env(safe-area-inset-top,0px));right:max(24px,env(safe-area-inset-right,0px));display:flex;gap:10px;align-items:center}
+.pill{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 26px;border-radius:999px;background:var(--pill);color:var(--pill-ink);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transition:transform .25s cubic-bezier(.2,.7,.2,1),background .25s;text-decoration:none;white-space:nowrap}
+.pill:hover{transform:translateY(-2px);background:#fff8ea}
+.pill:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.pill .dot{width:5px;height:5px;border-radius:999px;background:var(--pill-ink)}
+.pill.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px #34404f}
+.pill.ghost:hover{background:rgba(239,232,218,.06)}
+
+.cap{position:absolute;left:max(28px,env(safe-area-inset-left,0px));bottom:calc(36px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100vw - 56px));opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease;pointer-events:none}
+.cap.on{opacity:1;transform:none;pointer-events:auto}
+.cap em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.cap em b{font-weight:600;color:var(--amber)}
+.cap h2{margin:0 0 10px;font-weight:500;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1.05}
+.cap p{margin:0;font-size:16px;line-height:1.5;color:var(--ink-mid);max-width:44ch}
+.cap .key{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.cap .key i{font-style:normal;display:inline-flex;align-items:center;gap:7px}
+.cap .key i::before{content:'';width:9px;height:9px;border-radius:999px;background:var(--c,#fff)}
+
+.hero-title{position:absolute;left:max(28px,env(safe-area-inset-left,0px));right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);pointer-events:none;transition:opacity .5s ease}
+.hero-title em{display:block;font-style:normal;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
+.hero-title h1{margin:0;font-weight:500;font-size:clamp(44px,7.4vw,124px);letter-spacing:-.035em;line-height:.92;max-width:9ch}
+.hero-title p{margin:22px 0 0;font-size:clamp(16px,1.4vw,20px);color:var(--ink-mid);max-width:32ch}
+.hero-title .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.hero-title .row > *{pointer-events:auto}
+
+.progress{position:absolute;right:max(28px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px}
+.progress i{width:6px;height:6px;border-radius:999px;background:#2a3442;transition:background .3s,transform .3s}
+.progress i.on{background:var(--amber);transform:scale(1.4)}
+
+.end{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:calc(112px + env(safe-area-inset-top,0px)) max(28px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(28px,env(safe-area-inset-left,0px));opacity:0;transition:opacity .6s ease;pointer-events:none}
+.end.on{opacity:1;pointer-events:auto}
+.end .big{margin:0;font-weight:500;font-size:clamp(34px,min(6.2vw,9vh),100px);letter-spacing:-.035em;line-height:.95;max-width:14ch}
+.end .sub{margin:22px 0 0;font-size:clamp(17px,1.5vw,22px);color:var(--ink-mid);max-width:42ch}
+.end .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;align-items:center}
+.end .next{margin-top:48px;font-size:14px;color:var(--ink-soft)}
+.end .next a{color:var(--ink);text-decoration:none;font-weight:500}
+
+.scroll{position:absolute;right:max(28px,env(safe-area-inset-right,0px));bottom:calc(32px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);transition:opacity .6s ease}
+.scroll i{display:block;width:44px;height:2px;background:var(--ink-soft);animation:line 2.2s cubic-bezier(.7,0,.3,1) infinite}
+@keyframes line{0%{transform:scaleX(0);transform-origin:left}45%{transform:scaleX(1);transform-origin:left}55%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+
+#fly{position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none;display:block}
+.runway{position:relative;z-index:0;height:1300svh;pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------------- the runbook ---------------- */
+.doc{position:relative;z-index:3;background:var(--bg);padding:0 0 120px}
+.doc::before{content:'';position:absolute;left:0;right:0;top:-220px;height:220px;background:linear-gradient(to bottom,rgba(16,18,25,0),var(--bg));pointer-events:none}
+.doc-in{width:min(1240px,calc(100% - 56px));margin:0 auto}
+.doc-head{padding:140px 0 56px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:end}
+.doc-head em{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:18px}
+.doc-head h2{margin:0;font-weight:500;font-size:clamp(34px,4.6vw,68px);letter-spacing:-.03em;line-height:1}
+.doc-head p{margin:20px 0 0;font-size:18px;line-height:1.5;color:var(--ink-mid);max-width:52ch}
+.facts{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.facts div{background:var(--card);padding:18px 20px}
+.facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.facts dd{margin:0;font-size:16px;font-weight:500}
+.doc-grid{display:grid;grid-template-columns:220px 1fr;gap:64px;padding-top:56px}
+.toc{position:sticky;top:120px;align-self:start;display:flex;flex-direction:column;gap:4px;font-size:13px;letter-spacing:.04em}
+.toc a{text-decoration:none;color:var(--ink-soft);padding:8px 0;display:flex;gap:12px;transition:color .25s}
+.toc a span{font-variant-numeric:tabular-nums;color:#556273}
+.toc a:hover,.toc a.on{color:var(--ink)}
+.toc .foot{margin-top:28px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:12px;line-height:1.5}
+article{min-width:0}
+.sec{padding:0 0 72px;margin-bottom:72px;border-bottom:1px solid var(--line)}
+.sec:last-child{border:0;margin:0;padding:0}
+.sec h3{margin:0 0 26px;font-weight:500;font-size:clamp(24px,2.4vw,34px);letter-spacing:-.02em;display:flex;gap:18px;align-items:baseline}
+.sec h3 span{font-family:var(--font);font-size:13px;letter-spacing:.1em;color:var(--ink-soft);font-weight:500}
+.sec p{margin:0 0 16px;font-size:17px;line-height:1.6;color:var(--ink-mid);max-width:64ch}
+.sec p:last-child{margin-bottom:0}
+.lede{font-size:clamp(20px,1.8vw,26px)!important;line-height:1.35!important;letter-spacing:-.01em;color:var(--ink)!important;max-width:30ch!important}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.steps li{background:var(--card);display:grid;grid-template-columns:72px 1fr;gap:20px;padding:24px 26px 26px 22px;align-items:start}
+.steps .n{font-size:13px;letter-spacing:.08em;color:var(--ink-soft);font-variant-numeric:tabular-nums;padding-top:4px;display:flex;align-items:center;gap:10px}
+.steps .n::before{content:'';width:8px;height:8px;border-radius:999px;background:var(--c,#555)}
+.steps h4{margin:0 0 6px;font-weight:500;font-size:18px;letter-spacing:-.01em}
+.steps p{font-size:15px!important;color:#b4bfcb!important;margin:0!important;max-width:60ch!important}
+.steps .node{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:#0d131b;border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+.rules{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.rules li{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.rules b{display:block;font-weight:500;font-size:17px;margin-bottom:8px}
+.rules span{font-size:15px;color:#b4bfcb;line-height:1.5;display:block}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px}
+.checks{width:100%;min-width:520px;border-collapse:collapse;font-size:15px;background:var(--card)}
+.checks th,.checks td{text-align:left;padding:14px 20px;border-bottom:1px solid var(--line);vertical-align:top}
+.checks tr:last-child td{border-bottom:0}
+.checks th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:500;background:#101720}
+.checks td:first-child{color:var(--ink-soft);font-variant-numeric:tabular-nums;width:48px}
+.checks td i{font-style:normal;color:var(--ink-soft)}
+.checks code{font-family:var(--mono);font-size:13px;color:var(--amber)}
+.note{font-size:14px!important;color:var(--ink-soft)!important;margin-top:16px!important}
+.prio{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.prio div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;border-top:4px solid var(--c)}
+.prio b{display:block;font-weight:600;font-size:28px;letter-spacing:-.02em;color:var(--c);margin-bottom:6px}
+.prio span{font-size:15px;color:#b4bfcb;line-height:1.5}
+.report{margin:28px 0 0;background:#f4eee2;color:#1d2a25;border-radius:20px;max-width:660px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.report .hd{padding:20px 24px;border-bottom:1px solid #e0d8c8;display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.report .hd b{font-weight:600;font-size:17px}
+.report .hd span{font-size:13px;color:#5f6b65}
+.report .st{display:inline-block;background:var(--p0);color:#fff;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;letter-spacing:.06em}
+.report ul{list-style:none;margin:0;padding:10px 24px 18px}
+.report li{display:grid;grid-template-columns:44px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #e7e0d2;font-size:14px;align-items:baseline}
+.report li:last-child{border:0}
+.report li i{font-style:normal;font-weight:700;font-size:12px;letter-spacing:.04em}
+.report li small{display:block;color:#5f6b65;font-size:13px;margin-top:2px}
+.report .p0 i{color:var(--p0)}.report .p1 i{color:#b97614}.report .ok i{color:#2f8a57}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:8px}
+.stats div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 22px}
+.stats b{display:block;font-weight:500;font-size:clamp(30px,3vw,44px);letter-spacing:-.03em;line-height:1;margin-bottom:10px;color:var(--amber)}
+.stats span{font-size:14px;color:var(--ink-soft)}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pills i{font-style:normal;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:9px 13px;border-radius:999px;background:#18212c}
+.doc-foot{margin-top:96px;padding-top:40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.doc-foot .nm{font-size:14px;color:var(--ink-soft)}
+.doc-foot .nm a{color:var(--ink);text-decoration:none;font-weight:500}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:980px){
+  .doc-head{grid-template-columns:1fr;gap:32px;padding-top:110px}
+  .doc-grid{grid-template-columns:1fr;gap:0}
+  .toc{display:none}
+}
+@media (max-width:760px){
+  .cap{bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+  .cap h2{font-size:26px}.cap p{font-size:15px}
+  .hero-title{top:auto;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:none}
+  .hero-title h1{font-size:15vw}
+  .progress{display:none}
+  .scroll{display:none}
+  .mark span{display:none}
+  .doc-in{width:calc(100% - 40px)}
+  .steps li{grid-template-columns:1fr;gap:10px;padding:20px}
+  .checks th,.checks td{padding:12px 14px}
+  .report li{grid-template-columns:38px 1fr}
+}
+@media (prefers-reduced-motion:reduce){#gl,.hushveil{transition:none}.scroll i,.grain{animation:none}.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+.runway{height:1300svh}
+.vignette{background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 38%,rgba(0,0,0,.14) 62%,rgba(0,0,0,.32) 82%,rgba(0,0,0,.52) 100%)}   /* eased: the big dusk sky shows the shared vignette's edge as an arc */
+.cap code{font-family:var(--mono);font-size:.92em;background:rgba(241,236,228,.1);padding:2px 6px;border-radius:6px;color:var(--ink)}
+.slip-mock{margin:18px 0 10px;max-width:520px;background:#e6d2a4;color:#2b2118;border-radius:4px;padding:18px 22px;display:grid;gap:8px;font-size:15px;box-shadow:0 30px 60px -30px rgba(0,0,0,.6);clip-path:polygon(28px 0,calc(100% - 28px) 0,100% 28px,100% 100%,0 100%,0 28px)}
+.slip-mock b{font-family:'Special Elite','Courier New',monospace;font-weight:400;font-size:21px;margin-bottom:2px;text-align:center}
+.slip-mock i{font-style:normal;display:inline-block;width:150px;color:#6b5a44;font-size:13px;letter-spacing:.04em}
+.slip-mock em.auto{font-style:normal;color:#8a6a12;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid currentColor;border-radius:999px;padding:1px 9px}
+.sec code{font-family:var(--mono);font-size:.9em;background:rgba(241,236,228,.08);padding:1px 6px;border-radius:5px}
+/* Let's talk: the parcel label on the post at the platform's end, the form typed on it; everything else steps aside while it's open */
+#talk3d{position:fixed;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;display:none}
+html.talking #talk3d{display:block}
+html.talking #talk3d .tb-live{pointer-events:auto}
+html.talking .cap,html.talking .hero-title,html.talking .end,html.talking .progress,html.talking .scroll,html.talking .scrim,html.talking .hushveil{opacity:0!important;pointer-events:none!important;transition:opacity .5s ease}
+html.talking .doc{visibility:hidden}
+html.talking body.hush #gl{filter:none}
+.tb-face.tb-look-tag{--tb-display:'Special Elite','Courier New',monospace;--tb-display-w:400;--tb-display-ls:0;--tb-ink:#2b2118;--tb-field-ink:#2b2118;--tb-accent:#b3352a;--tb-accent-soft:rgba(179,53,42,.18);--tb-placeholder:rgba(43,33,24,.42);--tb-bad:#b3352a;--tb-ghost:#2b2118}
+.tb-look-tag h2{font-size:54px;line-height:1}.tb-look-tag h3{font-size:44px;line-height:1.05}
+.tb-face.tb-m.tb-look-tag h2{font-size:40px}.tb-face.tb-m.tb-look-tag h3{font-size:34px}
+.tb-look-tag .tb-intro{font-size:16px;font-weight:600;line-height:1.4}
+.tb-face.tb-m.tb-look-tag .tb-intro{font-size:14.5px}
+.tb-look-tag .tb-f label{font-size:12px;font-weight:800;letter-spacing:.18em}
+.tb-look-tag .tb-msg{font-weight:800}
+.tb-look-tag .tb-note{font-weight:600}
+.tb-look-tag .tb-f input,.tb-look-tag .tb-f textarea{font-family:'Special Elite','Courier New',monospace;font-weight:400;transition:none;border-radius:2px}
+.tb-look-tag .tb-f input:focus,.tb-look-tag .tb-f textarea:focus{box-shadow:0 0 0 2px var(--tb-accent)}
+.tb-look-tag .tb-btn{font-family:'Special Elite','Courier New',monospace;font-weight:400;font-size:22px;letter-spacing:.06em;text-transform:uppercase;color:#f6ecd6;background:#b3352a;border-radius:3px;box-shadow:0 3px 0 #74221a}
+.tb-look-tag .tb-btn:hover{filter:brightness(1.06)}
+.tb-look-tag .tb-knob{color:#2b2118;background:transparent;box-shadow:inset 0 0 0 1.5px rgba(43,33,24,.5)}
+.tb-look-tag .tb-knob:hover{background:rgba(43,33,24,.08)}
+.tb-look-tag .tb-tag{background:#2b2118;color:#e6d2a4;transform:none}
+.tb-look-tag .tb-ghost{color:#2b2118}
+</style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div id="talk3d"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="scrim" aria-hidden="true"></div>
+<div class="hushveil" aria-hidden="true"></div>
+
+<div class="ui" id="ui">
+  <a class="mark" href="../index.html#from-organic-social-engine" id="mark" aria-label="Back to the projects forest"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3 5 9l6 6"/></svg><span>Vasant Suraj</span></a>
+  <div class="actions"><a class="pill" href="mailto:vasantsuraj02@gmail.com" data-contact aria-haspopup="dialog">Let's talk <span class="dot" aria-hidden="true"></span></a></div>
+
+  <div class="hero-title" id="heroTitle">
+    <em>Automation · Social</em>
+    <h1>Organic Social Engine</h1>
+    <p>Post ideas come in from Reddit, LinkedIn, X, YouTube, the blog, sales calls and webinars. Each is written in the right voice, edited, reviewed and turned into a carousel or an image, all from one Notion board.</p>
+    <div class="row"><a class="pill ghost" href="#doc">Read the runbook</a></div>
+  </div>
+
+  <div class="cap" data-i="1"><em><b>01</b> · The weekly freight</em><h2>Six lines, sorted once a week.</h2><p>Once a week, scrapers bring in the week's posts from Reddit, LinkedIn searches, a list of thought leaders, X and YouTube. A post goes on only with more than 30 likes, and only if Gemini judges it on topic. The blog's posts from the last 7 days come in too, each already drafted.</p><div class="key"><i style="--c:#6fd08a">30+ likes, on topic</i><i style="--c:#e8573f">the rest</i></div></div>
+  <div class="cap" data-i="2"><em><b>02</b> · The specials</em><h2>Calls and webinars, any time.</h2><p>Send a call transcript and Claude pulls out 3 to 5 post ideas, each with the voice it suits. Send a webinar and Claude writes three captions to promote it: a hook, three takeaways, a call to action and a question to end on. Both land on the board.</p></div>
+  <div class="cap" data-i="3"><em><b>03</b> · The board</em><h2>One row for each idea.</h2><p>Every idea is a row on one Notion board, with where it came from, a summary and the voice it's assigned to. Tick Generate Content on a row: within a minute it's picked up, the box is cleared and the status becomes Generating.</p><div class="key"><i style="--c:#f1ead8">New Idea</i><i style="--c:#f2b13c">Generating</i></div></div>
+  <div class="cap" data-i="4"><em><b>04</b> · The sheds</em><h2>Written in its own voice.</h2><p>There's a writer for each of four voices, three people and the company account, each briefed on how that voice writes. Then the same voice's editor sharpens the hook and cuts what doesn't earn its place. The draft goes back on the row as In Review.</p><div class="key"><i style="--c:#f4d35e">In Review</i></div></div>
+  <div class="cap" data-i="5"><em><b>05</b> · The repair shop</em><h2>Edits, from a note.</h2><p>Not right yet? Write what to change in Edit Instructions and set the status to Needs Edits. Within a minute Claude revises the draft to the note, keeps the voice, clears the note and sets After Edit Instructions.</p><div class="key"><i style="--c:#e8573f">Needs Edits</i><i style="--c:#7fb3e0">After Edit Instructions</i></div></div>
+  <div class="cap" data-i="6"><em><b>06</b> · The paint shop</em><h2>A carousel, or an image.</h2><p>Pick a Content Type and set Generate Creative. A carousel comes back as five slides, a cover, three points and a call to action, each with its word limits, ready to design. An image post gets an image made for it, saved to Google Drive.</p><div class="key"><i style="--c:#d9743a">Carousel</i><i style="--c:#c79be8">Image Post</i></div></div>
+  <div class="cap" data-i="7"><em><b>07</b> · The starter</em><h2>Creative ready.</h2><p>Once the carousel's slides are on the row, the status becomes Creative Ready and the post is ready for someone to design and publish. Nothing is posted on its own.</p><div class="key"><i style="--c:#6fd08a">Creative Ready</i></div></div>
+
+  <div class="end" id="end">
+    <p class="big">Every idea, in the right voice.</p>
+    <p class="sub">Scraped posts, blogs, calls and webinars become drafts in four voices: edited, reviewed and briefed for a carousel or an image, all on one Notion board.</p>
+    <div class="row"><a class="pill" href="#doc">Read the runbook <span class="dot" aria-hidden="true"></span></a><span class="pill ghost">n8n</span><span class="pill ghost">Notion</span><span class="pill ghost">Apify</span><span class="pill ghost">Gemini</span><span class="pill ghost">Claude</span></div>
+    <p class="next">Next automation → <a href="#" id="nextLink">Slack to Post Idea</a></p>
+  </div>
+
+  <div class="progress" id="progress" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="scroll" id="scrollHint" aria-hidden="true">Scroll to walk the yard <i></i></div>
+</div>
+
+<canvas id="fly" aria-hidden="true"></canvas>
+<div class="runway" id="runway" aria-hidden="true"></div>
+<h1 class="sr">Organic Social Engine. Six n8n workflows feed one Notion board with LinkedIn post ideas. Once a week, scrapers collect posts from Reddit, LinkedIn, thought leaders, X and YouTube, keep those with more than 30 likes that Gemini judges on topic, and add the blog's posts from the last 7 days. Call transcripts and webinars arrive by webhook and become ideas or captions with Claude. Ticking Generate Content on a row writes the post with the assigned voice's writer and editor and sets it to In Review; Needs Edits revises it to the edit instructions; Generate Creative turns it into a five-slide carousel brief or an image, and the row is marked Creative Ready.</h1>
+
+<!-- ============================ RUNBOOK ============================ -->
+<section class="doc" id="doc">
+  <div class="doc-in">
+    <header class="doc-head">
+      <div class="rv"><em>Runbook</em><h2>How the Organic Social Engine works</h2><p>The full picture of the yard above: where the ideas come from, how a row moves from idea to draft to creative, what each step expects, and what to check when a row stops.</p></div>
+      <dl class="facts rv">
+        <div><dt>Trigger</dt><dd>A weekly scrape, two webhooks, and a board checked every minute</dd></div>
+        <div><dt>Runs</dt><dd>Six workflows: one weekly, two on demand, three every minute</dd></div>
+        <div><dt>Stack</dt><dd>n8n · Notion · Apify · YouTube · Gemini · Claude · OpenAI · Google Drive · Slack</dd></div>
+        <div><dt>Output</dt><dd>LinkedIn drafts in four voices on the board, edited on request, with a carousel brief or an image</dd></div>
+      </dl>
+    </header>
+
+    <div class="doc-grid">
+      <nav class="toc" id="toc" aria-label="Runbook sections">
+        <a href="#d-problem"><span>01</span>Problem</a>
+        <a href="#d-run"><span>02</span>Running it</a>
+        <a href="#d-flow"><span>03</span>Flow</a>
+        <a href="#d-rules"><span>04</span>The rules</a>
+        <a href="#d-fail"><span>05</span>If something fails</a>
+        <a href="#d-outcome"><span>06</span>Outcome</a>
+        <a href="#d-ops"><span>07</span>Operating it</a>
+        <div class="foot">The board, the workspace, credentials, the people behind the voices and the prompts' wording are left out on purpose. The ideas, notes and slides in the scene are illustrative.</div>
+      </nav>
+
+      <article>
+        <section class="sec rv" id="d-problem">
+          <h3><span>01</span>Problem</h3>
+          <p class="lede">A good post needs something worth saying, and a voice that sounds like its author.</p>
+          <p>Finding the first means reading Reddit, LinkedIn, X and YouTube every week and remembering what came up on calls and webinars. The second means writing each idea up in the right voice, three people's and the company's, then editing it, and then briefing the carousel. Each step is easy to skip.</p>
+        </section>
+
+        <section class="sec rv" id="d-run">
+          <h3><span>02</span>Running it</h3>
+          <ol class="steps">
+            <li><div class="n" style="--c:#f1ece4">01</div><div><h4>Let the ideas come in</h4><p>The scrape runs once a week on its own. Send a call transcript or a webinar to its webhook whenever there's one.</p></div></li>
+            <li><div class="n" style="--c:#f1ece4">02</div><div><h4>Pick an idea</h4><p>On the board, read the summary and check Assigned Profile: the voice it will be written in.</p></div></li>
+            <li><div class="n" style="--c:#f2b13c">03</div><div><h4>Tick Generate Content</h4><p>Within a minute the row says Generating; soon after, In Review, with the post in Generated Draft.</p></div></li>
+            <li><div class="n" style="--c:#e8573f">04</div><div><h4>Review it</h4><p>Not right yet? Write Edit Instructions and set Needs Edits. It comes back as After Edit Instructions.</p></div></li>
+            <li><div class="n" style="--c:#6fd08a">05</div><div><h4>Ask for the creative</h4><p>Set Content Type to Carousel or Image Post and the status to Generate Creative. A carousel's slides land in Creative Brief, marked Creative Ready.</p></div></li>
+          </ol>
+          <div class="slip-mock">
+            <b>On the board · one row</b>
+            <span><i>Source</i> Call Transcript</span>
+            <span><i>Assigned Profile</i> one of the four voices</span>
+            <span><i>Generate Content</i> ticked</span>
+            <span><i>Status</i> <em class="auto">In Review</em></span>
+          </div>
+          <p class="note">An illustrative example.</p>
+        </section>
+
+        <section class="sec rv" id="d-flow">
+          <h3><span>03</span>Flow</h3>
+          <ol class="steps">
+            <li><div class="n" style="--c:#f1ece4">01</div><div><h4>The weekly scrape</h4><p>Apify scrapers fetch the week's top Reddit threads, LinkedIn search results, a list of thought leaders' posts and X posts; a YouTube search adds each video's views and likes. Posts with more than 30 likes go on, unless they're from a blocked handle.</p><span class="node">Schedule · Apify · YouTube · Filter</span></div></li>
+            <li><div class="n" style="--c:#f1ece4">02</div><div><h4>Summarise and judge</h4><p>Gemini summarises each post, suggests a voice and says whether it's on topic. Off-topic posts are dropped.</p><span class="node">Gemini · Filter</span></div></li>
+            <li><div class="n" style="--c:#f1ece4">03</div><div><h4>The week's blogs</h4><p>Blog posts from the last 7 days are read from a sheet, and Gemini drafts a post from each in the company's voice.</p><span class="node">Google Sheets · Gemini</span></div></li>
+            <li><div class="n" style="--c:#f1ece4">04</div><div><h4>Onto the board</h4><p>Each idea becomes a row marked New Idea, with its source, link, summary and voice. A digest of the week's haul goes to Slack.</p><span class="node">Notion · Slack</span></div></li>
+            <li><div class="n" style="--c:#f1ece4">05</div><div><h4>Calls and webinars</h4><p>One webhook takes a call transcript: Claude finds 3 to 5 ideas, each with a title, the insight and a voice. Another takes a webinar's title, summary and transcript: Claude writes three captions, saved on a row as a ready draft.</p><span class="node">Webhook · Claude · Notion</span></div></li>
+            <li><div class="n" style="--c:#f2b13c">06</div><div><h4>Write, then edit</h4><p>Every minute, rows with Generate Content ticked are set to Generating and unticked. The row's voice picks its writer and its editor; the draft is saved in pieces under Notion's length limit and the row goes to In Review.</p><span class="node">Schedule · Switch · Claude · Notion</span></div></li>
+            <li><div class="n" style="--c:#e8573f">07</div><div><h4>Edits</h4><p>Every minute, rows at Needs Edits are revised to their Edit Instructions, which are then cleared, and set to After Edit Instructions.</p><span class="node">Schedule · Claude · Notion</span></div></li>
+            <li><div class="n" style="--c:#6fd08a">08</div><div><h4>Creative</h4><p>Every minute, rows at Generate Creative are read by Content Type. A carousel: Claude breaks the draft into five slides, saves them to Creative Brief and marks the row Creative Ready. An image post: an image is generated and saved to Google Drive.</p><span class="node">Schedule · Switch · Claude · OpenAI · Google Drive</span></div></li>
+          </ol>
+        </section>
+
+        <section class="sec rv" id="d-rules">
+          <h3><span>04</span>The rules</h3>
+          <p>Every step has the same brief every time, so what lands on the board is always in the same shape.</p>
+          <div class="tbl-wrap">
+          <table class="checks">
+            <thead><tr><th>#</th><th>Part</th><th>The rule</th><th>In the yard</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>The gate</td><td>More than 30 likes, judged on topic, not from a blocked handle</td><td><i>the hump and the spur</i></td></tr>
+              <tr><td>2</td><td>Calls</td><td>3 to 5 ideas, each a short title, a two-sentence insight and a voice</td><td><i>the call special</i></td></tr>
+              <tr><td>3</td><td>Webinars</td><td>Three captions of 150 to 200 words: a hook, three takeaways, a call to action, a question</td><td><i>the webinar special</i></td></tr>
+              <tr><td>4</td><td>Writers</td><td>One for each voice, briefed on its topics, its tone and how long it runs</td><td><i>the four sheds</i></td></tr>
+              <tr><td>5</td><td>Editors</td><td>The same voice: a sharper first line, nothing generic, no commentary around the post</td><td><i>the second board in each shed</i></td></tr>
+              <tr><td>6</td><td>Carousel</td><td>A cover (8-word headline, 20-word subtext), three slides (8 and 25 words) and a call to action</td><td><i>the five painted cars</i></td></tr>
+            </tbody>
+          </table>
+          </div>
+        </section>
+
+        <section class="sec rv" id="d-fail">
+          <h3><span>05</span>If something fails</h3>
+          <ul class="rules">
+            <li><b>Start here</b><span>Each workflow's Executions tab in n8n shows which step stopped and why.</span></li>
+            <li><b>A row stays at Generating</b><span>Its Assigned Profile has to be one of the four voices; anything else matches no writer. Fix it, set the status back and tick the box again.</span></li>
+            <li><b>The week brought few ideas</b><span>The 30-like gate and the topic check may have kept most of them out. The Slack digest shows what came in.</span></li>
+            <li><b>Edits on a very long draft</b><span>The revised draft is saved in one piece, up to 2,000 characters.</span></li>
+          </ul>
+        </section>
+
+        <section class="sec rv" id="d-outcome">
+          <h3><span>06</span>Outcome</h3>
+          <div class="stats">
+            <div><b>6</b><span>sources scraped every week, the blog included</span></div>
+            <div><b>4</b><span>voices, each with its own writer and editor</span></div>
+            <div><b>~1 min</b><span>until a ticked row is picked up</span></div>
+          </div>
+          <p style="margin-top:26px">A week of ideas arrives without anyone searching for them, and every one of them can be a reviewed draft in the right voice, with its carousel briefed, in a few minutes.</p>
+        </section>
+
+        <section class="sec rv" id="d-ops">
+          <h3><span>07</span>Operating it</h3>
+          <ul class="rules">
+            <li><b>A review, not a post</b><span>Drafts, briefs and images stay on the board and in Drive. Nothing is published anywhere.</span></li>
+            <li><b>The voice is set per row</b><span>Change Assigned Profile before ticking Generate Content.</span></li>
+            <li><b>One switch per step</b><span>Generate Content for the draft, Needs Edits for changes, Generate Creative for the carousel or image.</span></li>
+            <li><b>Calls and webinars on demand</b><span>They come in when they're sent, not with the weekly scrape.</span></li>
+          </ul>
+          <div class="pills" style="margin-top:28px"><i>n8n</i><i>Notion</i><i>Apify</i><i>YouTube</i><i>Gemini</i><i>Claude</i><i>OpenAI</i><i>Google Drive</i><i>Slack</i></div>
+        </section>
+      </article>
+    </div>
+
+    <footer class="doc-foot">
+      <a class="pill ghost" href="#top">Back to the yard</a>
+      <p class="nm">Next automation → <a href="#" id="nextLink2">Slack to Post Idea</a></p>
+    </footer>
+  </div>
+</section>
+
+<script>
+/* UI layer: scroll → station. Runs before the 3D module so the page reads even if WebGL is unavailable. */
+(() => {
+  const caps = [...document.querySelectorAll('.cap')], dots = [...document.querySelectorAll('.progress i')];
+  const runway = document.getElementById('runway'), ui = document.getElementById('ui'), hero = document.getElementById('heroTitle'), hint = document.getElementById('scrollHint'), end = document.getElementById('end');
+  const S = window.__stage = { prog: 0, station: 0, doc: 0 };
+  // stations: 0 hero · 1 the freight · 2 the specials · 3 the board · 4 the sheds · 5 the repair shop · 6 the paint shop · 7 the starter · 8 end
+  const CUT = [0.05, 0.17, 0.29, 0.41, 0.53, 0.65, 0.76, 0.88];
+  function onScroll() {
+    const H = innerHeight, max = Math.max(1, runway.offsetHeight - H);
+    const pr = Math.max(0, Math.min(1, scrollY / max));
+    let st = 0; while (st < CUT.length && pr >= CUT[st]) st++;
+    S.prog = pr; S.station = st; S.doc = Math.max(0, Math.min(1, (scrollY - (runway.offsetHeight - H * 0.9)) / (H * 0.5)));
+    caps.forEach(c => c.classList.toggle('on', Number(c.dataset.i) === st));
+    dots.forEach((d, i) => d.classList.toggle('on', i === st));
+    hero.style.opacity = String(1 - Math.min(1, pr / 0.04));
+    hint.style.opacity = String(pr < 0.02 ? 1 : 0);
+    end.classList.toggle('on', st === 8 && S.doc < 0.5);
+    document.body.classList.toggle('hush', st === 8 && S.doc < 0.5);
+    ui.classList.toggle('off', S.doc >= 0.5);
+  }
+  addEventListener('scroll', onScroll, { passive: true }); addEventListener('resize', onScroll); onScroll();
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  const links = [...document.querySelectorAll('.toc a')];
+  const io2 = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-30% 0px -55% 0px' });
+  document.querySelectorAll('.sec').forEach(s => io2.observe(s));
+})();
+
+/* back to the forest: when the visitor came from the home page, the arrow is a real browser "back" (usually instant, no reload,
+   exactly where they left). Otherwise the link opens the home page at this page's card. */
+(() => {
+  const mark = document.getElementById('mark'); if (!mark) return;
+  const slug = (/#from-([\w-]+)$/.exec(mark.getAttribute('href')) || [])[1];
+  mark.addEventListener('click', e => {
+    let ref; try { ref = new URL(document.referrer); } catch (_) { return; }
+    const home = new URL('../', location.href).pathname;
+    const fromHome = ref.origin === location.origin && [home, home + 'index.html', home + 'index'].includes(ref.pathname);
+    if (!fromHome || history.length < 2) return;
+    e.preventDefault();
+    try { if (slug) sessionStorage.setItem('returnTo', slug); } catch (_) {}
+    history.back();
+  });
+  // in-page links (#doc, #top) scroll without adding history entries, so "back" always means the forest
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || e.defaultPrevented) return;
+    const id = a.getAttribute('href'); e.preventDefault(); if (id === '#') return;
+    const el = id === '#top' ? null : document.querySelector(id), how = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (el) el.scrollIntoView({ behavior: how }); else scrollTo({ top: 0, behavior: how });
+    history.replaceState(null, '', id);
+  });
+})();
+</script>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(hover: none)').matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = t => t * t * (3 - 2 * t);
+const sstep = (a, b, v) => smooth(clamp((v - a) / (b - a), 0, 1));
+const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+let W = innerWidth, H = innerHeight;
+const stage = window.__stage; const SNAP = /snap/.test(location.search);
+// a single NaN pixel would be smeared into a black block by the bloom: zero it where it's made (?nan paints it magenta to find it)
+THREE.ShaderChunk.dithering_fragment += /[?&]nan/.test(location.search) ? '\nif (any(isnan(gl_FragColor)) || any(isinf(gl_FragColor))) gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);' : '\nif (any(isnan(gl_FragColor)) || any(isinf(gl_FragColor))) gl_FragColor = vec4(0.0);';
+const SANS = "'Elms Sans', Archivo, Arial, sans-serif", MONO = "ui-monospace, Menlo, Consolas, monospace", TYPE = "'Special Elite', 'Courier New', monospace";
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+let seed = 23; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+/* =====================================================================
+   RENDERER · a railway goods yard at dusk: the sun on the horizon behind the yard, lamps coming on, steam hanging in the cold air
+   ===================================================================== */
+const canvas = document.getElementById('gl');
+canvas.style.opacity = '0'; canvas.style.transition = 'opacity 1.2s ease';
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+const DPR = Math.min(coarse ? 1.25 : 1.5, devicePixelRatio || 1);
+renderer.setPixelRatio(DPR);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x4a5568);
+scene.fog = new THREE.FogExp2(0x30343f, 0.0068);   // dusk haze and coal smoke: the far end of the yard goes grey-violet   // golden haze: the far rows soften into the evening
+const camera = new THREE.PerspectiveCamera(42, W / H, 0.03, 900);
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.34, 0.4, 0.86);   // the lamps and the fire bloom
+if (!/[?&]nan/.test(location.search)) composer.addPass(bloom); composer.addPass(new OutputPass());
+
+/* ---- loading ---- */
+const manager = new THREE.LoadingManager();
+manager.onLoad = () => { canvas.style.opacity = '1'; };
+manager.onError = u => console.warn('[yard] missing', u);
+setTimeout(() => { canvas.style.opacity = '1'; }, 7000);
+const TL = new THREE.TextureLoader(manager);
+const ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+function tex(name, srgb, tile = 0) { const t = TL.load('railyard/' + name); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; if (srgb) t.colorSpace = THREE.SRGBColorSpace; if (tile) t.repeat.set(1 / tile, 1 / tile); return t; }
+const SMALL = new Set(['clock', 'ladder', 'spray', 'sledge', 'chest', 'stove', 'bench', 'case1', 'case2', 'lamp', 'lglass', 'barrel1', 'barrel2', 'oilcan']);   // props: 512 px is all they show
+function pbr(base, tile = 0, metal = false) {   // geometry UVs are in metres; tile = how many metres one texture covers
+  const r = SMALL.has(base) ? '512' : '1k';
+  const m = { map: tex(`${base}_diff_${r}.jpg`, true, tile), normalMap: tex(`${base}_nor_${r}.jpg`, false, tile), roughnessMap: tex(`${base}_rough_${r}.jpg`, false, tile) };
+  if (metal) m.metalnessMap = tex(`${base}_metal_${r}.jpg`, false, tile); return m;
+}
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer;
+async function loadPacked(file) {
+  const r = await fetch('railyard/' + file); if (!r.ok) throw new Error(file + ' ' + r.status); const d = await r.json(); const out = {};
+  for (const mat in d) out[mat] = d[mat].parts.map(p => {
+    const q = new Uint16Array(b64(p.p)), nr = new Int8Array(b64(p.nr)), uvq = new Int16Array(b64(p.uv)), ix = p.i32 ? new Uint32Array(b64(p.i)) : new Uint16Array(b64(p.i));
+    { let mx = 0; for (let k = 0; k < ix.length; k++) if (ix[k] > mx) mx = ix[k]; if (mx >= p.n) for (let k = 0; k < ix.length; k++) if (ix[k] > 0) ix[k]--; }   // packs from the old packer number every vertex after the first one too high: undo that
+    const P = new Float32Array(p.n * 3), N = new Float32Array(p.n * 3), U = new Float32Array(p.n * 2);
+    for (let i = 0; i < p.n; i++) { for (let c = 0; c < 3; c++) { P[i * 3 + c] = p.lo[c] + q[i * 3 + c] / 65535 * p.sc[c]; N[i * 3 + c] = nr[i * 3 + c] / 127; } U[i * 2] = uvq[i * 2] / 8000; U[i * 2 + 1] = uvq[i * 2 + 1] / 8000; }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.BufferAttribute(N, 3)); g.setAttribute('uv', new THREE.BufferAttribute(U, 2)); g.setIndex(new THREE.BufferAttribute(ix, 1));
+    g.name = p.name; return g;
+  });
+  return out;
+}
+const footTo0 = g => { g.computeBoundingBox(); const b = g.boundingBox; g.translate(-(b.min.x + b.max.x) / 2, -b.min.y, -(b.min.z + b.max.z) / 2); return g; };   // centre a scanned part on its own footprint
+function canvasTex(w, h, draw, opts = {}) {   // a canvas texture that redraws when the web fonts arrive
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  const t = new THREE.CanvasTexture(c); t.colorSpace = opts.linear ? THREE.LinearSRGBColorSpace : THREE.SRGBColorSpace; t.anisotropy = ANISO;
+  if (opts.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; }
+  const redraw = (...a) => { x.save(); x.textAlign = 'left'; x.textBaseline = 'alphabetic'; draw(x, w, h, ...a); x.restore(); t.needsUpdate = true; };
+  redraw(); t.userData.redraw = redraw; if (!opts.static && document.fonts) document.fonts.ready.then(() => redraw());
+  return t;
+}
+function wrapText(x, text, X, Y, maxW, lh, maxLines = 99) {
+  const words = text.split(' '); let line = '', y = Y, n = 0;
+  for (const w of words) { const t = line ? line + ' ' + w : w; if (x.measureText(t).width > maxW && line) { x.fillText(line, X, y); line = w; y += lh; if (++n >= maxLines) return y; } else line = t; }
+  if (line) x.fillText(line, X, y); return y + lh;
+}
+function grain(x, w, h, n, a = 0.05, col = '90,70,40') { let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; for (let i = 0; i < n; i++) { x.fillStyle = `rgba(${col},${r() * a})`; x.fillRect(r() * w, r() * h, 2, 2); } }
+const metresUV = (g, tile = 1) => {   // box UVs from world metres, so textures keep their scale on every face
+  g.computeVertexNormals(); const p = g.attributes.position, n = g.attributes.normal, uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) { const nx = Math.abs(n.getX(i)), ny = Math.abs(n.getY(i)), x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    if (ny > 0.5) uv.setXY(i, x / tile, z / tile); else if (nx > 0.5) uv.setXY(i, z / tile, y / tile); else uv.setXY(i, x / tile, y / tile); }
+  return g;
+};
+const box = (w, h, d, x, y, z) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); return metresUV(g); };
+const mesh = (geo, mat, parent, x = 0, y = 0, z = 0, sh = true) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = sh; m.receiveShadow = true; (parent || scene).add(m); return m; };
+
+/* ---- light from the sky: Poly Haven "Industrial Sunset 02 (Pure Sky)", turned so its sun sets behind the yard; reflections and fill only ---- */
+const pmrem = new THREE.PMREMGenerator(renderer);
+const ENVK = 0.32, ENVMAX = 5, ENV_SHIFT = 154;
+fetch('railyard/yard_env.json').then(r => r.json()).then(d => {
+  const src = new Uint8Array(b64(d.d)), w = d.w, h = d.h, out = new Uint16Array(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + (x + ENV_SHIFT) % w) * 4, o = ((h - 1 - y) * w + x) * 4, e = src[i + 3], f0 = e ? Math.pow(2, e - 136) * ENVK : 0, lum = (src[i] + src[i + 1] + src[i + 2]) / 3 * f0, f = lum > ENVMAX ? f0 * ENVMAX / lum : f0;
+    let r = src[i] * f, g = src[i + 1] * f, b = src[i + 2] * f;
+    if (y >= h / 2) { const k = Math.min(1, (y - h / 2) / (h * 0.04)); r = lerp(r, 0.12 * ENVK * 2, k); g = lerp(g, 0.1 * ENVK * 2, k); b = lerp(b, 0.09 * ENVK * 2, k); }   // a pure-sky HDRI has nothing below the horizon: put the dark yard there, for the bounce
+    out[o] = THREE.DataUtils.toHalfFloat(r); out[o + 1] = THREE.DataUtils.toHalfFloat(g); out[o + 2] = THREE.DataUtils.toHalfFloat(b); out[o + 3] = THREE.DataUtils.toHalfFloat(1);
+  }
+  const t = new THREE.DataTexture(out, w, h, THREE.RGBAFormat, THREE.HalfFloatType);
+  t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.LinearSRGBColorSpace; t.magFilter = t.minFilter = THREE.LinearFilter; t.needsUpdate = true;
+  scene.environment = pmrem.fromEquirectangular(t).texture; t.dispose();
+}).catch(err => console.warn('[yard] reflections unavailable:', err && err.message));
+
+/* =====================================================================
+   THE YARD: a railway goods yard at dusk. y is up; the lines run along z, and everything in the story moves toward −z, down the
+   yard and out toward the sunset. The sun has just gone down to the horizon at the far end, a little to the right: the rails gleam
+   toward it, the wagons stand dark against it, and the lamps are coming on.
+   x: the platform road −15.5 (the goods office and its platform west of it) · the line −6 (the hump, the sheds, the shops, out)
+   ===================================================================== */
+const SUN_SKY = V(0.302, 0.052, -0.953).normalize();                       // where the sky's own sun sits, on the horizon
+const SUN = V(0.33, 0.21, -0.92).normalize();                             // the light from it: raised a little, so the shadows stay on the yard
+const SUNC = new THREE.Color(1.0, 0.58, 0.32);
+const RT = 0.38, HG = 0.7175;                                              // rail top; half the gauge (rail centres)
+const FOG_WARM = new THREE.Color(0.17, 0.095, 0.07), FOG_COOL = new THREE.Color(0.04, 0.047, 0.08);   // (linear)
+
+/* ---- the lines: straight runs joined by curves of a given radius; anything on a line is placed by its distance along it ---- */
+function lineOf(pts, R = 20) {
+  const P = [[pts[0][0], pts[0][1]]];
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [ax, az] = pts[i - 1], [bx, bz] = pts[i], [cx, cz] = pts[i + 1];
+    let d1x = bx - ax, d1z = bz - az, d2x = cx - bx, d2z = cz - bz; const l1 = Math.hypot(d1x, d1z), l2 = Math.hypot(d2x, d2z); d1x /= l1; d1z /= l1; d2x /= l2; d2z /= l2;
+    const th = Math.acos(clamp(d1x * d2x + d1z * d2z, -1, 1)); if (th < 1e-4) { P.push([bx, bz]); continue; }
+    const t = R * Math.tan(th / 2), sx = bx - d1x * t, sz = bz - d1z * t, side = Math.sign(d1x * d2z - d1z * d2x);
+    const nx = -d1z * side, nz = d1x * side, ox = sx + nx * R, oz = sz + nz * R, a0 = Math.atan2(sz - oz, sx - ox), n = Math.max(4, Math.ceil(th * R / 0.8));
+    for (let k = 0; k <= n; k++) { const a = a0 + side * th * k / n; P.push([ox + Math.cos(a) * R, oz + Math.sin(a) * R]); }
+  }
+  P.push([pts[pts.length - 1][0], pts[pts.length - 1][1]]);
+  const S = [0]; for (let i = 1; i < P.length; i++) S.push(S[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
+  const len = S[S.length - 1];
+  function at(s, o = { x: 0, z: 0, tx: 0, tz: -1 }) {   // the point at distance s, and the way the line runs there
+    s = clamp(s, 0, len); let lo = 0, hi = S.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (S[m] <= s) lo = m; else hi = m; }
+    const f = (s - S[lo]) / Math.max(1e-6, S[hi] - S[lo]); o.x = lerp(P[lo][0], P[hi][0], f); o.z = lerp(P[lo][1], P[hi][1], f);
+    const dx = P[hi][0] - P[lo][0], dz = P[hi][1] - P[lo][1], dl = Math.hypot(dx, dz) || 1; o.tx = dx / dl; o.tz = dz / dl; return o;
+  }
+  const sAtZ = z => { let best = 0, bd = 1e9; for (let s = 0; s <= len; s += 0.25) { const d = Math.abs(at(s).z - z); if (d < bd) { bd = d; best = s; } } return best; };
+  return { P, S, len, at, sAtZ };
+}
+const LINE = lineOf([[-6, 260], [-6, -700]]);                                          // the hump, the sheds, the shops, and away
+const SPUR = lineOf([[-6, 90], [-6, 66], [-10.5, 50], [-10.5, 35]], 18);              // where the light wagons go: a dead end
+const PLAT = lineOf([[-15.5, 260], [-15.5, -90], [-6, -150], [-6, -700]], 40);       // the platform road: the specials, the parcels train
+const FAN = [lineOf([[-6, 8], [-6, 0], [-10, -12], [-10, -40]]), LINE, lineOf([[-6, 8], [-6, 0], [-2, -12], [-2, -40]]), lineOf([[-6, 8], [-6, 0], [2, -12], [2, -40]])];   // into the four sheds
+const SHEDZ = { z0: -15, z1: -31 };
+
+/* ---- materials ---- */
+const yardM = new THREE.MeshStandardMaterial({ ...pbr('yard', 3.2), roughness: 1, envMapIntensity: 0.55 });
+const ballastM = new THREE.MeshStandardMaterial({ ...pbr('ballast', 1.4), color: 0x9a948c, roughness: 1, envMapIntensity: 0.4 });
+const sleeperM = new THREE.MeshStandardMaterial({ ...pbr('planks', 1.2), color: 0x6a5a4c, roughness: 1, envMapIntensity: 0.35 });
+const railHeadM = new THREE.MeshStandardMaterial({ color: 0xc9c2bc, roughness: 0.22, metalness: 1, envMapIntensity: 1.4 });   // the running face: polished by the wheels
+const railWebM = new THREE.MeshStandardMaterial({ ...pbr('rust', 0.8), color: 0x8a7064, roughness: 0.9, metalness: 0.4, envMapIntensity: 0.5 });
+const brickM = new THREE.MeshStandardMaterial({ ...pbr('brick', 2.4), color: 0xc7b3a8, roughness: 1, envMapIntensity: 0.45 });
+const tinM = new THREE.MeshStandardMaterial({ ...pbr('tin', 1.6, true), color: 0x9a9690, roughness: 0.75, envMapIntensity: 0.8, side: THREE.DoubleSide });
+const plankM = new THREE.MeshStandardMaterial({ ...pbr('planks', 1.4), roughness: 1, envMapIntensity: 0.45 });
+const paintM = col => new THREE.MeshStandardMaterial({ ...pbr('paint', 1.6), color: col, roughness: 0.85, metalness: 0.15, envMapIntensity: 0.6 });
+const rustM = new THREE.MeshStandardMaterial({ ...pbr('rust', 1.2), color: 0x9a8070, roughness: 0.8, metalness: 0.5, envMapIntensity: 0.55 });
+const ironM = new THREE.MeshStandardMaterial({ color: 0x24221f, roughness: 0.55, metalness: 0.8, envMapIntensity: 0.7 });
+const sootM = new THREE.MeshStandardMaterial({ color: 0x151414, roughness: 0.6, metalness: 0.5, envMapIntensity: 0.8 });
+const brassM = new THREE.MeshStandardMaterial({ color: 0xc89a4a, roughness: 0.3, metalness: 1, envMapIntensity: 1.2 });
+const glowM = col => new THREE.MeshBasicMaterial({ color: col, toneMapped: false, fog: false });
+const lineM = new THREE.LineBasicMaterial({ color: 0x1a1816, transparent: true, opacity: 0.7, fog: true });
+const flat = (w, h, map, parent, x, y, z, ry = 0, extra = {}) => { const m = mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map, roughness: 0.95, ...extra }), parent, x, y, z, false); m.rotation.y = ry; return m; };
+
+/* ---- the sky: Poly Haven "Industrial Sunset 02 (Pure Sky)", turned so its sun sets at the yard's far end; below the horizon the
+   haze. The fog takes the sunset's colour when you look toward it and the dusk's blue when you look away ---- */
+const skyTex = TL.load('railyard/sky.jpg'); skyTex.colorSpace = THREE.SRGBColorSpace; skyTex.wrapS = THREE.RepeatWrapping; skyTex.anisotropy = ANISO;
+const skyM = new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false,
+  uniforms: { uSky: { value: skyTex }, uSun: { value: SUN_SKY }, uHaze: { value: scene.fog.color }, uShift: { value: 0.301 } },
+  vertexShader: 'varying vec3 vD; void main(){ vD = position; vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }',
+  fragmentShader: `uniform sampler2D uSky; uniform vec3 uSun, uHaze; uniform float uShift; varying vec3 vD;
+    void main(){
+      vec3 d = normalize(vD); float el = asin(clamp(d.y, -1.0, 1.0)) / 1.5708;
+      vec3 c = texture2D(uSky, vec2(atan(d.z, d.x) / 6.28318 + 0.5 + uShift, clamp(el, 0.004, 0.998))).rgb;
+      float s = max(dot(d, uSun), 0.0);
+      c += vec3(1.0, 0.5, 0.22) * (pow(s, 5.0) * 0.12 + pow(s, 48.0) * 0.45) + vec3(3.0, 1.7, 0.8) * smoothstep(0.99935, 0.9997, s);
+      c = mix(c, uHaze, (1.0 - smoothstep(-0.03, 0.035, d.y)) * 0.96);
+      gl_FragColor = vec4(c, 1.0);
+    }` });
+const sky = new THREE.Mesh(new THREE.SphereGeometry(800, 48, 24), skyM); sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);
+const _cf = V(0, 0, 0);
+function fogTint() {   // the haze is warm toward the sunset, blue away from it
+  _cf.set(0, 0, -1).applyQuaternion(camera.quaternion); const k = Math.pow(clamp((_cf.x * SUN_SKY.x + _cf.z * SUN_SKY.z) / Math.hypot(_cf.x, _cf.z || 1e-4) * 0.5 + 0.5, 0, 1), 2.2);
+  scene.fog.color.copy(FOG_COOL).lerp(FOG_WARM, k); scene.background.copy(scene.fog.color);
+}
+
+/* ---- the yard floor: Poly Haven "Tarred Gravel", oil-stained, with puddles from the afternoon's rain that hold the sunset ---- */
+const WP = `#ifdef USE_INSTANCING
+    vWp = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;
+  #else
+    vWp = (modelMatrix * vec4(transformed, 1.0)).xyz;
+  #endif`;
+const NOISE = `float ch(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float cn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(ch(i), ch(i + vec2(1, 0)), f.x), mix(ch(i + vec2(0, 1)), ch(i + vec2(1, 1)), f.x), f.y); }`;
+yardM.onBeforeCompile = sh => {
+  sh.vertexShader = 'varying vec3 vWp;\n' + sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n' + WP);
+  sh.fragmentShader = 'varying vec3 vWp;\n' + NOISE + '\nfloat puddle;\n' + sh.fragmentShader
+    .replace('#include <map_fragment>', `#include <map_fragment>
+      float n1 = cn(vWp.xz * 0.11), n2 = cn(vWp.xz * 0.37 + 4.0), n3 = cn(vWp.xz * 1.7);
+      puddle = smoothstep(0.77, 0.8, n1 * 0.7 + n2 * 0.3 + (n3 - 0.5) * 0.06) * (1.0 - smoothstep(60.0, 120.0, length(vWp.xz - vec2(-6.0, -20.0))));
+      diffuseColor.rgb *= mix(vec3(0.9, 0.88, 0.86), vec3(1.05, 1.0, 0.95), n2) * (1.0 - 0.35 * smoothstep(0.55, 0.8, cn(vWp.xz * 0.5 + 9.0))) * mix(1.0, 0.45, puddle);   // oil and wear; the wet is dark`)
+    .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n roughnessFactor = mix(roughnessFactor, 0.55, puddle);   // wet, not mirror: a mirror holds the bright horizon and reads as snow')
+    .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n normal = normalize(mix(normal, nonPerturbedNormal, puddle));');
+};
+yardM.customProgramCacheKey = () => 'yard';
+{ const g = new THREE.PlaneGeometry(1400, 1400, 1, 1); g.rotateX(-Math.PI / 2); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) - 0.5) * 1400 / 3.2, (uv.getY(i) - 0.5) * 1400 / 3.2);
+  const m = mesh(g, yardM, null, 0, 0, -150, false); m.receiveShadow = true;
+  for (const k of ['map', 'normalMap', 'roughnessMap']) yardM[k].repeat.set(1, 1); }
+
+/* ---- track: ballast, sleepers, rails, built along a line between two distances ---- */
+const _p = { x: 0, z: 0, tx: 0, tz: -1 };
+function strip(rt, s0, s1, prof, step, uvk = 0.5) {   // a profile [[lateral, y], …] swept along a line
+  const P = [], N = [], U = [], I = []; let n = 0;
+  const ss = []; for (let s = s0; s < s1; s += step) ss.push(s); ss.push(s1);
+  for (const s of ss) { rt.at(s, _p); const nx = -_p.tz, nz = _p.tx;
+    prof.forEach(([l, y, ny = 0, nl = 0], j) => { P.push(_p.x + nx * l, y, _p.z + nz * l); N.push(nx * nl, ny, nz * nl); U.push(l * uvk + (j ? 0 : 0), s * uvk); }); n++; }
+  const m = prof.length; for (let i = 0; i < n - 1; i++) for (let j = 0; j < m - 1; j++) { const a = i * m + j, b = a + 1, c = a + m, d = c + 1; if (prof[j][4]) continue; I.push(a, b, c, b, d, c); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(U, 2)); g.setIndex(I); return g;
+}
+const tracks = { heads: [], webs: [], ballast: [], sleepers: [] };
+const _m4 = new THREE.Matrix4(), _q4 = new THREE.Quaternion(), _s4 = V(1, 1, 1), _p4 = V(0, 0, 0);
+function track(rt, s0 = 0, s1 = rt.len, k = 0) {
+  const step = rt.P.length > 2 ? 0.8 : Math.max(1, s1 - s0);   // straight lines need no samples between their ends
+  tracks.ballast.push(strip(rt, s0, s1, [[-2.1, 0.0, 0.6, -0.8], [-1.45, 0.13 + k * 0.002, 1, 0], [1.45, 0.13 + k * 0.002, 1, 0], [2.1, 0.0, 0.6, 0.8]], step, 0.45));
+  for (const c of [-HG, HG]) {
+    tracks.heads.push(strip(rt, s0, s1, [[c - 0.036, RT, 1, 0], [c + 0.036, RT, 1, 0]], step, 0.3));
+    tracks.webs.push(strip(rt, s0, s1, [[c - 0.036, 0.25, 0, -1], [c - 0.036, RT - 0.004, 0, -1, true], [c + 0.036, RT - 0.004, 0, 1], [c + 0.036, 0.25, 0, 1]], step, 0.5));   // the two sides (the top is the head)
+  }
+  for (let s = s0 + 0.3; s < s1; s += 0.68) tracks.sleepers.push([rt, s]);
+}
+track(LINE, 60, 850);
+track(SPUR, 16); track(PLAT, 60, PLAT.sAtZ(-146), 1);
+FAN.forEach((rt, i) => { if (i !== 1) track(rt, 3.0, rt.len, 2 + i); });
+const trackMeshes = () => {   // (called once every line is laid)
+  for (const [list, mat] of [[tracks.ballast, ballastM], [tracks.heads, railHeadM], [tracks.webs, railWebM]]) { const m = mesh(mergeGeometries(list), mat, null, 0, 0, 0, mat !== ballastM); m.frustumCulled = false; }
+  const g = new THREE.BoxGeometry(2.6, 0.13, 0.25); metresUV(g, 1.2); g.translate(0, 0.185, 0);
+  const im = new THREE.InstancedMesh(g, sleeperM, tracks.sleepers.length), e = new THREE.Euler(); let i = 0;
+  for (const [rt, s] of tracks.sleepers) { rt.at(s, _p); e.set(0, Math.atan2(-_p.tz, _p.tx) + (rnd() - 0.5) * 0.05, 0); _m4.compose(_p4.set(_p.x + (rnd() - 0.5) * 0.05, 0, _p.z), _q4.setFromEuler(e), _s4.set(1, 1, 1)); im.setMatrixAt(i++, _m4); }
+  im.castShadow = false; im.receiveShadow = true; im.computeBoundingSphere(); scene.add(im);
+};
+trackMeshes();
+const bufM = new THREE.MeshStandardMaterial({ ...pbr('paint', 1), color: 0xa02a20, roughness: 0.7 });
+function bufferStop(rt, s) {   // a timber beam on two rails, the buffers painted red
+  rt.at(s, _p); const g = new THREE.Group(); g.position.set(_p.x, 0, _p.z); g.rotation.y = Math.atan2(-_p.tx, -_p.tz); scene.add(g);
+  mesh(box(2.6, 0.5, 0.35, 0, 0.95, 0), plankM, g); for (const x of [-0.85, 0.85]) { mesh(box(0.14, 0.9, 0.14, x, 0.6, -0.25), ironM, g); const b = mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.08, 18), bufM, g, x, 0.95, 0.22); b.rotation.x = Math.PI / 2; }   // (its back is the line's way on: the buffers face what comes)
+  return g;
+}
+bufferStop(SPUR, SPUR.len - 0.5); FAN.forEach((rt, i) => { if (i !== 1) bufferStop(rt, rt.len - 0.5); });
+
+/* ---- light: the low sun (its shadow box follows the camera), the dusk sky's fill ---- */
+const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.color.copy(SUNC);
+sun.castShadow = true; sun.shadow.mapSize.set(coarse ? 1024 : 2048, coarse ? 1024 : 2048);
+const SHB = 18; { const c = sun.shadow.camera; c.left = -SHB; c.right = SHB; c.top = SHB; c.bottom = -SHB; c.near = 1; c.far = 160; c.updateProjectionMatrix(); }
+sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.04; sun.shadow.radius = 3;
+scene.add(sun, sun.target);
+const hemi = new THREE.HemisphereLight(0x7d8cb0, 0x3a3029, 0.95); scene.add(hemi);
+const _lx = V(0, 0, 0), _ly = V(0, 0, 0), _lt = V(0, 0, 0);
+_lx.crossVectors(V(0, 1, 0), SUN).normalize(); _ly.crossVectors(SUN, _lx).normalize();
+function sunFollow(at) {   // the shadow box centred on what's in view, snapped to its own texels so edges don't crawl
+  const tx = 2 * SHB / sun.shadow.mapSize.x, a = Math.round(at.dot(_lx) / tx) * tx, b = Math.round(at.dot(_ly) / tx) * tx, c = at.dot(SUN);
+  _lt.copy(_lx).multiplyScalar(a).addScaledVector(_ly, b).addScaledVector(SUN, c);
+  sun.target.position.copy(_lt); sun.position.copy(_lt).addScaledVector(SUN, 80); sun.target.updateMatrixWorld();
+}
+sunFollow(V(0, 0, 0));
+
+/* ---- the lamps: tall yard lamps on iron posts, a few of them really lighting the yard round them ---- */
+const glowTex = canvasTex(128, 128, (x, w, h) => { const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.18, 'rgba(255,255,255,.55)'); g.addColorStop(0.5, 'rgba(255,255,255,.12)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.clearRect(0, 0, w, h); x.fillStyle = g; x.fillRect(0, 0, w, h); }, { static: true });
+function glow(col, size, parent, x, y, z, op = 0.8) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, opacity: op, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false })); s.scale.setScalar(size); s.position.set(x, y, z); (parent || scene).add(s); return s; }
+const LAMPC = 0xffb36a, shadeM = ironM.clone(); shadeM.side = THREE.DoubleSide;
+function lampPost(x, z, h = 7, light = 0, ry = 0) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g);
+  mesh(new THREE.CylinderGeometry(0.07, 0.11, h, 10).translate(0, h / 2, 0), ironM, g); mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.5, 10).translate(0, 0.25, 0), ironM, g);
+  mesh(box(1.1, 0.06, 0.06, 0.5, h - 0.15, 0), ironM, g);
+  const hd = new THREE.Group(); hd.position.set(1.0, h - 0.2, 0); g.add(hd);
+  mesh(new THREE.ConeGeometry(0.42, 0.26, 16, 1, true), shadeM, hd); mesh(new THREE.SphereGeometry(0.11, 12, 8), glowM(0xfff1d6), hd, 0, -0.1, 0, false);
+  glow(LAMPC, 2.2, hd, 0, -0.12, 0, 0.75);
+  if (light) { const L = new THREE.PointLight(LAMPC, light, 26, 1.6); L.position.set(0, -0.25, 0); hd.add(L); }
+  return g;
+}
+
+/* ---- steam and smoke: puffs from the engines' chimneys, drifting off on the evening air ---- */
+const steam = (() => {
+  const N = coarse ? 420 : 900, P = new Float32Array(N * 3), A = new Float32Array(N * 2), vel = new Float32Array(N * 3), age = new Float32Array(N).fill(1e9), life = new Float32Array(N);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('aSA', new THREE.BufferAttribute(A, 2));
+  const t = canvasTex(128, 128, (x, w, h) => { x.clearRect(0, 0, w, h); for (let i = 0; i < 9; i++) { const cx = 64 + Math.cos(i * 2.4) * 16 * (i % 3) / 2, cy = 64 + Math.sin(i * 2.4) * 16 * (i % 3) / 2, g = x.createRadialGradient(cx, cy, 0, cx, cy, 34); g.addColorStop(0, 'rgba(255,255,255,.34)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); } }, { static: true });
+  const m = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, fog: true, uniforms: Object.assign(THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { uScale: { value: H * DPR }, uSun: { value: SUN }, uWarm: { value: new THREE.Color(1.0, 0.72, 0.52) }, uCool: { value: new THREE.Color(0.52, 0.55, 0.66) } }]), { uMap: { value: t } }),
+    vertexShader: `attribute vec2 aSA; uniform float uScale; varying float vA, vS;
+      #include <fog_pars_vertex>
+      void main(){ vec4 mvPosition = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mvPosition; gl_PointSize = min(900.0, uScale * aSA.x / max(0.4, -mvPosition.z)); vA = aSA.y; vS = clamp(position.y / 9.0, 0.0, 1.0);
+        #include <fog_vertex>
+      }`,
+    fragmentShader: `uniform sampler2D uMap; uniform vec3 uWarm, uCool; varying float vA, vS;
+      #include <fog_pars_fragment>
+      void main(){ vec4 c = texture2D(uMap, gl_PointCoord); gl_FragColor = vec4(mix(uCool, uWarm, 0.35 + 0.4 * vS), c.a * vA); if (gl_FragColor.a < 0.004) discard;
+        #include <fog_fragment>
+      }` });
+  const pts = new THREE.Points(g, m); pts.frustumCulled = false; pts.renderOrder = 6; scene.add(pts);
+  let next = 0; const emitters = [];
+  function emit(x, y, z, vx, vy, vz, size, lifeS) { const i = next; next = (next + 1) % N; P[i * 3] = x; P[i * 3 + 1] = y; P[i * 3 + 2] = z; vel[i * 3] = vx; vel[i * 3 + 1] = vy; vel[i * 3 + 2] = vz; age[i] = 0; life[i] = lifeS; A[i * 2] = size; }
+  function tick(dt) {
+    for (const e of emitters) { if (!e.on()) continue; e.acc = (e.acc || 0) + dt * e.rate(); e.pos(_ta2);
+      while (e.acc > 1) { e.acc -= 1; emit(_ta2.x + (rnd() - 0.5) * 0.12, _ta2.y, _ta2.z + (rnd() - 0.5) * 0.12, (rnd() - 0.5) * 0.25 + e.vx, e.vy * (0.75 + rnd() * 0.5), (rnd() - 0.5) * 0.25 + e.vz, e.size * (0.8 + rnd() * 0.4), e.life * (0.8 + rnd() * 0.4)); } }
+    for (let i = 0; i < N; i++) { if (age[i] > life[i]) { A[i * 2 + 1] = 0; continue; } age[i] += dt; const u = age[i] / life[i];
+      vel[i * 3 + 1] *= 1 - dt * 0.5; vel[i * 3] += (0.35 - vel[i * 3]) * dt * 0.4; vel[i * 3 + 2] += (0.2 - vel[i * 3 + 2]) * dt * 0.4;   // rising, slowing, carried off by the air
+      P[i * 3] += vel[i * 3] * dt; P[i * 3 + 1] += vel[i * 3 + 1] * dt; P[i * 3 + 2] += vel[i * 3 + 2] * dt;
+      A[i * 2] += dt * 0.9 * (1 - u); A[i * 2 + 1] = Math.sin(Math.PI * Math.min(1, u * 1.6 + 0.05)) * (1 - u) * 0.9; }
+    g.attributes.position.needsUpdate = true; g.attributes.aSA.needsUpdate = true;
+  }
+  return { m, emitters, tick, emit };
+})();
+const _ta2 = V(0, 0, 0);
+
+/* ---- far off: the town's mills and chimneys against the sunset, telegraph poles along the line ---- */
+{ const parts = [], farM = new THREE.MeshStandardMaterial({ color: 0x2a2730, roughness: 1, envMapIntensity: 0.2 });
+  let s = 91; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 70; i++) { const a = -Math.PI / 2 + (r() - 0.5) * 2.6, d = 260 + r() * 220, x = Math.cos(a) * d * 1.1, z = -150 + Math.sin(a) * d; const w = 12 + r() * 40, h = 6 + r() * 22;
+    parts.push(box(w, h, 10 + r() * 20, x, h / 2, z)); if (r() < 0.35) { const ch = 25 + r() * 35; const c = new THREE.CylinderGeometry(1.0, 1.8, ch, 8); c.translate(x + (r() - 0.5) * w * 0.6, ch / 2, z); parts.push(metresUV(c)); } }
+  for (let i = 0; i < 30; i++) { const x = (r() - 0.5) * 500, z = 190 + r() * 120, w = 14 + r() * 30, h = 5 + r() * 14; parts.push(box(w, h, 12, x, h / 2, z)); }
+  for (let i = 0; i < 16; i++) { const z = -46 - i * 38, x = 13; const p = new THREE.CylinderGeometry(0.1, 0.13, 8, 6); p.translate(x, 4, z); parts.push(metresUV(p)); parts.push(box(1.6, 0.1, 0.1, x, 7.6, z)); parts.push(box(1.2, 0.1, 0.1, x, 7.1, z)); }
+  const m = mesh(mergeGeometries(parts), farM, null, 0, 0, 0, false); m.frustumCulled = false;
+  const W3 = []; for (let i = 0; i < 15; i++) for (const [dx, y] of [[-0.7, 7.65], [0.7, 7.65], [-0.5, 7.15], [0.5, 7.15]]) { const z0 = -46 - i * 38, z1 = z0 - 38; for (let k = 0; k < 8; k++) { const a = k / 8, b = (k + 1) / 8; W3.push(13 + dx, y - 0.6 * 4 * a * (1 - a), lerp(z0, z1, a), 13 + dx, y - 0.6 * 4 * b * (1 - b), lerp(z0, z1, b)); } }
+  const wg = new THREE.BufferGeometry(); wg.setAttribute('position', new THREE.Float32BufferAttribute(W3, 3)); const wl = new THREE.LineSegments(wg, lineM); wl.frustumCulled = false; scene.add(wl); }
+
+/* =====================================================================
+   THE ROLLING STOCK: small tank engines, open wagons heaped with parcels, vans, a guard's van. Each is built once, in its own
+   space (−z is its front, y up from the rail), shares its geometry with every copy, and is put on a line by its distance along it.
+   ===================================================================== */
+const CHALK = "'Caveat', 'Segoe Print', 'Bradley Hand', cursive";
+const bodyM = (col, rough = 0.8) => new THREE.MeshStandardMaterial({ normalMap: tex('paint_nor_1k.jpg', false, 1.6), roughnessMap: tex('paint_rough_1k.jpg', false, 1.6), color: col, roughness: rough, metalness: 0.2, envMapIntensity: 0.65 });
+const bauxM = new THREE.MeshStandardMaterial({ ...pbr('paint', 1.6), color: 0xd8c4bc, roughness: 0.85, metalness: 0.15, envMapIntensity: 0.6 });   // red oxide, rust showing through
+const greyM = bodyM(0x7c7f80), blackM = bodyM(0x1d1c1b, 0.55), greenM = bodyM(0x23472f, 0.5), maroonM = bodyM(0x5a1f1c, 0.55), redM = bodyM(0x9a2a1f, 0.6);
+const roofM = new THREE.MeshStandardMaterial({ color: 0x3a3836, roughness: 0.9, metalness: 0.1, envMapIntensity: 0.5 });
+const wagonM = new THREE.MeshStandardMaterial({ ...pbr('planks', 1.1), color: 0xb8aea6, roughness: 1, envMapIntensity: 0.45 });
+const parcelM = [new THREE.MeshStandardMaterial({ color: 0xb8956a, roughness: 1, envMapIntensity: 0.4 }), new THREE.MeshStandardMaterial({ color: 0x8e6d4b, roughness: 1, envMapIntensity: 0.4 }), new THREE.MeshStandardMaterial({ color: 0xd9c7a2, roughness: 1, envMapIntensity: 0.4 })];
+const coalM = new THREE.MeshStandardMaterial({ color: 0x121212, roughness: 0.5, metalness: 0.3, flatShading: true });
+const fireM = new THREE.MeshBasicMaterial({ color: 0xff7a2a, toneMapped: false });
+const cyl = (r0, r1, h, seg = 16) => new THREE.CylinderGeometry(r0, r1, h, seg);
+const alongZ = g => { g.rotateX(Math.PI / 2); return g; };   // a cylinder lying along the length
+const at = (g, x, y, z) => { g.translate(x, y, z); return g; };
+
+/* ---- the running gear ---- */
+function axleGeo(r) {   // two wheels and their axle: spokes are too fine to read here, so a dished disc with a rim and a flange
+  const parts = [];
+  for (const x of [-HG, HG]) { const w = cyl(r, r, 0.12, 22); w.rotateZ(Math.PI / 2); w.translate(x, 0, 0); parts.push(w);
+    const f = cyl(r + 0.035, r + 0.035, 0.03, 22); f.rotateZ(Math.PI / 2); f.translate(x - Math.sign(x) * 0.07, 0, 0); parts.push(f);
+    const hub = cyl(r * 0.28, r * 0.28, 0.2, 10); hub.rotateZ(Math.PI / 2); hub.translate(x + Math.sign(x) * 0.04, 0, 0); parts.push(hub);
+    for (let k = 0; k < 3; k++) { const sp = new THREE.BoxGeometry(0.05, r * 1.7, 0.08); sp.rotateX(k * Math.PI / 3); sp.translate(x + Math.sign(x) * 0.065, 0, 0); parts.push(sp); } }   // (three bars across: the turning reads)
+  const ax = cyl(0.07, 0.07, HG * 2, 8); ax.rotateZ(Math.PI / 2); parts.push(ax);
+  return mergeGeometries(parts.map(g => g.toNonIndexed()));
+}
+const AXLE = { s: axleGeo(0.45), b: axleGeo(0.62) };
+function buffers(len, h, parts) { for (const z of [-len / 2, len / 2]) for (const x of [-0.85, 0.85]) { const b = alongZ(cyl(0.065, 0.065, 0.42, 10)); b.translate(x, h, z + Math.sign(z) * 0.18); parts.push(b); const d = alongZ(cyl(0.17, 0.17, 0.05, 16)); d.translate(x, h, z + Math.sign(z) * 0.4); parts.push(d); } }
+function underframe(len, parts, h = 1.0) { parts.push(box(0.12, 0.28, len - 0.1, -1.0, h, 0), box(0.12, 0.28, len - 0.1, 1.0, h, 0), box(2.5, 0.32, 0.14, 0, h, -len / 2 + 0.07), box(2.5, 0.32, 0.14, 0, h, len / 2 - 0.07)); }   // solebars, headstocks
+
+/* ---- a vehicle: its parts merged by material, its axles turning ---- */
+const VEH = {};   // the built kinds, shared by every copy
+function kind(name, build) { if (!VEH[name]) VEH[name] = build(); return VEH[name]; }
+function vehicle(k, opts = {}) {
+  const g = new THREE.Group(); scene.add(g); const v = { g, len: k.len, wb: k.wb, axles: [], rods: [], s: null, kind: k, lamps: [], slates: [] };
+  for (const [geo, mat] of k.parts) { const m = mesh(geo, mat || opts.mat || greyM, g); m.castShadow = true; }   // (null: the vehicle's own paint)
+  for (const [z, r] of k.ax) { const a = mesh(r > 0.5 ? AXLE.b : AXLE.s, ironM, g, 0, RT + r, z); v.axles.push([a, r]); }
+  if (k.rod) for (const x of [-1.42, 1.42]) { const rod = mesh(box(0.06, 0.09, k.rod.len, 0, 0, 0), ironM, g, x, RT + 0.62, k.rod.z); v.rods.push(rod); }
+  return v;
+}
+const _A = { x: 0, z: 0, tx: 0, tz: -1 }, _B = { x: 0, z: 0, tx: 0, tz: -1 };
+function place(v, rt, s) {   // its middle at distance s along the line, square to the line between its axles
+  rt.at(s - v.wb, _A); rt.at(s + v.wb, _B);
+  v.g.position.set((_A.x + _B.x) / 2, 0, (_A.z + _B.z) / 2); v.g.rotation.y = Math.atan2(-(_B.x - _A.x), -(_B.z - _A.z));
+  if (v.s != null) { const ds = s - v.s; for (const [a, r] of v.axles) a.rotation.x -= ds / r;
+    if (v.rods.length) { const th = v.axles[0][0].rotation.x; v.rods.forEach((rod, i) => { const ph = th + (i ? Math.PI / 2 : 0); rod.position.y = RT + 0.62 + Math.sin(ph) * 0.24; rod.position.z = v.kind.rod.z - Math.cos(ph) * 0.24; }); } }
+  v.s = s; v.rt = rt;
+}
+function train(rt, cars, gap = 0.35) {   // vehicles coupled in a line: head is the distance of the front of the first
+  const off = []; let o = 0; for (const c of cars) { off.push(o + c.len / 2); o += c.len + gap; }
+  return { rt, cars, off, len: o - gap, head: null, set(h) { this.head = h; cars.forEach((c, i) => place(c, this.rt, h - off[i])); } };
+}
+
+/* ---- the kinds ---- */
+const WAGON = () => kind('wagon', () => {   // an open wagon: planked sides, iron strapping
+  const L = 5.6, parts = [], wood = [], iron = [];
+  underframe(L, iron); buffers(L, 1.0, iron);
+  wood.push(box(2.38, 0.08, L - 0.1, 0, 1.2, 0));   // the floor
+  for (const x of [-1.15, 1.15]) wood.push(box(0.08, 0.95, L - 0.1, x, 1.7, 0));
+  for (const z of [-L / 2 + 0.09, L / 2 - 0.09]) wood.push(box(2.3, 0.95, 0.08, 0, 1.7, z));
+  for (const x of [-1.2, 1.2]) for (const z of [-L / 2 + 0.1, -0.9, 0.9, L / 2 - 0.1]) iron.push(box(0.03, 1.0, 0.09, x, 1.7, z));
+  for (const x of [-1.2, 1.2]) iron.push(box(0.03, 0.06, L - 0.1, x, 2.15, 0), box(0.03, 0.06, L - 0.1, x, 1.24, 0));
+  parts.push([mergeGeometries(wood), wagonM], [mergeGeometries(iron), ironM]);
+  return { len: L + 0.8, wb: 1.5, hw: 1.22, ax: [[-1.5, 0.45], [1.5, 0.45]], parts };
+});
+const VAN = (name = 'van', L = 6.0) => kind(name, () => {   // a covered van: planked body, sliding doors, an arched roof
+  const parts = [], body = [], iron = [];
+  underframe(L, iron); buffers(L, 1.0, iron);
+  body.push(box(2.5, 2.25, L - 0.1, 0, 2.3, 0));
+  for (const x of [-1.27, 1.27]) { body.push(box(0.04, 2.0, 1.7, x, 2.25, 0)); iron.push(box(0.05, 0.05, 1.8, x * 1.01, 3.25, 0), box(0.05, 0.05, 1.8, x * 1.01, 1.22, 0)); }
+  for (const x of [-1.27, 1.27]) for (const z of [-L / 2 + 0.1, -1.95, 1.95, L / 2 - 0.1]) iron.push(box(0.03, 2.2, 0.08, x * 1.005, 2.3, z));
+  const r2 = new THREE.CylinderGeometry(1.0, 1.0, L + 0.12, 24, 1, false, 0, Math.PI); r2.rotateZ(Math.PI / 2); r2.rotateY(Math.PI / 2); r2.scale(1.34, 0.28, 1); r2.translate(0, 3.42, 0);
+  parts.push([mergeGeometries(body), null], [mergeGeometries(iron), ironM], [r2, roofM]);
+  return { len: L + 0.8, wb: 1.7, hw: 1.3, ax: [[-1.7, 0.45], [1.7, 0.45]], parts };
+});
+const GUARD = () => kind('guard', () => {   // the guard's van: a short body between two open verandas, a stove pipe
+  const L = 6.2, parts = [], body = [], iron = [];
+  underframe(L, iron); buffers(L, 1.0, iron);
+  iron.push(box(2.5, 0.1, L - 0.1, 0, 1.2, 0));
+  body.push(box(2.4, 2.15, 3.6, 0, 2.3, 0));
+  for (const z of [-L / 2 + 0.2, L / 2 - 0.2]) { iron.push(box(2.3, 0.05, 0.05, 0, 2.15, z)); for (const x of [-1.15, -0.4, 0.4, 1.15]) iron.push(box(0.05, 0.95, 0.05, x, 1.7, z)); }
+  const r2 = new THREE.CylinderGeometry(1.0, 1.0, L - 0.3, 24, 1, false, 0, Math.PI); r2.rotateZ(Math.PI / 2); r2.rotateY(Math.PI / 2); r2.scale(1.34, 0.26, 1); r2.translate(0, 3.38, 0);
+  for (const z of [-L / 2 + 0.4, L / 2 - 0.4]) for (const x of [-1.15, 1.15]) iron.push(box(0.05, 2.2, 0.05, x, 2.3, z));
+  iron.push(cyl(0.06, 0.06, 0.6, 8).translate(0.5, 3.75, 0.8));
+  parts.push([mergeGeometries(body), null], [mergeGeometries(iron), ironM], [r2, roofM]);
+  return { len: L + 0.8, wb: 1.9, hw: 1.23, ax: [[-1.9, 0.45], [1.9, 0.45]], parts };
+});
+const TANK = () => kind('tank', () => {   // a six-coupled tank engine: smokebox forward (−z), side tanks, cab and coal bunker behind
+  const L = 8.2, body = [], soot = [], iron = [], brass = [], red = [], coal = [];
+  underframe(L, iron, 1.05); buffers(L, 1.05, iron);
+  for (const z of [-L / 2 + 0.07, L / 2 - 0.07]) red.push(box(2.6, 0.42, 0.14, 0, 1.08, z));
+  body.push(box(2.6, 0.08, L - 0.6, 0, 1.48, 0));                                       // the running plate
+  for (const x of [-0.98, 0.98]) body.push(box(0.62, 1.35, 3.3, x, 2.18, -0.55));        // side tanks
+  body.push(alongZ(cyl(0.72, 0.72, 4.3, 24)).translate(0, 2.52, -1.35));                 // boiler
+  soot.push(alongZ(cyl(0.78, 0.78, 0.95, 24)).translate(0, 2.52, -3.6), alongZ(cyl(0.6, 0.6, 0.05, 24)).translate(0, 2.52, -4.09), box(1.7, 0.75, 0.95, 0, 1.85, -3.6));   // smokebox, its door, the saddle
+  soot.push(cyl(0.22, 0.26, 0.85, 14).translate(0, 3.55, -3.55), cyl(0.3, 0.24, 0.12, 14).translate(0, 4.0, -3.55));   // chimney
+  brass.push(cyl(0.3, 0.36, 0.45, 16).translate(0, 3.35, -1.6), new THREE.SphereGeometry(0.3, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, 3.56, -1.6), cyl(0.09, 0.12, 0.35, 10).translate(0, 3.38, 0.2), cyl(0.05, 0.05, 0.2, 8).translate(0.25, 3.6, 0.95));   // dome, valves, whistle
+  body.push(box(2.55, 1.95, 1.9, 0, 2.48, 1.85).translate(0, 0, 0));                    // cab (a box: the windows are painted dark below)
+  const r2 = new THREE.CylinderGeometry(1.0, 1.0, 2.4, 24, 1, false, 0, Math.PI); r2.rotateZ(Math.PI / 2); r2.rotateY(Math.PI / 2); r2.scale(1.36, 0.25, 1); r2.translate(0, 3.46, 2.1); soot.push(r2);
+  body.push(box(2.3, 1.25, 1.2, 0, 2.1, 3.35));                                          // bunker
+  for (let i = 0; i < 26; i++) { const c = new THREE.IcosahedronGeometry(0.16 + (i % 5) * 0.03, 0); c.translate(((i * 37) % 9 - 4) * 0.22, 2.78 + (i % 3) * 0.06, 2.95 + ((i * 13) % 7) * 0.12); coal.push(c); }   // (already unindexed)
+  for (const x of [-0.6, 0.6]) soot.push(box(0.5, 0.42, 0.04, x, 2.95, 0.88), box(0.04, 0.42, 0.5, 1.29 * Math.sign(x), 2.95, 1.6));   // the cab's windows, glazed dark
+  for (const x of [-1.05, 1.05]) soot.push(alongZ(cyl(0.3, 0.3, 1.2, 14)).translate(x, 1.3, -2.65));   // cylinders
+  for (const x of [-1.3, 1.3]) iron.push(box(0.12, 0.55, 5.6, x, 1.2, -0.3));             // the frames outside the wheels
+  return { len: L + 0.8, wb: 1.6, ax: [[-1.9, 0.62], [-0.3, 0.62], [1.3, 0.62]], rod: { z: -0.3, len: 3.4 }, parts: [[mergeGeometries(body.map(g => g.index ? g.toNonIndexed() : g)), null], [mergeGeometries(soot.map(g => g.index ? g.toNonIndexed() : g)), sootM], [mergeGeometries(iron.map(g => g.index ? g.toNonIndexed() : g)), ironM], [mergeGeometries(brass.map(g => g.index ? g.toNonIndexed() : g)), brassM], [mergeGeometries(red), redM], [mergeGeometries(coal), coalM]] };
+});
+function engine(mat, opts = {}) {   // a tank engine in a livery, its headlamps lit, a fire glowing in the cab, steam from the chimney
+  const v = vehicle(TANK(), { mat });
+  for (const x of opts.lamps || [-0.75, 0.75]) { const l = mesh(cyl(0.11, 0.11, 0.2, 10), glowM(0xfff2d8), v.g, x, 1.5, -4.16, false); l.rotation.x = Math.PI / 2; v.lamps.push(glow(0xffe6c0, 1.4, v.g, x, 1.5, -4.3, 0.85)); }
+  mesh(new THREE.PlaneGeometry(1.6, 0.9), fireM, v.g, 0, 2.3, 1.0, false);   // the firebox glow, seen through the cab
+  glow(0xff8a3a, 2.2, v.g, 0, 2.4, 1.3, 0.35);
+  v.chimney = V(0, 4.1, -3.55); v.puff = opts.puff != null ? opts.puff : 1;
+  const _c = V(0, 0, 0); let lastS = null, chuff = 0;
+  steam.emitters.push({ on: () => v.g.visible && v.puff > 0, rate: () => { const sp = lastS == null || v.s == null ? 0 : Math.abs(v.s - lastS) / Math.max(1e-3, _dt); lastS = v.s; chuff = clamp(sp / 4, 0, 1); return v.puff * (2.5 + chuff * 16); },
+    pos: o => o.copy(v.g.localToWorld(_c.copy(v.chimney))), vx: 0, vy: 2.2, vz: 0, get size() { return 0.55 + chuff * 0.3; }, life: 5.5 });
+  if (opts.headboard) { const t = canvasTex(512, 160, (x, w, h) => { x.fillStyle = '#f1e7d0'; x.fillRect(0, 0, w, h); x.strokeStyle = '#7a2a1f'; x.lineWidth = 10; x.strokeRect(8, 8, w - 16, h - 16); x.fillStyle = '#2a1a12'; x.textAlign = 'center'; x.textBaseline = 'middle'; fitFont(x, opts.headboard, 700, 96, SANS, w - 70); x.fillText(opts.headboard, w / 2, h / 2 + 4); }, {});
+    const hb = flat(1.2, 0.38, t, v.g, 0, 2.95, -4.13, Math.PI); hb.material.emissive = new THREE.Color(0xffffff); hb.material.emissiveMap = t; hb.material.emissiveIntensity = 0.12; }
+  return v;
+}
+let _dt = 0.016;
+
+/* ---- the chalk slates on their sides: what's in them, what the yard has made of them ---- */
+function fitFont(x, str, wt, px, fam, maxW) { let s = px; do { x.font = `${wt} ${s}px ${fam}`; } while (x.measureText(str).width > maxW && --s > 8); return s; }
+function slateTex(lines) {   // lines: [[text, size, colour], …]
+  return canvasTex(512, 200, (x, w, h, ls = lines) => {
+    x.fillStyle = '#2a2d2f'; x.fillRect(0, 0, w, h); let s = 5; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 40; i++) { const g = x.createRadialGradient(r() * w, r() * h, 0, r() * w, r() * h, 30 + r() * 90); g.addColorStop(0, `rgba(220,220,214,${0.02 + r() * 0.05})`); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); }   // old chalk, wiped
+    x.textAlign = 'center'; x.textBaseline = 'middle'; const tot = ls.reduce((a, l) => a + l[1] * 1.05, 0); let y = h / 2 - tot / 2;
+    for (const [t, px, col] of ls) { y += px * 0.525; fitFont(x, t, 700, px, CHALK, w - 40); x.fillStyle = col || 'rgba(238,236,228,.93)'; x.fillText(t, w / 2, y); y += px * 0.525; }
+    x.strokeStyle = '#6a5a48'; x.lineWidth = 12; x.strokeRect(0, 0, w, h);
+  }, {});
+}
+function slate(v, lines, y = 1.68, w = 1.5, dz = 0) {   // one on each side of a vehicle, the same chalk on both
+  const t = slateTex(lines);
+  for (const s of [1, -1]) flat(w, w * 200 / 512, t, v.g, s * (v.kind.hw + 0.035), y, dz, s * Math.PI / 2, { emissive: new THREE.Color(0xffffff), emissiveMap: t, emissiveIntensity: 0.22 });   // (chalk you can read at dusk)
+  v.slates.push(t); return t;
+}
+function loadParcels(v, n, seed, top = 2.3) {   // a heap of parcels in an open wagon (n: how full)
+  let s = seed; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; const per = [[], [], []];
+  for (let i = 0; i < n; i++) { const w = 0.45 + r() * 0.55, h = 0.3 + r() * 0.35, d = 0.45 + r() * 0.5, x = (r() - 0.5) * (2.1 - w), z = (r() - 0.5) * (5.2 - d), lay = Math.min(1, i / Math.max(1, n) * 1.6);
+    const y = 1.24 + h / 2 + lay * (top - 1.6) * (0.4 + r() * 0.6) * (1 - Math.abs(z) / 3.2); const g = box(w, h, d, 0, 0, 0); g.rotateY((r() - 0.5) * 0.5); g.translate(x, y, z); per[i % 3].push(g); }
+  per.forEach((list, k) => { if (list.length) mesh(mergeGeometries(list), parcelM[k], v.g); });
+}
+
+/* =====================================================================
+   THE YARD'S BUILDINGS AND ITS TRAFFIC: the goods office on its platform with the departure board under the canopy, the four
+   loading sheds (one for each voice), the repair shop, the paint shop, the water tower, the signals; the weekly freight that is
+   sorted over the hump, the two specials, the van that carries one idea all the way down the yard, the carousel train.
+   ===================================================================== */
+const INK = '#2b2118', INKR = '#b3352a', TAG = '#e6d2a4';
+const two = n => String(n).padStart(2, '0');
+const PLATY = 0.9;                                                         // the platform's top
+const OFFICE = { x0: -28.6, x1: -21.6, z0: -13, z1: 13, h: 7.2 };
+const BOARD = { x: OFFICE.x1 + 0.06, y: PLATY + 2.45, z: 0, w: 3.8, h: 1.9 };
+
+/* ---- the platform and the goods office: brick, two storeys, a slate roof, warm windows; an iron canopy with a wooden valance ---- */
+const platM = new THREE.MeshStandardMaterial({ ...pbr('yard', 2.4), color: 0xb8b0a8, roughness: 1, envMapIntensity: 0.5 });
+const stoneM = new THREE.MeshStandardMaterial({ color: 0xa8a294, roughness: 0.95, envMapIntensity: 0.4 });
+const winM = new THREE.MeshBasicMaterial({ color: 0xffb66a, toneMapped: true });
+const winDimM = new THREE.MeshBasicMaterial({ color: 0x8a5a34 });
+{ const P = { x0: -21.6, x1: -17.1, z0: -42, z1: 70 };
+  mesh(box(P.x1 - P.x0, PLATY, P.z1 - P.z0, (P.x0 + P.x1) / 2, PLATY / 2, (P.z0 + P.z1) / 2), brickM);   // the platform: brick faced
+  mesh(box(P.x1 - P.x0 - 0.5, 0.04, P.z1 - P.z0, (P.x0 + P.x1) / 2 - 0.25, PLATY + 0.02, (P.z0 + P.z1) / 2), platM, null, 0, 0, 0, false);
+  mesh(box(0.55, 0.08, P.z1 - P.z0, P.x1 - 0.27, PLATY + 0.03, (P.z0 + P.z1) / 2), stoneM, null, 0, 0, 0, false);   // the coping
+  mesh(box(0.08, 0.005, P.z1 - P.z0, P.x1 - 0.7, PLATY + 0.075, (P.z0 + P.z1) / 2), new THREE.MeshBasicMaterial({ color: 0xd8d2c0 }), null, 0, 0, 0, false);   // the white line
+  for (const z of [P.z0, P.z1]) { const r = box(P.x1 - P.x0, PLATY, 0.6, (P.x0 + P.x1) / 2, PLATY / 2, z); mesh(r, brickM); } }
+{ const O = OFFICE, W = O.x1 - O.x0, D = O.z1 - O.z0, cx = (O.x0 + O.x1) / 2, cz = (O.z0 + O.z1) / 2;
+  mesh(box(W, O.h, D, cx, O.h / 2, cz), brickM);
+  const gab = new THREE.Shape(); gab.moveTo(O.x0 - 0.3, 0); gab.lineTo(O.x1 + 0.3, 0); gab.lineTo(cx, 2.6); gab.lineTo(O.x0 - 0.3, 0);
+  const roof = []; { const sl = Math.hypot(W / 2 + 0.3, 2.6), a = Math.atan2(2.6, W / 2 + 0.3);
+    for (const s of [-1, 1]) { const g = new THREE.BoxGeometry(sl, 0.12, D + 0.6); metresUV(g, 1.2); g.rotateZ(-s * a); g.translate(cx + s * (W / 4 + 0.15), O.h + 1.3, cz); roof.push(g); } }
+  mesh(mergeGeometries(roof), roofM);
+  const brickDS = brickM.clone(); brickDS.side = THREE.DoubleSide;
+  for (const z of [O.z0, O.z1]) { const g = new THREE.ShapeGeometry(gab); metresUV(g, 2.4); mesh(g, brickDS, null, 0, O.h, z + (z > 0 ? 0.001 : -0.001)); }
+  for (const z of [O.z0 + 5, O.z1 - 6]) mesh(box(0.9, 2.4, 0.9, O.x0 + 1.8, O.h + 2.4, z), brickM);   // chimneys
+  // windows: the upper floor, and the booking office's below (the board fills the middle)
+  const win = (x, y, z, w, h, lit = true) => { mesh(box(0.06, h + 0.2, w + 0.2, x + 0.02, y, z), stoneM, null, 0, 0, 0, false); const m = mesh(new THREE.PlaneGeometry(w, h), lit ? winM : winDimM, null, x + 0.06, y, z, false); m.rotation.y = Math.PI / 2;
+    mesh(box(0.05, h, 0.05, x + 0.08, y, z), ironM, null, 0, 0, 0, false); mesh(box(0.05, 0.05, w, x + 0.08, y, z), ironM, null, 0, 0, 0, false); return m; };
+  for (let i = 0; i < 6; i++) win(O.x1, PLATY + 5.25, O.z0 + 2.2 + i * 4.3, 1.0, 1.15, i % 3 !== 1);   // (above the canopy)
+  for (const z of [-9.5, 6.5, 10.5]) { win(O.x1, PLATY + 1.5, z, 1.3, 1.7); mesh(box(0.32, 0.08, 1.6, O.x1 + 0.16, PLATY + 0.6, z), stoneM, null, 0, 0, 0, false); }   // and their sills
+  mesh(box(0.08, 2.4, 1.3, O.x1 + 0.03, PLATY + 1.2, -5.6), new THREE.MeshStandardMaterial({ color: 0x3a2a20, roughness: 0.8 }), null, 0, 0, 0, false);   // the door
+}
+const canopy = (() => {   // iron columns along the platform, a tin roof falling back to the wall, a valance of dagger boards
+  const g = new THREE.Group(); scene.add(g); const H = PLATY + 4.3, X0 = OFFICE.x1, X1 = -17.6, Z0 = OFFICE.z0 - 3, Z1 = OFFICE.z1 + 2;
+  for (let z = Z0 + 1.2; z < Z1; z += 4.3) { mesh(cyl(0.08, 0.1, H - PLATY, 10).translate(X1 + 0.4, (H + PLATY) / 2, z), ironM, g); mesh(box(X0 - X1 - 0.2, 0.18, 0.08, (X0 + X1) / 2, H - 0.1, z), ironM, g); }
+  const r = new THREE.BoxGeometry(X0 - X1 + 0.6, 0.06, Z1 - Z0); metresUV(r, 1.5); r.rotateZ(-0.08); r.translate((X0 + X1) / 2 - 0.3, H + 0.15, (Z0 + Z1) / 2); mesh(r, tinM, g);
+  const vt = canvasTex(512, 64, (x, w, h) => { x.clearRect(0, 0, w, h); x.fillStyle = '#e8e0cc'; const n = 16, bw = w / n; for (let i = 0; i < n; i++) { x.beginPath(); x.moveTo(i * bw + 2, 0); x.lineTo((i + 1) * bw - 2, 0); x.lineTo((i + 1) * bw - 2, h * 0.55); x.lineTo((i + 0.5) * bw, h); x.lineTo(i * bw + 2, h * 0.55); x.closePath(); x.fill(); } }, { static: true });
+  vt.wrapS = THREE.RepeatWrapping; vt.repeat.x = (Z1 - Z0) / 3.5;
+  const v = mesh(new THREE.PlaneGeometry(Z1 - Z0, 0.55), new THREE.MeshStandardMaterial({ map: vt, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9, color: 0x6f5e4c }), g, X1 - 0.25, H - 0.12, (Z0 + Z1) / 2, false); v.rotation.y = Math.PI / 2;
+  for (const z of [Z0, Z1]) { const e = mesh(new THREE.PlaneGeometry(X0 - X1 + 0.3, 0.55), v.material, g, (X0 + X1) / 2 - 0.15, H - 0.12, z, false); void e; }
+  return g;
+})();
+
+/* ---- 03: the departure board, under the canopy: one row for each idea on the board, its status on the right ---- */
+const STATUS = { new: ['NEW IDEA', '#f1ead8'], gen: ['GENERATING', '#f2b13c'], review: ['IN REVIEW', '#f4d35e'], edits: ['NEEDS EDITS', '#e8573f'], after: ['AFTER EDITS', '#7fb3e0'], creative: ['GENERATE CREATIVE', '#c79be8'], ready: ['CREATIVE READY', '#6fd08a'] };
+const ROWS = [['THREAD TO ANSWER', 'REDDIT', 'VOICE 1', 'new', 0], ['IDEA FROM A CALL', 'CALL', 'VOICE 2', 'new', 0], ['WEBINAR CAPTION', 'WEBINAR', 'COMPANY', 'new', 0], ["THIS WEEK'S BLOG", 'BLOG', 'COMPANY', 'review', 0], ['POST TO REPLY TO', 'LINKEDIN', 'VOICE 3', 'ready', 0]];
+const HERO = 1;   // the row the van carries
+const FLAPS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'·";
+const board = (() => {
+  const g = new THREE.Group(); g.position.set(BOARD.x, BOARD.y, BOARD.z); g.rotation.y = Math.PI / 2; scene.add(g);
+  mesh(box(BOARD.w + 0.16, BOARD.h + 0.16, 0.12, 0, 0, -0.06), sootM, g);
+  for (const x of [-BOARD.w / 2 + 0.3, BOARD.w / 2 - 0.3]) mesh(box(0.05, 1.2, 0.05, x, BOARD.h / 2 + 0.6, -0.06), ironM, g);
+  const st = { flip: null, t0: 0, rows: ROWS.map(r => r.slice()) };
+  const CW = 33, X0 = 64, COLS = [[0, 17], [18, 8], [27, 7], [36, 17]], GO = 54;   // character cells: where each column starts, how many; the tick box
+  const t = canvasTex(2048, 1024, (x, w, h, now = 0) => {
+    x.fillStyle = '#121416'; x.fillRect(0, 0, w, h); x.textBaseline = 'middle';
+    x.fillStyle = '#e9e2cf'; x.font = `800 60px ${SANS}`; x.fillText('DEPARTURES', X0, 84);
+    x.font = `700 28px ${SANS}`; x.fillStyle = 'rgba(233,226,207,.55)'; x.textAlign = 'right'; x.fillText('ONE ROW FOR EACH IDEA  ·  CHECKED EVERY MINUTE', w - X0, 88); x.textAlign = 'left';
+    x.fillStyle = 'rgba(233,226,207,.12)'; x.fillRect(X0, 128, w - 2 * X0, 3);
+    x.font = `700 25px ${SANS}`; x.fillStyle = 'rgba(233,226,207,.55)'; [['IDEA', 0], ['FROM', 18], ['VOICE', 27], ['STATUS', 36], ['GO', GO]].forEach(([s, c]) => x.fillText(s, X0 + c * CW, 168));
+    st.rows.forEach((r, i) => {
+      const y = 250 + i * 148;
+      COLS.forEach(([c0, n], ci) => { let s = (ci === 3 ? STATUS[r[3]][0] : r[ci]).padEnd(n).slice(0, n);
+        if (st.flip && st.flip.row === i && ci === 3) { const u = (now - st.t0) / 0.9; s = s.split('').map((ch, k) => u * (n + 6) < k + 6 ? FLAPS[Math.floor((now * 30 + k * 7) % FLAPS.length)] : ch).join(''); }
+        for (let k = 0; k < n; k++) { const cx = X0 + (c0 + k) * CW; x.fillStyle = '#1e2124'; x.fillRect(cx, y - 42, CW - 4, 84); x.fillStyle = 'rgba(0,0,0,.6)'; x.fillRect(cx, y - 1, CW - 4, 3);
+          const ch = s[k]; if (ch && ch !== ' ') { x.font = `700 50px ${SANS}`; x.textAlign = 'center'; x.fillStyle = ci === 3 ? STATUS[r[3]][1] : '#efe8d6'; x.fillText(ch, cx + (CW - 4) / 2, y + 3); x.textAlign = 'left'; } } });
+      const bx = X0 + GO * CW; x.strokeStyle = '#efe8d6'; x.lineWidth = 5; x.strokeRect(bx + 4, y - 26, 52, 52);   // the Generate Content box
+      if (r[4]) { x.strokeStyle = '#6fd08a'; x.lineWidth = 9; x.lineCap = 'round'; x.beginPath(); x.moveTo(bx + 14, y); x.lineTo(bx + 27, y + 14); x.lineTo(bx + 50, y - 18); x.stroke(); }
+      x.fillStyle = STATUS[r[3]][1]; x.beginPath(); x.arc(X0 + 35 * CW + 12, y, 9, 0, 7); x.fill();
+    });
+    x.fillStyle = 'rgba(255,255,255,.035)'; for (let yy = 0; yy < h; yy += 4) x.fillRect(0, yy, w, 1);
+  }, {});
+  const face = mesh(new THREE.PlaneGeometry(BOARD.w, BOARD.h), new THREE.MeshBasicMaterial({ map: t, color: new THREE.Color(0.92, 0.9, 0.86) }), g, 0, 0, 0.005, false);
+  glow(0xfff0d0, 5.5, g, 0, 0, 0.4, 0.06);
+  return { g, t, st, face, set(i, status, tick, now) { const r = st.rows[i]; if (r[3] !== status) { st.flip = { row: i }; st.t0 = now; } r[3] = status; r[4] = tick ? 1 : 0; t.userData.redraw(now); },
+    tick(now) { if (st.flip) { t.userData.redraw(now); if (now - st.t0 > 1.1) { st.flip = null; t.userData.redraw(now); } } } };
+})();
+
+/* ---- 04: the loading sheds: four roads under four roofs, one for each voice; the writer under the first board, the editor under
+   the second ---- */
+const VOICES = ['VOICE 1', 'VOICE 2', 'VOICE 3', 'COMPANY'], SHEDX = [-10, -6, -2, 2];
+const sheds = (() => {
+  const g = new THREE.Group(); scene.add(g); const { z0, z1 } = SHEDZ, eave = 5.6, ridge = 7.0, half = 2.0, iron = [], roofs = [], walls = [];
+  for (const [i, x] of SHEDX.entries()) {
+    for (const s of [-1, 1]) { const sl = Math.hypot(half + 0.15, ridge - eave), a = Math.atan2(ridge - eave, half + 0.15), r = new THREE.BoxGeometry(sl, 0.05, z0 - z1 + 0.8); metresUV(r, 1.4); r.rotateZ(-s * a); r.translate(x + s * (half + 0.15) / 2, (eave + ridge) / 2, (z0 + z1) / 2); roofs.push(r); }
+    for (const z of [z0, z1]) { const sh = new THREE.Shape(); sh.moveTo(-half, 0); sh.lineTo(half, 0); sh.lineTo(0, ridge - eave); sh.lineTo(-half, 0); const gg = new THREE.ShapeGeometry(sh); gg.translate(x, eave, z); metresUV(gg, 1.4); walls.push(gg); }
+    void i;
+  }
+  for (let k = 0; k <= SHEDX.length; k++) { const x = SHEDX[0] - half + k * 2 * half; for (let z = z0; z >= z1 - 0.01; z -= 4) iron.push(box(0.22, eave, 0.22, x, eave / 2, z)); iron.push(box(0.16, 0.34, z0 - z1, x, eave - 0.17, (z0 + z1) / 2)); }
+  for (const z of [z0, z1, (z0 + z1) / 2]) iron.push(box(SHEDX.length * 2 * half + 0.3, 0.34, 0.16, (SHEDX[0] + SHEDX[3]) / 2, eave - 0.17, z));
+  mesh(mergeGeometries(roofs), tinM, g); mesh(mergeGeometries(iron), ironM, g); const gw = mesh(mergeGeometries(walls), brickM, g); gw.material = brickM.clone(); gw.material.side = THREE.DoubleSide;
+  const boardT = (txt, sub, col) => canvasTex(512, 160, (x, w, h) => { x.fillStyle = col; x.fillRect(0, 0, w, h); x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 6; x.strokeRect(10, 10, w - 20, h - 20); x.fillStyle = '#f4ecd8'; x.textAlign = 'center'; x.textBaseline = 'middle'; fitFont(x, txt, 800, 74, SANS, w - 60); x.fillText(txt, w / 2, sub ? h / 2 - 12 : h / 2 + 3); if (sub) { x.font = `700 30px ${SANS}`; x.fillStyle = 'rgba(244,236,216,.75)'; x.fillText(sub, w / 2, h / 2 + 44); } }, {});
+  const head = VOICES.map(v => boardT(v, '', '#24343c')), wr = boardT('WRITER', 'in this voice', '#5a2a1e'), ed = boardT('EDITOR', 'same voice', '#2a4a33');
+  const hangM = t => new THREE.MeshStandardMaterial({ map: t, roughness: 0.8, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: 0.18, side: THREE.DoubleSide });
+  SHEDX.forEach((x, i) => { for (const z of [z0 + 0.12, z1 - 0.12]) mesh(new THREE.PlaneGeometry(2.2, 0.69), hangM(head[i]), g, x, eave + 0.55, z, false).rotation.y = z < z1 + 1 ? Math.PI : 0;
+    mesh(new THREE.PlaneGeometry(1.5, 0.47), hangM(wr), g, x, 4.55, z0 - 4.5, false); mesh(new THREE.PlaneGeometry(1.5, 0.47), hangM(ed), g, x, 4.55, z0 - 11, false); });
+  const L = new THREE.PointLight(0xffc488, 40, 24, 1.6); L.position.set(-4, 4.6, (z0 + z1) / 2); g.add(L);
+  for (const x of SHEDX) for (const z of [z0 - 4, z0 - 11]) { mesh(new THREE.SphereGeometry(0.12, 10, 8), glowM(0xfff0d0), g, x, 5.05, z, false); glow(LAMPC, 1.6, g, x, 5.0, z, 0.6); }
+  return g;
+})();
+
+/* ---- the scanned things (Poly Haven): suitcases on the bench, the oil lamp, the clock, the barrel stove, the tool chest, the
+   sledgehammer, the ladder, the oil can, spray paint, barrels ---- */
+const scanM = {}, scanG = {};
+const SCAN = { bench: ['bench_p.json', ['bench']], case: ['case_p.json', ['case1', 'case2']], lamp: ['lamp_p.json', ['lglass', 'lamp']], clock: ['clock_p.json', ['clock', 'clock']], stove: ['stove_p.json', ['stove']], chest: ['chest_p.json', ['chest']], sledge: ['sledge_p.json', ['sledge']], ladder: ['ladder_p.json', ['ladder']], oilcan: ['oilcan_p.json', ['oilcan']], spray: ['spray_p.json', ['spray']], barrels: ['barrels_p.json', ['barrel1', 'barrel2']] };
+const METAL = new Set(['case1', 'case2', 'lamp', 'lglass', 'clock', 'stove', 'chest', 'sledge', 'ladder', 'oilcan', 'spray', 'barrel1', 'barrel2']);
+function scanMat(base) {
+  if (scanM[base]) return scanM[base];
+  const m = new THREE.MeshStandardMaterial({ ...pbr(base, 0, METAL.has(base)), roughness: 1, metalness: METAL.has(base) ? 1 : 0, envMapIntensity: 0.8 });
+  if (base === 'stove' || base === 'lglass') { m.alphaMap = tex(`${base}_alpha_512.jpg`, false); m.alphaTest = 0.5; m.side = THREE.DoubleSide; }
+  if (base === 'lglass') { m.transparent = true; m.alphaTest = 0; m.opacity = 0.5; m.roughness = 0.1; m.depthWrite = false; }
+  return (scanM[base] = m);
+}
+const scans = Promise.all(Object.entries(SCAN).map(([k, [f]]) => loadPacked(f).then(d => { scanG[k] = d; }).catch(e => console.warn('[yard]', f, e.message))));
+function scan(k, parent, x, y, z, ry = 0, s = 1, opts = {}) {
+  const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; g.scale.setScalar(s); (parent || scene).add(g);
+  const inner = new THREE.Group(); g.add(inner); if (opts.rx) inner.rotation.x = opts.rx; if (opts.rz) inner.rotation.z = opts.rz;
+  scans.then(() => { const d = scanG[k]; if (!d) return; const mats = Object.keys(d), bb = new THREE.Box3();
+    mats.forEach((mat, mi) => { if (opts.only != null && opts.only !== mi) return; for (const part of d[mat]) {
+      const m = new THREE.Mesh(part, scanMat(SCAN[k][1][mi] || SCAN[k][1][0])); m.castShadow = opts.shadow !== false; m.receiveShadow = true; m.name = part.name; inner.add(m); part.computeBoundingBox(); bb.union(part.boundingBox); } });
+    if (opts.centre) for (const m of inner.children) m.position.set(-(bb.min.x + bb.max.x) / 2, -bb.min.y, -(bb.min.z + bb.max.z) / 2);   // the chosen piece stood on its own footprint
+    if (opts.then) opts.then(g); });
+  return g;
+}
+
+/* ---- Let's talk's corner of the platform: the bench with two old suitcases and the oil lamp, by the parcels office ---- */
+const BENCH = { x: -20.75, z: -17.6 };
+scan('bench', null, BENCH.x, PLATY, BENCH.z, Math.PI / 2);
+scan('case', null, BENCH.x + 0.05, PLATY + 0.47, BENCH.z + 0.25, Math.PI / 2 + 0.08, 0.9, { only: 0, centre: true });
+scan('case', null, BENCH.x - 0.05, PLATY, BENCH.z - 1.1, Math.PI / 2 - 0.2, 0.9, { only: 1, centre: true });
+const oilLamp = scan('lamp', null, BENCH.x + 0.02, PLATY + 0.47, BENCH.z - 0.45, 0, 0.8);
+glow(0xffa04a, 0.9, null, BENCH.x + 0.02, PLATY + 0.47 + 0.6 * 0.8, BENCH.z - 0.45, 0.7);
+scan('clock', null, OFFICE.x1 + 0.2, PLATY + 0.64, -9.1, Math.PI / 2, 1.3);   // on the booking office's window sill
+scan('barrels', null, -20.4, PLATY, 24, 0.3, 1, { centre: true, only: 0 }); scan('barrels', null, -20.6, PLATY, 25.1, 1.2, 1, { centre: true, only: 1 });
+lampPost(-21.0, -19.6, 4.6, 24, 0);   // the platform lamp: Let's talk's light
+for (const z of [24, 40, 56]) lampPost(-21.0, z, 4.6, 0, 0);
+
+/* ---- the water tower, by the hump ---- */
+const tower = (() => { const g = new THREE.Group(); g.position.set(-0.4, 0, 3.0); scene.add(g);
+  mesh(metresUV(cyl(1.75, 1.95, 4.2, 20).translate(0, 2.1, 0)), brickM, g); mesh(metresUV(cyl(2.3, 2.3, 2.7, 28).translate(0, 5.75, 0)), rustM, g); mesh(cyl(2.45, 2.45, 0.22, 28).translate(0, 4.4, 0), ironM, g);
+  mesh(new THREE.ConeGeometry(2.45, 0.9, 28).translate(0, 7.55, 0), sootM, g); for (let k = 0; k < 4; k++) mesh(cyl(0.035, 0.035, 2.72, 6).translate(Math.cos(k * 1.57) * 2.31, 5.75, Math.sin(k * 1.57) * 2.31), ironM, g);   // hoops and a cap
+  const arm = mesh(alongZ(cyl(0.16, 0.16, 2.8, 10)).rotateY(Math.PI / 2).translate(-3.2, 5.4, 0), ironM, g); void arm;
+  mesh(cyl(0.12, 0.14, 1.6, 10).translate(-4.5, 4.6, 0), new THREE.MeshStandardMaterial({ color: 0x2a1c14, roughness: 0.6 }), g);
+  scan('ladder', g, 1.9, 2.2, 0.9, -Math.PI / 2 + 0.4, 1, { rx: 0.0 }); scan('ladder', g, 2.0, 0.0, 0.95, -Math.PI / 2 + 0.4, 1, {});
+  return g; })();
+
+/* ---- the signals: upper-quadrant semaphores on lattice posts, the arm pointing away from the line, a lamp behind its glass ---- */
+const SIGC = { danger: 0xff3a2a, clear: 0x4dff7a, caution: 0xffb02a };
+function signal(rt, z, side = -1, h = 6.5, distant = false) {
+  const s = rt.sAtZ(z); rt.at(s, _p); const g = new THREE.Group(); g.position.set(_p.x + side * 2.25, 0, _p.z); scene.add(g);
+  mesh(box(0.22, h, 0.22, 0, h / 2, 0), ironM, g); mesh(cyl(0.1, 0.1, 0.3, 8).translate(0, h + 0.15, 0), ironM, g);
+  for (let y = 0.6; y < h - 0.4; y += 0.42) mesh(box(0.05, 0.05, 0.24, side * 0.18, y, 0.12), ironM, g);
+  const pivot = new THREE.Group(); pivot.position.set(side * 0.16, h - 0.6, 0.14); g.add(pivot);
+  const armT = canvasTex(256, 48, (x, w, hh) => { x.fillStyle = distant ? '#e8b13a' : '#b8241c'; x.fillRect(0, 0, w, hh); x.fillStyle = distant ? '#111' : '#f2ede4'; if (distant) { x.beginPath(); x.moveTo(w - 70, 0); x.lineTo(w - 40, hh / 2); x.lineTo(w - 70, hh); x.lineTo(w - 52, hh); x.lineTo(w - 22, hh / 2); x.lineTo(w - 52, 0); x.fill(); } else x.fillRect(w - 64, 6, 22, hh - 12); }, { static: true });
+  const arm = mesh(new THREE.PlaneGeometry(1.25, 0.24), new THREE.MeshStandardMaterial({ map: armT, roughness: 0.6, side: THREE.DoubleSide, emissive: 0xffffff, emissiveMap: armT, emissiveIntensity: 0.08 }), pivot, side * 0.62, 0, 0, false);
+  mesh(box(0.3, 0.3, 0.16, 0, 0, -0.04), ironM, pivot);
+  const lamp = glow(SIGC.danger, 1.3, g, side * 0.16, h - 0.6, 0.32, 0.95); mesh(new THREE.SphereGeometry(0.07, 8, 6), new THREE.MeshBasicMaterial({ color: SIGC.danger, toneMapped: false }), g, side * 0.16, h - 0.6, 0.26, false);
+  const bulb = g.children[g.children.length - 1];
+  let cur = -1;
+  return { g, pivot, lamp, set(k) {   // k: 0 at danger (or caution), 1 clear
+    if (Math.abs(k - cur) < 1e-3) return; cur = k; pivot.rotation.z = side * k * 0.75;   // upper quadrant: the free end rises
+    const c = new THREE.Color(distant ? SIGC.caution : SIGC.danger).lerp(new THREE.Color(SIGC.clear), sstep(0.6, 0.95, k)); lamp.material.color.copy(c); bulb.material.color.copy(c); } };
+}
+const sigReview = signal(LINE, -41, -1, 5.2, true);     // In Review: a caution arm
+const sigDepart = signal(LINE, -141, -1, 7.5);          // the starter: clear when the creative is ready
+const sigPlat = signal(PLAT, -44, 1, 5.6);              // the platform starter: Let's talk's train
+sigReview.set(0); sigDepart.set(0); sigPlat.set(0);
+
+/* ---- 05: the repair shop, where a van goes when it needs edits: corrugated iron on a timber frame, the stove lit ---- */
+const REPAIR = { x0: -10.2, x1: -1.8, z0: -45, z1: -59 };
+const repair = (() => { const R = REPAIR, g = new THREE.Group(); scene.add(g); const W = R.x1 - R.x0, cx = (R.x0 + R.x1) / 2, eave = 5.0, ridge = 6.6, frame = [], walls = [];
+  for (const x of [R.x0, R.x1]) walls.push(box(0.1, eave, R.z0 - R.z1, x, eave / 2, (R.z0 + R.z1) / 2));
+  for (const z of [R.z0, R.z1]) { const sh = new THREE.Shape(); sh.moveTo(-W / 2, 0); sh.lineTo(W / 2, 0); sh.lineTo(0, ridge - eave); sh.lineTo(-W / 2, 0); const gg = new THREE.ShapeGeometry(sh); gg.translate(cx, eave, z); metresUV(gg, 1.4); walls.push(gg); }
+  for (const s of [-1, 1]) { const sl = Math.hypot(W / 2 + 0.3, ridge - eave), r = new THREE.BoxGeometry(sl, 0.05, R.z0 - R.z1 + 0.6); metresUV(r, 1.4); r.rotateZ(-s * Math.atan2(ridge - eave, W / 2 + 0.3)); r.translate(cx + s * (W / 4 + 0.15), (eave + ridge) / 2, (R.z0 + R.z1) / 2); walls.push(r); }
+  for (const z of [R.z0, R.z1]) for (const x of [R.x0, R.x1]) frame.push(box(0.25, eave, 0.25, x, eave / 2, z));
+  for (const z of [R.z0, (R.z0 + R.z1) / 2, R.z1]) frame.push(box(W, 0.25, 0.25, cx, eave, z));
+  const rm = tinM.clone(); rm.side = THREE.DoubleSide; rm.color.set(0x8c6e5e); mesh(mergeGeometries(walls.map(w => w.index ? w.toNonIndexed() : w)), rm, g); mesh(mergeGeometries(frame), plankM, g);
+  const sign = canvasTex(512, 128, (x, w, h) => { x.fillStyle = '#2b3a33'; x.fillRect(0, 0, w, h); x.fillStyle = '#efe6d0'; x.textAlign = 'center'; x.textBaseline = 'middle'; fitFont(x, 'REPAIR SHOP', 800, 70, SANS, w - 50); x.fillText('REPAIR SHOP', w / 2, h / 2 + 3); }, {});
+  for (const z of [R.z0 + 0.06, R.z1 - 0.06]) flat(2.6, 0.65, sign, g, cx, eave + 0.55, z, z > -50 ? 0 : Math.PI, { emissive: new THREE.Color(0xffffff), emissiveMap: sign, emissiveIntensity: 0.12 });
+  scan('stove', g, R.x1 - 0.9, 0, -47.3, 0, 1.15);
+  mesh(cyl(0.09, 0.09, 4.6, 8).translate(R.x1 - 0.9, 3.3, -47.3), sootM, g);
+  scan('chest', g, R.x1 - 0.55, 0, -55.4, -Math.PI / 2);
+  scan('oilcan', g, R.x1 - 0.6, 0.66, -55.2, 0.6);
+  scan('sledge', g, R.x1 - 0.3, 0.74, -53.6, 0, 1, { rz: 0.25 });
+  scan('ladder', g, R.x0 + 0.25, 0, -56.0, Math.PI / 2, 1, { rx: -0.12 });
+  scan('barrels', g, R.x0 + 1.1, 0, -47.4, 0, 1, { centre: true, only: 0 }); scan('barrels', g, R.x0 + 0.9, 0, -57.6, 0.4, 1, { centre: true, only: 1 });
+  const fire = new THREE.PointLight(0xff7a2a, 26, 14, 1.7); fire.position.set(R.x1 - 0.9, 0.7, -47.3 - 0.5); g.add(fire); glow(0xff7a2a, 1.0, g, R.x1 - 0.9, 0.45, -47.65, 0.3);
+  const hang = new THREE.PointLight(0xffd0a0, 14, 16, 1.6); hang.position.set(cx, 4.2, -52); g.add(hang); mesh(new THREE.SphereGeometry(0.12, 10, 8), glowM(0xfff0d0), g, cx, 4.3, -52, false); glow(LAMPC, 1.6, g, cx, 4.3, -52, 0.6);
+  return { g, fire };
+})();
+const note = (() => {   // the reviewer's note, chalked on a board on a trestle by the van
+  const g = new THREE.Group(); g.position.set(REPAIR.x1 - 1.45, 0, -51.2); g.rotation.y = Math.PI - 0.5; scene.add(g);   // facing back down the aisle, toward the door
+  for (const x of [-0.55, 0.55]) { const l = mesh(box(0.06, 1.9, 0.06, x, 0.92, 0), plankM, g); l.rotation.x = -0.1; }
+  const t = canvasTex(640, 480, (x, w, h, st = 0) => {
+    x.fillStyle = '#2a2d2f'; x.fillRect(0, 0, w, h); let s = 9; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 50; i++) { const gg = x.createRadialGradient(r() * w, r() * h, 0, r() * w, r() * h, 40 + r() * 120); gg.addColorStop(0, `rgba(220,220,214,${0.02 + r() * 0.05})`); gg.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gg; x.fillRect(0, 0, w, h); }
+    x.textBaseline = 'middle'; x.fillStyle = 'rgba(238,236,228,.93)'; x.font = `700 60px ${CHALK}`; x.fillText('Edit instructions', 40, 70);
+    x.font = `700 48px ${CHALK}`; x.fillStyle = st ? 'rgba(238,236,228,.35)' : 'rgba(238,236,228,.9)';
+    ['· open with the number', '· cut the last line', '· say it more plainly'].forEach((l, i) => x.fillText(l, 50, 160 + i * 74));
+    if (st) { x.strokeStyle = 'rgba(111,208,138,.95)'; x.lineWidth = 9; x.lineCap = 'round'; for (let i = 0; i < 3; i++) { x.beginPath(); x.moveTo(40, 160 + i * 74); x.lineTo(440, 156 + i * 74); x.stroke(); }
+      x.fillStyle = 'rgba(111,208,138,.95)'; x.font = `700 54px ${CHALK}`; x.fillText('done · cleared', 300, 410); }
+    x.strokeStyle = '#6a5a48'; x.lineWidth = 16; x.strokeRect(0, 0, w, h);
+  }, {});
+  flat(1.3, 0.975, t, g, 0, 1.45, 0.04, 0, { emissive: new THREE.Color(0xffffff), emissiveMap: t, emissiveIntensity: 0.08 });
+  return { g, t };
+})();
+
+/* ---- 06: the paint shop: brick, tall doors at both ends, a cold white light; spray paint on the bench by the door ---- */
+const PAINT = { x0: -10.4, x1: -1.6, z0: -66, z1: -84 };
+const paintShop = (() => { const P = PAINT, g = new THREE.Group(); scene.add(g); const W = P.x1 - P.x0, cx = (P.x0 + P.x1) / 2, eave = 6.2, ridge = 8.0, parts = [], roof = [];
+  for (const x of [P.x0, P.x1]) parts.push(box(0.45, eave, P.z0 - P.z1, x, eave / 2, (P.z0 + P.z1) / 2));
+  for (const z of [P.z0, P.z1]) { const sh = new THREE.Shape(); sh.moveTo(-W / 2 - 0.2, 0); sh.lineTo(W / 2 + 0.2, 0); sh.lineTo(W / 2 + 0.2, eave); sh.lineTo(0, ridge); sh.lineTo(-W / 2 - 0.2, eave); sh.lineTo(-W / 2 - 0.2, 0);
+    const hole = new THREE.Path(); hole.moveTo(-1.85, 0); hole.lineTo(1.85, 0); hole.lineTo(1.85, 4.6); hole.absarc(0, 4.6, 1.85, 0, Math.PI, false); hole.lineTo(-1.85, 0); sh.holes.push(hole);
+    const gg = new THREE.ExtrudeGeometry(sh, { depth: 0.45, bevelEnabled: false }); gg.translate(cx, 0, z - (z === P.z0 ? 0.45 : 0)); metresUV(gg, 2.4); parts.push(gg.index ? gg.toNonIndexed() : gg); }
+  for (const s of [-1, 1]) { const sl = Math.hypot(W / 2 + 0.5, ridge - eave), r = new THREE.BoxGeometry(sl, 0.08, P.z0 - P.z1 + 0.8); metresUV(r, 1.2); r.rotateZ(-s * Math.atan2(ridge - eave, W / 2 + 0.5)); r.translate(cx + s * (W / 4 + 0.25), (eave + ridge) / 2 + 0.05, (P.z0 + P.z1) / 2); roof.push(r); }
+  mesh(mergeGeometries(parts.map(p => p.index ? p.toNonIndexed() : p)), brickM, g); mesh(mergeGeometries(roof), roofM, g);
+  const sign = canvasTex(512, 128, (x, w, h) => { x.fillStyle = '#3b2a4a'; x.fillRect(0, 0, w, h); x.fillStyle = '#f1e8d4'; x.textAlign = 'center'; x.textBaseline = 'middle'; fitFont(x, 'PAINT SHOP', 800, 72, SANS, w - 50); x.fillText('PAINT SHOP', w / 2, h / 2 + 3); }, {});
+  for (const z of [P.z0 + 0.02, P.z1 - 0.02]) flat(2.8, 0.7, sign, g, cx, 7.0, z, z > -70 ? 0 : Math.PI, { emissive: new THREE.Color(0xffffff), emissiveMap: sign, emissiveIntensity: 0.14 });
+  const L = new THREE.PointLight(0xdfe8ff, 30, 20, 1.6); L.position.set(cx, 5.2, (P.z0 + P.z1) / 2); g.add(L);
+  for (const z of [P.z0 - 5, P.z1 + 5]) { mesh(box(1.6, 0.1, 0.3, cx, 5.6, z), glowM(0xeef3ff), g, 0, 0, 0, false); glow(0xdfe8ff, 2.6, g, cx, 5.5, z, 0.5); }
+  mesh(box(0.8, 0.9, 2.2, P.x1 - 0.9, 0.45, P.z1 + 3), plankM, g); scan('spray', g, P.x1 - 0.95, 0.9, P.z1 + 2.6, 0.4, 1.4); scan('spray', g, P.x1 - 0.85, 0.9, P.z1 + 3.5, -0.8, 1.4);
+  return g;
+})();
+
+/* ---- lamps round the yard ---- */
+lampPost(-1.6, 62, 7.5, 60, 0);              // the hump
+lampPost(-14.6, 40, 7.0, 34, Math.PI);       // the spur's end
+lampPost(5.4, -33.5, 7.5, 30, Math.PI);      // the sheds
+lampPost(-1.4, -38, 6.8, 0, Math.PI);        // In Review
+lampPost(-0.8, -96, 7.0, 0, Math.PI);        // the paint shop's door
+lampPost(-10.4, -128, 7.2, 30, 0);           // the starter
+for (const [x, z] of [[-12.6, 30], [-12.6, -4], [6, 20], [6, -60], [-12.6, -60], [3.5, -175]]) lampPost(x, z, 7, 0, x > 0 ? Math.PI : 0);
+
+/* =====================================================================
+   THE TRAFFIC
+   ===================================================================== */
+/* ---- 01: the weekly freight, pushed in over the hump: one wagon from each line's pickings, the full ones kept, the light ones
+   run off into the spur ---- */
+const FREIGHT = [['Reddit', 1, '30+ likes'], ['X', 0, 'under 30'], ['LinkedIn', 1, '30+ likes'], ['YouTube', 1, '30+ likes'], ['Reddit', 0, 'off topic'], ['Thought leaders', 1, '30+ likes'], ['X', 1, '30+ likes'], ['LinkedIn', 0, 'under 30'], ['Blogs', 1, 'last 7 days']];
+const freight = (() => {
+  const wagons = FREIGHT.map(([line, kept, n], i) => { const v = vehicle(WAGON()); loadParcels(v, kept ? 22 : 4, 31 + i * 17, kept ? 2.55 : 1.5);
+    slate(v, [[line, 64], [n, 44, kept ? 'rgba(170,230,180,.95)' : 'rgba(250,170,150,.95)']], 1.68, 1.45); v.kept = !!kept; return v; });
+  const loco = engine(blackM, { puff: 1 });
+  const tr = train(LINE, [...wagons, loco]);
+  let kk = 0, kr = 0; const KEEP = LINE.sAtZ(20);   // the kept ones stand along the line from here back toward the hump
+  wagons.forEach(v => { if (v.kept) { v.dest = KEEP - 0.35 - v.len / 2 - kk * (v.len + 0.35); kk++; } else { v.dest = SPUR.len - 0.8 - v.len / 2 - kr * (v.len + 0.35); kr++; } });
+  return { wagons, loco, tr };
+})();
+const SPUR_OFF = LINE.sAtZ(90);   // a distance on the line, less this, is the same place on the spur (until they part)
+
+/* the yard's own signs at the hump: what's kept, what's sent back */
+function yardSign(x, z, ry, lines, col) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g);
+  for (const dx of [-0.9, 0.9]) mesh(box(0.1, 3.2, 0.1, dx, 1.6, 0), ironM, g);
+  const t = canvasTex(512, 200, (c, w, h) => { c.fillStyle = col; c.fillRect(0, 0, w, h); c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = 7; c.strokeRect(10, 10, w - 20, h - 20); c.fillStyle = '#f6efe0'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    fitFont(c, lines[0], 800, 78, SANS, w - 60); c.fillText(lines[0], w / 2, 76); c.font = `700 34px ${SANS}`; c.fillStyle = 'rgba(246,239,224,.85)'; c.fillText(lines[1], w / 2, 146); }, {});
+  flat(2.2, 0.86, t, g, 0, 2.75, 0.06, 0, { emissive: new THREE.Color(0xffffff), emissiveMap: t, emissiveIntensity: 0.35 });
+  return g;
+}
+yardSign(-2.7, 57.0, 0.3, ['KEPT', '30+ likes · on topic'], '#2f6b45');
+yardSign(-13.4, 49.0, -0.3, ['SENT BACK', 'under 30 · off topic'], '#8a2f24');
+
+/* ---- 02: the specials: a call's ideas and a webinar's captions, each on its own short train into the platform ---- */
+const specials = (() => {
+  const mk = (head, n, word, sub) => { const vans = []; for (let i = 0; i < n; i++) { const v = vehicle(VAN(), { mat: greyM }); slate(v, [[`${word} ${i + 1}`, 64], [sub, 40]], 2.2, 1.5); vans.push(v); }
+    return train(PLAT, [engine(maroonM, { headboard: head, puff: 0.8 }), ...vans]); };
+  return { call: mk('CALL', 4, 'Idea', 'voice suggested'), web: mk('WEBINAR', 3, 'Caption', 'written in full') };
+})();
+
+/* ---- 03→07: the van that carries one idea down the yard; its slate says where it's got to ---- */
+const pro = (() => { const v = vehicle(VAN(), { mat: bauxM }); const t = slate(v, [['Idea from a call', 58], ['voice 2 · new idea', 40]], 2.2, 1.55); return { v, t, key: '' }; })();
+const proSay = (a, b) => { const k = a + b; if (pro.key === k) return; pro.key = k; pro.t.userData.redraw([[a, 58], [b, 40, b.includes('ready') ? 'rgba(170,230,180,.95)' : b.includes('edits') && !b.includes('after') ? 'rgba(250,170,150,.95)' : null]]); };
+
+/* ---- 06: the carousel: five cars painted as five slides (cover, three points, the call to action in the guard's van), and the
+   image post's van, sprayed in its own livery ---- */
+const SLIDE = [['COVER', '01', '#d9743a', 'the hook'], ['POINT', '02', '#2f6b8f', ''], ['POINT', '03', '#3d7f5a', ''], ['POINT', '04', '#7a4f9a', ''], ['CALL TO ACTION', '05', '#c03a32', 'what to do next']];
+function slideTex(i) {
+  const [kind, num, col, sub] = SLIDE[i];
+  return canvasTex(1024, 384, (x, w, h) => {
+    x.fillStyle = col; x.fillRect(0, 0, w, h); const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, 'rgba(255,255,255,.12)'); g.addColorStop(1, 'rgba(0,0,0,.18)'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    x.fillStyle = 'rgba(255,248,236,.95)'; x.font = `800 210px ${SANS}`; x.textBaseline = 'alphabetic'; x.fillText(num, 48, 250);
+    x.font = `800 56px ${SANS}`; x.fillText(kind, 360, 120); if (sub) { x.font = `600 40px ${SANS}`; x.fillStyle = 'rgba(255,248,236,.75)'; x.fillText(sub, 362, 176); }
+    x.fillStyle = 'rgba(255,248,236,.55)'; const bars = i === 0 ? [[560, 34]] : i === 4 ? [[420, 30], [300, 30]] : [[580, 26], [520, 26], [430, 26]]; bars.forEach(([bw, bh], k) => x.fillRect(362, 220 + k * 48, bw, bh));   // the words, to come
+    for (let k = 0; k < 5; k++) { x.fillStyle = k === i ? 'rgba(255,248,236,.95)' : 'rgba(255,248,236,.35)'; x.beginPath(); x.arc(w / 2 - 80 + k * 40, h - 34, 10, 0, 7); x.fill(); }
+    x.strokeStyle = 'rgba(0,0,0,.25)'; x.lineWidth = 10; x.strokeRect(0, 0, w, h);
+  }, {});
+}
+const carousel = (() => {
+  const cars = SLIDE.map((s, i) => { const v = vehicle(i === 4 ? GUARD() : VAN(), { mat: i === 4 ? greyM : bauxM }); const t = slideTex(i), w = i === 4 ? 3.5 : 5.6;
+    for (const sd of [1, -1]) flat(w, w * 384 / 1024, t, v.g, sd * (v.kind.hw + 0.03), 2.3, 0, sd * Math.PI / 2, { emissive: new THREE.Color(0xffffff), emissiveMap: t, emissiveIntensity: 0.1, roughness: 0.5 }); return v; });
+  const loco = engine(greenM, { headboard: 'CAROUSEL', puff: 1 });
+  const tr = train(LINE, [loco, ...cars]);
+  return { cars, loco, tr, front: LINE.sAtZ(-134) };
+})();
+const imageVan = (() => {   // the image post: a van sprayed with a picture, the spray front running along it
+  const v = vehicle(VAN(), { mat: greyM }); place(v, PLAT, PLAT.sAtZ(-91));
+  const t = canvasTex(1024, 384, (x, w, h, u = 0) => {
+    x.fillStyle = '#7c7f80'; x.fillRect(0, 0, w, h);
+    x.save(); x.beginPath(); for (let yy = 0; yy <= h; yy += 16) { const e = u * (w + 140) - 70 + Math.sin(yy * 0.09) * 22 + Math.sin(yy * 0.31) * 9; yy === 0 ? x.moveTo(0, 0) : 0; x.lineTo(e, yy); } x.lineTo(0, h); x.closePath(); x.clip();
+    const sky = x.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#1d2f5a'); sky.addColorStop(0.55, '#d0603a'); sky.addColorStop(1, '#f2b25a'); x.fillStyle = sky; x.fillRect(0, 0, w, h);
+    x.fillStyle = '#f7e2a8'; x.beginPath(); x.arc(w * 0.68, h * 0.62, 58, 0, 7); x.fill();
+    x.fillStyle = '#2a2140'; x.beginPath(); x.moveTo(0, h); x.lineTo(0, h * 0.7); for (let k = 0; k <= 10; k++) x.lineTo(k * w / 10, h * (0.66 + 0.1 * Math.sin(k * 1.7))); x.lineTo(w, h); x.fill();
+    x.fillStyle = '#151024'; x.beginPath(); x.moveTo(0, h); for (let k = 0; k <= 8; k++) x.lineTo(k * w / 8, h * (0.82 + 0.06 * Math.cos(k * 2.3))); x.lineTo(w, h); x.fill();
+    x.restore();
+    if (u > 0 && u < 1) { const e = u * (w + 140) - 70; const g = x.createRadialGradient(e, h / 2, 0, e, h / 2, 120); g.addColorStop(0, 'rgba(255,255,255,.25)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(e - 120, 0, 240, h); }
+    x.strokeStyle = 'rgba(0,0,0,.25)'; x.lineWidth = 8; x.strokeRect(0, 0, w, h);
+  }, {});
+  for (const sd of [1, -1]) flat(5.6, 5.6 * 384 / 1024, t, v.g, sd * (v.kind.hw + 0.03), 2.3, 0, sd * Math.PI / 2, { emissive: new THREE.Color(0xffffff), emissiveMap: t, emissiveIntensity: 0.1, roughness: 0.5 });
+  return { v, t, u: -1 };
+})();
+
+/* ---- the yard at work: wagons and vans standing about, an engine simmering by the sheds ---- */
+{ const standing = [[FAN[0], -25.8, VAN(), bauxM], [FAN[2], -29.5, VAN(), greyM], [FAN[3], -30, VAN(), bauxM], [FAN[3], -22.5, WAGON(), null]];
+  for (const [rt, z, k, m] of standing) { const v = vehicle(k, { mat: m }); place(v, rt, rt.sAtZ(z)); if (k === VEH.wagon) loadParcels(v, 12, 77, 2.2); }
+  const sim = engine(blackM, { puff: 0.35 }); place(sim, FAN[0], FAN[0].sAtZ(-34.9)); }
+
+/* =====================================================================
+   LET'S TALK: the parcel label. "Let's talk" takes the camera to the far end of the platform, where a big manila luggage label
+   hangs from an iron post by the bench and its two old suitcases, the parcels train standing beyond it with its van door open and
+   the sunset behind. The form is typed onto the label a key at a time (talk/surface.js lays it out; this types it); the live fields
+   sit over it in CSS3D. Send: the camera steps back, the label goes into the parcels van, the door slides shut, the signal comes off
+   and the train pulls out down the yard; then back to the post, where a fresh label is typed "Message received" and stamped with the
+   time. Escape or ✕ goes back to wherever the scroll left the camera.
+   ===================================================================== */
+const RATE = 130;                                                          // characters typed a second
+const OUT = 1.7, HOLD = 5.8, BACK = 2.4;                                   // step back and watch it go, and come back
+const LBL = { x: -18.85, z: -15.6 }, HOOKY = PLATY + 3.02;                 // where the label hangs: from the post's bracket
+const talk = { mode: 'off', t: 0, dur: 3, curve: null, back: null, ahead: false, L0: V(0, 0, 0), L1: V(0, 0, 0), v: 0, busy: false, surf: null, L: null,
+  group: null, face: null, css: null, cssR: null, opener: null, mobile: null, cv: null, tex: null, FW: 0, FH: 0, ox: 0, oy: 0, MPP: 0, PW: 0, PH: 0,
+  shown: 0, total: 0, writing: false, hold: false, cssK: 0, seq: -1, swapped: false, when: new Date(), sentVals: null };
+const talkPose = { pos: V(0, 0, 0), look: V(0, 0, 0) }, _tl = V(0, 0, 0), _ta = V(0, 0, 0);
+
+/* ---- the post: cast iron, a bracket with a hook; the label hangs from it on a doubled string, facing up the platform ---- */
+const post = (() => {
+  const g = new THREE.Group(); g.position.set(LBL.x, PLATY, LBL.z); scene.add(g);
+  mesh(cyl(0.05, 0.075, 3.25, 12).translate(-0.82, 1.62, 0), ironM, g); mesh(cyl(0.13, 0.16, 0.35, 12).translate(-0.82, 0.17, 0), ironM, g); mesh(new THREE.SphereGeometry(0.075, 10, 8), brassM, g, -0.82, 3.27, 0);
+  mesh(box(0.86, 0.045, 0.045, -0.41, HOOKY - PLATY + 0.06, 0), ironM, g); mesh(box(0.035, 0.36, 0.035, -0.6, HOOKY - PLATY - 0.1, 0), ironM, g).rotation.z = -0.9;
+  mesh(new THREE.TorusGeometry(0.035, 0.008, 6, 14, Math.PI * 1.4), brassM, g, 0, HOOKY - PLATY + 0.02, 0);
+  return g;
+})();
+const stringM = new THREE.LineBasicMaterial({ color: 0xd8c8a0, transparent: true, opacity: 0.9 });
+function hangString(topY) {   // the string from the hook down to the label's eyelet (in the post's space)
+  const p = []; for (const dx of [-0.012, 0.012]) p.push(0, HOOKY - PLATY, 0.004, dx, topY, 0.006);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); const l = new THREE.LineSegments(g, stringM); post.add(l); return l;
+}
+function tagShape(w, h, cut) { const s = new THREE.Shape(); s.moveTo(-w / 2 + cut, h / 2); s.lineTo(w / 2 - cut, h / 2); s.lineTo(w / 2, h / 2 - cut); s.lineTo(w / 2, -h / 2); s.lineTo(-w / 2, -h / 2); s.lineTo(-w / 2, h / 2 - cut); s.lineTo(-w / 2 + cut, h / 2); return s; }
+const cardM = new THREE.MeshStandardMaterial({ color: 0xc9b282, roughness: 0.95, side: THREE.DoubleSide });
+function tagPath(x, w, h, cut) { x.beginPath(); x.moveTo(cut, 0); x.lineTo(w - cut, 0); x.lineTo(w, cut); x.lineTo(w, h); x.lineTo(0, h); x.lineTo(0, cut); x.closePath(); }
+function tagGround(x, w, h, k, seed = 13) {   // manila card: fibres, a printed red border, the eyelet's ring with the hole punched through
+  const cut = 70 * k; x.clearRect(0, 0, w, h); x.save(); tagPath(x, w, h, cut); x.clip();
+  x.fillStyle = TAG; x.fillRect(0, 0, w, h); let s = seed; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 420; i++) { x.strokeStyle = `rgba(120,90,50,${0.03 + r() * 0.05})`; x.lineWidth = (0.5 + r()) * k; x.beginPath(); const X = r() * w, Y = r() * h; x.moveTo(X, Y); x.lineTo(X + (r() - 0.5) * 40 * k, Y + (r() - 0.5) * 12 * k); x.stroke(); }
+  const vg = x.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.max(w, h) * 0.75); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(90,60,20,.18)'); x.fillStyle = vg; x.fillRect(0, 0, w, h);
+  x.strokeStyle = 'rgba(179,53,42,.85)'; x.lineWidth = 4 * k; const m = 16 * k; x.beginPath(); x.moveTo(cut + m * 0.6, m); x.lineTo(w - cut - m * 0.6, m); x.lineTo(w - m, cut + m * 0.6); x.lineTo(w - m, h - m); x.lineTo(m, h - m); x.lineTo(m, cut + m * 0.6); x.closePath(); x.stroke();
+  x.restore();
+  const ex = w / 2, ey = 34 * k; x.fillStyle = '#c4a46a'; x.beginPath(); x.arc(ex, ey, 22 * k, 0, 7); x.fill(); x.strokeStyle = 'rgba(80,60,30,.5)'; x.lineWidth = 2 * k; x.stroke();
+  x.save(); x.globalCompositeOperation = 'destination-out'; x.beginPath(); x.arc(ex, ey, 9 * k, 0, 7); x.fill(); x.restore();
+}
+const blankTag = (() => {   // in the story: a blank label, waiting
+  const w = 0.6, h = 0.82, g = new THREE.Group(); g.position.set(0, HOOKY - PLATY - 0.3 - h / 2, 0); post.add(g);
+  const t = canvasTex(600, 820, (x, W2, H2) => { const k = W2 / 600; tagGround(x, W2, H2, k, 7); x.fillStyle = INK; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = `400 84px ${TYPE}`; x.fillText("LET'S TALK", W2 / 2, 300); x.font = `400 40px ${TYPE}`; x.fillStyle = 'rgba(43,33,24,.7)'; x.fillText('say hello on this one', W2 / 2, 380);
+    x.strokeStyle = 'rgba(43,33,24,.5)'; x.lineWidth = 2; for (let i = 0; i < 4; i++) { x.beginPath(); x.moveTo(70, 500 + i * 70); x.lineTo(W2 - 70, 500 + i * 70); x.stroke(); } }, {});
+  mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: t, transparent: true, alphaTest: 0.5, roughness: 0.9, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: 0.12 }), g, 0, 0, 0.002, false);
+  mesh(new THREE.ShapeGeometry(tagShape(w, h, 0.07)), cardM, g, 0, 0, -0.002, false);
+  g.userData.string = hangString(HOOKY - PLATY - 0.3 + 0.0 - 0.034 * h / 0.82);
+  return g;
+})();
+
+/* ---- the parcels train: a tank engine and a van at the platform's end, the van's door open toward the platform ---- */
+const parcels = (() => {
+  const loco = engine(blackM, { headboard: 'PARCELS', puff: 0.45 }), van = vehicle(VAN('pvan', 5.4), { mat: maroonM });
+  const tr = train(PLAT, [loco, van]); const head0 = PLAT.sAtZ(-38); tr.set(head0);
+  const hw = van.kind.hw;
+  mesh(new THREE.PlaneGeometry(1.6, 1.95), new THREE.MeshBasicMaterial({ color: 0x0c0a09 }), van.g, -(hw + 0.012), 2.22, 0, false).rotation.y = -Math.PI / 2;   // the doorway, dark inside
+  const door = mesh(box(0.06, 2.02, 1.72, 0, 0, 0), maroonM, van.g, -(hw + 0.05), 2.22, 1.75);
+  const t = slateTex([['Parcels', 60], ['to wherever you are', 38]]); flat(1.4, 1.4 * 200 / 512, t, van.g, hw + 0.035, 2.2, 0, Math.PI / 2, { emissive: new THREE.Color(0xffffff), emissiveMap: t, emissiveIntensity: 0.06 });
+  glow(0xff3a2a, 0.8, van.g, 0.7, 1.5, van.len / 2 - 0.35, 0.9);   // the tail lamp
+  return { loco, van, tr, head0, door, s: 0, go: -1, reset() { this.go = -1; tr.set(head0); door.position.z = 1.75; loco.g.visible = van.g.visible = true; sigPlat.set(0); } };
+})();
+
+/* ---- the typewriter ---- */
+const MONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const hhmm = d => two(d.getHours()) + ':' + two(d.getMinutes());
+const TCOL = { title: INK, intro: 'rgba(43,33,24,.9)', label: INKR, msg: INKR, note: 'rgba(43,33,24,.68)' };
+function printBox(x, f, k) { x.strokeStyle = 'rgba(43,33,24,.72)'; x.lineWidth = 1.8 * k; x.strokeRect(f.x * k, f.y * k, f.w * k, f.h * k); x.strokeStyle = 'rgba(43,33,24,.18)'; x.lineWidth = 1 * k; x.strokeRect((f.x + 3) * k, (f.y + 3) * k, (f.w - 6) * k, (f.h - 6) * k); }
+function drawValue(x, f, v, k, tall) {   // what the visitor typed, left on the label once it's sent
+  if (!v) return; x.font = `400 ${19 * k}px ${TYPE}`; x.fillStyle = INK; x.textBaseline = 'middle'; x.textAlign = 'left';
+  if (!tall) { let s = v; while (x.measureText(s).width > (f.w - 28) * k && s.length > 1) s = s.slice(0, -2) + '…'; x.fillText(s, (f.x + 14) * k, (f.y + f.h / 2) * k); return; }
+  const words = v.replace(/\s+/g, ' ').trim().split(' '), lines = []; let line = '';
+  for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (x.measureText(t).width > (f.w - 28) * k && line) { lines.push(line); line = wd; } else line = t; } if (line) lines.push(line);
+  lines.slice(0, Math.max(1, Math.floor((f.h - 12) / 24))).forEach((l, i) => x.fillText(l, (f.x + 14) * k, (f.y + 20 + i * 24) * k));
+}
+function stamp(x, cx, cy, r, k, when) {   // a rubber stamp in red: RECEIVED round the top, the time across the middle
+  x.save(); x.translate(cx, cy); x.rotate(-0.16); x.strokeStyle = 'rgba(179,53,42,.88)'; x.fillStyle = 'rgba(179,53,42,.88)';
+  x.lineWidth = 4 * k; x.beginPath(); x.arc(0, 0, r, 0, 7); x.stroke(); x.lineWidth = 2 * k; x.beginPath(); x.arc(0, 0, r * 0.8, 0, 7); x.stroke();
+  x.font = `400 ${15 * k}px ${TYPE}`; x.textAlign = 'center'; x.textBaseline = 'middle'; const word = 'RECEIVED · RECEIVED ·';
+  for (let i = 0; i < word.length; i++) { const a = -Math.PI / 2 + (i - word.length / 2 + 0.5) * 0.26; x.save(); x.rotate(a + Math.PI / 2); x.fillText(word[i], 0, -r * 0.9); x.restore(); }
+  x.font = `400 ${30 * k}px ${TYPE}`; x.fillText(hhmm(when), 0, 2 * k); x.font = `400 ${12 * k}px ${TYPE}`; x.fillText(`${when.getDate()} ${MONS[when.getMonth()].toUpperCase()}`, 0, 26 * k);
+  x.globalCompositeOperation = 'destination-out'; let s = 3; const rr = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 140; i++) { x.fillStyle = `rgba(0,0,0,${0.3 + rr() * 0.5})`; x.fillRect((rr() - 0.5) * r * 2.2, (rr() - 0.5) * r * 2.2, (1 + rr() * 3) * k, (1 + rr() * 2) * k); }   // where the ink didn't take
+  x.restore();
+}
+function paintFace() {
+  const cv = talk.cv, x = cv.getContext('2d'), w = cv.width, h = cv.height, k = w / talk.FW, L = talk.L, st = talk.surf.state;
+  x.setTransform(1, 0, 0, 1, 0, 0); tagGround(x, w, h, k);
+  const d = talk.when, head = `${st === 'sent' ? 'SENT' : st === 'error' ? 'NOT SENT' : 'PARCEL LABEL'}  ·  ${d.getDate()} ${MONS[d.getMonth()].toUpperCase()}  ·  ${hhmm(d)}`;
+  if (!talk.hold) { x.font = `400 ${15 * k}px ${TYPE}`; x.fillStyle = 'rgba(43,33,24,.62)'; x.textBaseline = 'middle'; x.textAlign = 'center'; x.fillText(head, w / 2, (talk.oy - 22) * k); x.textAlign = 'left'; }
+  x.translate(talk.ox * k, talk.oy * k);
+  let n = 0, lab = 0; const drawn = [];
+  for (const t of L.texts) {
+    x.font = t.font(k); x.textBaseline = 'middle'; x.textAlign = 'left'; try { x.letterSpacing = (t.ls * k) + 'px'; } catch (_) {}
+    x.fillStyle = TCOL[t.kind] || TCOL.intro;
+    for (const wd of t.words) { const m = wd.w.length, left = talk.hold ? 0 : talk.shown - n, c = Math.min(m, Math.floor(left)); if (c > 0) x.fillText(wd.w.slice(0, c), wd.x * k, (wd.y + wd.h / 2) * k); n += m + 1; }
+    try { x.letterSpacing = '0px'; } catch (_) {}
+    if (t.kind === 'label') { if (!talk.hold && talk.shown >= n) drawn.push(lab); lab++; }
+  }
+  L.fields.forEach((f, i) => { if (!drawn.includes(i)) return; printBox(x, f, k); if (talk.sentVals) drawValue(x, f, talk.sentVals[['name', 'phone', 'email', 'message'][i]], k, f.h > 70); });
+  if (!talk.hold && talk.shown >= talk.total) for (const b of L.buttons) { if (b.w < 50) continue; printBox(x, b, k); }
+  if (st === 'sent' && !talk.hold && talk.shown >= talk.total) for (const sl of L.seals) stamp(x, (sl.x + sl.w / 2) * k, (sl.y + sl.h / 2) * k, sl.w * 0.62 * k, k, talk.when);
+  talk.tex.needsUpdate = true;
+}
+const countAll = L => L.texts.reduce((n, t) => n + t.words.reduce((m, wd) => m + wd.w.length + 1, 0), 0);
+function startWriting(hold) { talk.L = talk.surf.layout(); talk.total = countAll(talk.L); talk.shown = reduce ? talk.total : 0; talk.writing = !reduce && !hold; talk.hold = !!hold && !reduce; paintFace(); }
+function faceChanged(reason) {
+  if (!talk.cv) return;
+  if (reason === 'state') {
+    if (talk.surf.state === 'sent') { talk.when = new Date(); talk.css.element.style.opacity = '0'; talk.cssK = 0;
+      if (!reduce) { talk.shown = talk.total; talk.writing = false; talk.hold = false; paintFace(); return; } }   // the sent label stays up until it's gone into the van
+    startWriting(talk.hold);
+  } else { talk.L = talk.surf.layout(); talk.total = countAll(talk.L); if (!talk.writing && !talk.hold) talk.shown = talk.total; paintFace(); }
+}
+
+/* ---- building it: the label on the post, its face the typed form ---- */
+async function buildTalk(config, send) {
+  const mobile = W / H < 0.85;
+  if (talk.group && talk.mobile === mobile) { fitTalk(); return; }
+  if (talk.group) { post.remove(talk.group); if (talk.string) post.remove(talk.string); talk.surf.destroy(); talk.cssScene.remove(talk.css); talk.tex.dispose(); talk.group = null; talk.cv = null; }
+  const { createSurface } = await import('../talk/surface.js');
+  if (document.fonts) await Promise.all([`400 30px 'Special Elite'`, `700 20px 'Elms Sans'`].map(f => document.fonts.load(f))).catch(() => {});
+  talk.mobile = mobile;
+  const s = talk.surf = createSurface({ config, send, width: mobile ? 344 : 600, mobile, look: 'tb-look-tag', pad: mobile ? ['22px', '20px', '22px'] : ['26px', '44px', '30px'],
+    copy: { sentTitle: 'Message received', sentText: "Thanks. I'll get back to you soon, on WhatsApp or by email." },
+    onChange: r => faceChanged(r), onClose: () => closeTalk(), onSent: () => launch() });
+  s.el.addEventListener('submit', e => { const f = e.target; talk.sentVals = Object.fromEntries(['name', 'phone', 'email', 'message'].map(n => [n, (f.elements[n] && f.elements[n].value) || ''])); }, true);
+  const mt = mobile ? 84 : 96, mb = mobile ? 24 : 30, mx = mobile ? 22 : 40;   // (the top margin holds the eyelet and the typed heading)
+  talk.FW = s.fw + 2 * mx; talk.FH = s.fh + mt + mb; talk.ox = mx; talk.oy = mt;
+  talk.PW = Math.min(mobile ? 0.56 : 0.86, 1.15 * talk.FW / talk.FH); talk.MPP = talk.PW / talk.FW; talk.PH = talk.FH * talk.MPP;
+  const kk = Math.min(2048 / Math.max(talk.FW, talk.FH), 2.8);
+  talk.cv = document.createElement('canvas'); talk.cv.width = Math.round(talk.FW * kk); talk.cv.height = Math.round(talk.FH * kk);
+  talk.tex = new THREE.CanvasTexture(talk.cv); talk.tex.colorSpace = THREE.SRGBColorSpace; talk.tex.anisotropy = ANISO;
+  const g = new THREE.Group(); post.add(g); talk.cy = HOOKY - PLATY - 0.3 - talk.PH / 2;
+  talk.tag = new THREE.Group(); talk.tag.position.set(0, talk.cy, 0); g.add(talk.tag);   // the label (it goes off into the van with its face)
+  talk.face = mesh(new THREE.PlaneGeometry(talk.PW, talk.PH), new THREE.MeshBasicMaterial({ map: talk.tex, color: new THREE.Color(0.95, 0.93, 0.88), transparent: true, opacity: 0, side: THREE.FrontSide, depthWrite: false }), talk.tag, 0, 0, 0.002, false);   // unlit: type you can read, whatever the light
+  talk.face.renderOrder = 3;
+  talk.card = mesh(new THREE.ShapeGeometry(tagShape(talk.PW, talk.PH, 70 * talk.MPP)), cardM, talk.tag, 0, 0, -0.003, false);
+  talk.string = hangString(talk.cy + talk.PH / 2 - 34 * talk.MPP); talk.string.visible = false;
+  talk.anchor = new THREE.Object3D(); talk.anchor.scale.setScalar(talk.MPP); talk.anchor.position.set((talk.ox + s.fw / 2 - talk.FW / 2) * talk.MPP, -(talk.oy + s.fh / 2 - talk.FH / 2) * talk.MPP, 0.004); talk.tag.add(talk.anchor);   // where the form sits, in the scene
+  if (!talk.cssScene) { talk.cssScene = new THREE.Scene(); talk.cssCam = new THREE.PerspectiveCamera(); }
+  talk.css = new CSS3DObject(s.el); talk.css.matrixAutoUpdate = false; talk.css.visible = false; talk.cssScene.add(talk.css);   // drawn in pixels (cssRender)
+  talk.group = g;
+  startWriting(true); fitTalk();
+}
+function fitTalk() {   // square on to the label, far enough back to see all of it
+  post.updateWorldMatrix(true, true);
+  const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), m = talk.mobile, { vis, mid } = shownPart();   // (on iPhones: fit in what shows)
+  const d = Math.max(talk.PH / ((m ? 0.84 : 0.8) * 2 * tn * vis), talk.PW / ((m ? 0.92 : 0.84) * 2 * tn * camera.aspect));
+  const c = post.localToWorld(V(0, talk.cy, 0)), n = V(0, 0, 1).transformDirection(post.matrixWorld);
+  talkPose.look.copy(c); talkPose.pos.copy(c).addScaledVector(n, d);
+  const lift = mid * d * tn; talkPose.look.y += lift; talkPose.pos.y += lift;   // centred in what shows
+}
+
+/* ---- the CSS3D layer, in pixels: one unit = one CSS pixel of the form. The scene is in metres, so drawn directly the form would be
+   a few units across a few units from the camera, and WebKit (iPhone Safari) snaps such small 3D offsets to whole pixels, then
+   multiplies the error by the perspective: the live fields landed tens of pixels off the painted ones. So the form is drawn in a
+   scene of its own scaled up to its pixel size, with a camera scaled to match: the same picture, sensible numbers. ---- */
+const _KS = new THREE.Matrix4(), _sp = new THREE.Vector3();
+function cssRender() {
+  const K = 1 / talk.MPP; talk.anchor.updateWorldMatrix(true, false);
+  talk.css.matrix.multiplyMatrices(_KS.makeScale(K, K, K), talk.anchor.matrixWorld); talk.css.matrixWorldNeedsUpdate = true;
+  const c = talk.cssCam; c.fov = camera.fov; c.aspect = camera.aspect; c.near = camera.near * K; c.far = camera.far * K; c.updateProjectionMatrix();
+  c.position.copy(camera.position).multiplyScalar(K); c.quaternion.copy(camera.quaternion); c.updateMatrixWorld(true);
+  talk.cssR.render(talk.cssScene, c);
+}
+/* ---- the live form exactly over the painted one. On iPhones the canvas and the CSS3D layer can be laid out differently (the
+   canvas can start under the address bar, or change size with the toolbars without a resize event), so while Let's talk is open the
+   page measures both every quarter second: it re-renders at the canvas's real size and moves the CSS3D layer onto the canvas.
+   ?talkdbg shows the numbers. ---- */
+const talkEl = document.getElementById('talk3d'), talkDbg = /[?&]talkdbg/.test(location.search) ? document.body.appendChild(Object.assign(document.createElement('pre'), { style: 'position:fixed;left:6px;bottom:6px;z-index:99;margin:0;padding:6px 8px;font:11px/1.35 monospace;color:#fff;background:rgba(0,0,0,.7);pointer-events:none' })) : null;
+let syncT = 0, talkDX = 0, talkDY = 0;
+function syncLayers() {   // and a last check: where the browser says the first live field is, against where its printed box is drawn
+  if (!talk.cssR || !document.documentElement.classList.contains('talking')) return;
+  let g = canvas.getBoundingClientRect();
+  if (Math.abs(Math.round(g.height) - H) > 1 || Math.abs(Math.round(g.width) - W) > 1) { resize(); g = canvas.getBoundingClientRect(); }
+  const t = talkEl.getBoundingClientRect(), inp = talk.css && talk.css.visible && talk.mode === 'on' && talk.L && talk.L.fields.length ? talk.css.element.querySelector('input[data-field]') : null;
+  let dx = g.left - t.left, dy = g.top - t.top;
+  if (inp) { const f = talk.L.fields[0], r = inp.getBoundingClientRect(); talk.anchor.updateWorldMatrix(true, false);
+    _sp.set(f.x + f.w / 2 - talk.surf.fw / 2, -(f.y + f.h / 2 - talk.surf.fh / 2), 0).applyMatrix4(talk.anchor.matrixWorld).project(camera);
+    if (r.width > 0) { dx = g.left + (_sp.x + 1) / 2 * W - (r.left + r.width / 2); dy = g.top + (1 - _sp.y) / 2 * H - (r.top + r.height / 2); talk.fieldSync = true; } }
+  else if (talk.fieldSync) dx = dy = 0;   // (the sent face has no fields: keep the correction the form had)
+  if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) { talkDX += dx; talkDY += dy; talkEl.style.transform = talkDX || talkDY ? `translate(${talkDX.toFixed(1)}px,${talkDY.toFixed(1)}px)` : ''; }
+  if (talkDbg) { const vv = window.visualViewport; talkDbg.textContent = `canvas ${g.left.toFixed(1)},${g.top.toFixed(1)} ${g.width.toFixed(1)}x${g.height.toFixed(1)}\nlayer  ${t.left.toFixed(1)},${t.top.toFixed(1)} ${t.width.toFixed(1)}x${t.height.toFixed(1)}\nW,H ${W},${H}  inner ${innerWidth}x${innerHeight}\nvv ${vv ? vv.width.toFixed(1) + 'x' + vv.height.toFixed(1) + ' @' + vv.offsetTop.toFixed(1) : '-'}  shift ${talkDX.toFixed(1)},${talkDY.toFixed(1)}`; }
+}
+function shownPart() {   // the part of the canvas on screen: on iPhones it can start above the top and run on under the bottom bar
+  const g = canvas.getBoundingClientRect(), vt = clamp(-g.top, 0, H - 1), vb = clamp(innerHeight - g.top, vt + 1, H);
+  return { vis: clamp((vb - vt) / H, 0.6, 1), mid: ((vt + vb) / 2 - H / 2) / (H / 2) };   // mid: where its middle is, −1…1 of the canvas's half-height
+}
+if (window.visualViewport) { visualViewport.addEventListener('resize', () => syncLayers()); visualViewport.addEventListener('scroll', () => syncLayers()); }
+
+/* ---- the camera's way: round the goods office, never through it; the last part always up the platform from the north ---- */
+const APPROACH = V(-16.2, 3.4, -4.5);
+function route(A, B) {
+  const pts = [A];
+  if (A.distanceTo(B) > 7) { if (A.x < OFFICE.x1 + 1 && A.z > OFFICE.z0 - 1) pts.push(V(-14.5, 4.2, A.z)); else if (A.distanceTo(APPROACH) > 12) pts.push(A.clone().lerp(APPROACH, 0.55).add(V(0, 1.2, 0))); pts.push(APPROACH); }
+  pts.push(B); return pts;
+}
+function curveOf(pts) {
+  const q = [pts[0]]; for (const p of pts.slice(1)) if (p.distanceTo(q[q.length - 1]) > 0.08) q.push(p);
+  if (q.length < 2) q.push(q[0].clone().add(V(0, 0.01, 0)));
+  if (q.length === 2) q.splice(1, 0, q[0].clone().lerp(q[1], 0.5));
+  return new THREE.CatmullRomCurve3(q, false, 'centripetal');
+}
+function flyCam(curve, e, L0, L1, ahead) {   // long ways look where they're going, then turn to what they came for
+  camera.position.copy(curve.getPointAt(e));
+  if (ahead) { _ta.copy(curve.getPointAt(Math.min(1, e + 0.1))); _tl.copy(L0).lerp(_ta, sstep(0.03, 0.3, e)).lerp(L1, sstep(0.65, 1, e)); }
+  else _tl.copy(L0).lerp(L1, sstep(0, 0.6, e));
+  camera.lookAt(_tl);
+}
+
+/* ---- the send: the label into the van, the door shut, the signal off, the train away; a fresh label on the post for the reply ---- */
+const VANT = { pos: V(-20.4, 3.15, -9.6), look: V(-16.2, 2.0, -34) }, _k0 = V(0, 0, 0), _k1 = V(0, 0, 0), _q0 = new THREE.Quaternion(), _q1 = new THREE.Quaternion();
+function launch() {   // Send went through
+  if (reduce) { return; }
+  talk.seq = 0; talk.mode = 'away'; talk.swapped = false;
+  talk.curve = curveOf([talkPose.pos.clone(), talkPose.pos.clone().lerp(VANT.pos, 0.5).add(V(0, 0.25, 0)), VANT.pos.clone()]);
+  talk.tag.updateWorldMatrix(true, false); talk.k0 = talk.tag.getWorldPosition(V(0, 0, 0)); talk.q0 = talk.tag.getWorldQuaternion(new THREE.Quaternion());
+  talk.flying = talk.tag; parcels.go = 0;
+}
+function parcelsTick(s, dt) {   // s: seconds since Send
+  const v = parcels.van, k = talk.flying;
+  if (k && s < 2.2) {   // the label: lifted off its hook, carried along the platform, in at the door, turning to it
+    if (k.parent !== scene) scene.attach(k);
+    const u = sstep(0.25, 1.75, s), e = easeIO(u); v.g.updateWorldMatrix(true, false);
+    _k1.copy(v.g.localToWorld(_ta.set(-0.6, 2.25, 0))); _kp.copy(talk.k0).lerp(_k1, e); _kp.y += Math.sin(Math.PI * e) * 0.6; k.position.copy(_kp);
+    v.g.getWorldQuaternion(_q1); _q1.multiply(_q0.setFromAxisAngle(V(0, 1, 0), -Math.PI / 2)); k.quaternion.copy(talk.q0).slerp(_q1, sstep(0.2, 0.8, u)); k.scale.setScalar(lerp(1, 0.42, e));
+    k.visible = u < 0.995;
+  } else if (k) k.visible = false;
+  parcels.door.position.z = lerp(1.75, 0, sstep(1.75, 2.35, s));
+  sigPlat.set(sstep(2.2, 2.9, s));
+  if (s > 2.6) { const tt = s - 2.6, d = 0.5 * 2.6 * tt * tt; parcels.tr.set(parcels.head0 + Math.min(d, 60)); if (d > 58) { parcels.loco.g.visible = parcels.van.g.visible = false; } }
+  void dt;
+}
+const _kp = V(0, 0, 0);
+function swapToReply() {   // a fresh label on the hook for the reply
+  talk.swapped = true; const flown = talk.flying;
+  const g = talk.group; talk.tag = new THREE.Group(); talk.tag.position.set(0, talk.cy, 0); g.add(talk.tag);
+  talk.card = mesh(talk.card.geometry, cardM, talk.tag, 0, 0, -0.003, false);
+  const c2 = document.createElement('canvas'); c2.width = talk.cv.width; c2.height = talk.cv.height; c2.getContext('2d').drawImage(talk.cv, 0, 0);   // the label that went: a copy of it as it was sent
+  const t2 = new THREE.CanvasTexture(c2); t2.colorSpace = THREE.SRGBColorSpace;
+  talk.face.removeFromParent(); if (flown.userData.face) flown.remove(flown.userData.face);
+  flown.userData.face = new THREE.Mesh(talk.face.geometry, new THREE.MeshBasicMaterial({ map: t2, transparent: true })); flown.add(flown.userData.face);
+  talk.tag.add(talk.face); talk.anchor.removeFromParent(); talk.tag.add(talk.anchor);
+  talk.sentVals = null; talk.L = talk.surf.layout(); talk.total = countAll(talk.L);
+  talk.shown = 0; talk.writing = false; talk.hold = true; paintFace();
+  talk.back = curveOf([camera.position.clone(), camera.position.clone().lerp(talkPose.pos, 0.5).add(V(0, 0.1, 0)), talkPose.pos.clone()]);
+}
+
+/* ---- open, send, close ---- */
+async function openTalk({ config, send, opener, fallback }) {
+  if (talk.mode === 'in' || talk.mode === 'on' || talk.mode === 'away' || talk.busy) return;
+  talk.opener = opener; talk.busy = true;
+  if (!talk.cssR) { talk.cssR = new CSS3DRenderer(); document.getElementById('talk3d').appendChild(talk.cssR.domElement); talk.cssR.setSize(W, H); }
+  document.documentElement.classList.add('talking'); document.documentElement.style.overflow = 'hidden';
+  try { await buildTalk(config, send); } catch (err) {
+    console.warn('[contact] the parcel label is unavailable:', err && err.message); talk.busy = false;
+    document.documentElement.classList.remove('talking'); document.documentElement.style.removeProperty('overflow'); talk.group = null; if (fallback) fallback(); return; }
+  talk.busy = false; talk.when = new Date(); talk.seq = -1; talk.swapped = false; talk.sentVals = null;
+  if (talk.flying) { talk.flying.removeFromParent(); talk.flying = null; } parcels.reset();
+  syncLayers();   // line the layers up before anything is shown
+  talk.hold = true; talk.surf.reset();   // → a blank label; the form is typed on as the camera arrives
+  const P0 = camera.position.clone();
+  talk.L0.copy(talk.mode === 'out' ? _tl : camLook); talk.L1.copy(talkPose.look);
+  if (P0.distanceTo(talkPose.pos) < 0.05) { talk.mode = 'on'; startWriting(false); if (!coarse) talk.surf.focusFirst(); return; }
+  talk.curve = curveOf(route(P0, talkPose.pos.clone())); const len = talk.curve.getLength(); talk.ahead = len > 4;
+  talk.dur = reduce ? 0.001 : Math.min(4.6, 1.8 + len * 0.08); talk.mode = 'in'; talk.t = 0;
+}
+function closeTalk() {
+  if (talk.mode === 'off' || talk.mode === 'out') return;
+  cameraAt(stage.prog);
+  talk.curve = curveOf(route(tgtPos.clone(), camera.position.clone()).reverse()); const len = talk.curve.getLength(); talk.ahead = len > 4;   // (the way in, backwards)
+  talk.L0.copy(_tl); talk.L1.copy(tgtLook);
+  talk.dur = reduce ? 0.001 : Math.min(4.2, 1.6 + len * 0.08); talk.mode = 'out'; talk.t = 0; talk.seq = -1; talk.hold = false;
+  document.documentElement.classList.remove('talking');
+}
+function talkFrame(dt) {
+  if (talk.mode === 'off') return false;
+  syncT += dt; if (syncT > 0.25) { syncT = 0; syncLayers(); }
+  if (talk.mode === 'on') { camera.position.copy(talkPose.pos); _tl.copy(talkPose.look); camera.lookAt(_tl); return true; }
+  if (talk.mode === 'away') {
+    talk.seq = talk.freeze != null ? talk.freeze : talk.seq + dt; const s = talk.seq;   // (freeze: QA hook)
+    if (s < OUT) flyCam(talk.curve, easeIO(s / OUT), talkPose.look, VANT.look, false);
+    else if (s < HOLD) { camera.position.copy(VANT.pos).add(_ta.set(0, (s - OUT) / (HOLD - OUT) * 0.08, 0)); _tl.copy(VANT.look); camera.lookAt(_tl); }
+    else {
+      if (!talk.swapped) swapToReply();
+      const u = Math.min(1, (s - HOLD) / BACK); flyCam(talk.back, easeIO(u), VANT.look, talkPose.look, false);
+      if (talk.hold && (1 - u) * BACK < 0.9) startWriting(false);
+      if (u >= 1) { talk.mode = 'on'; talk.seq = -1; if (talk.hold) startWriting(false); if (!coarse) talk.surf.focusFirst(); }
+    }
+    return true;
+  }
+  talk.t = Math.min(talk.dur, talk.t + dt); flyCam(talk.curve, easeIO(talk.t / talk.dur), talk.L0, talk.L1, talk.ahead);
+  if (talk.mode === 'in' && talk.hold && talk.dur - talk.t < 0.9) startWriting(false);
+  if (talk.mode === 'in' && talk.t >= talk.dur) { talk.mode = 'on'; if (talk.hold) startWriting(false); if (!coarse) talk.surf.focusFirst(); }
+  if (talk.mode === 'out' && talk.t >= talk.dur) { talk.mode = 'off'; camPos.copy(camera.position); camLook.copy(_tl); document.documentElement.style.removeProperty('overflow'); if (talk.opener && talk.opener.focus) talk.opener.focus({ preventScroll: true });
+    if (talk.flying) { talk.flying.removeFromParent(); talk.flying = null; } parcels.reset(); }
+  return true;
+}
+function talkUpdate(t, dt) {   // after the story's own update: the label, the typing, the send
+  const want = talk.mode === 'in' || talk.mode === 'on' || talk.mode === 'away' ? 1 : 0;
+  talk.v = reduce ? want : lerp(talk.v, want, 1 - Math.exp(-dt * (want ? 2.6 : 1.4)));
+  if (talk.group) {
+    talk.face.material.opacity = clamp(talk.v * 1.6 - 0.3, 0, 1); talk.face.visible = talk.face.material.opacity > 0.002;
+    talk.tag.visible = talk.face.visible || talk.mode === 'away'; talk.string.visible = talk.tag.visible && !(talk.mode === 'away' && !talk.swapped);
+    if (talk.writing) { talk.shown = Math.min(talk.total, talk.shown + dt * RATE); if (talk.shown >= talk.total) talk.writing = false; paintFace(); }
+    const show = talk.mode === 'on' && !talk.writing && !talk.hold && talk.shown >= talk.total;   // the live fields once the typing is done
+    talk.cssK = show ? (reduce ? 1 : lerp(talk.cssK, 1, 1 - Math.exp(-dt * 9))) : 0;
+    talk.css.visible = talk.cssK > 0.01; talk.css.element.style.opacity = talk.cssK.toFixed(3);
+  }
+  if (parcels.go >= 0) { parcels.go = talk.mode === 'away' && talk.freeze != null ? talk.freeze : parcels.go + dt; parcelsTick(parcels.go, dt); }
+  const busy = talk.group && (talk.face.visible || talk.mode === 'away'); blankTag.visible = !busy; blankTag.userData.string.visible = !busy;
+}
+addEventListener('keydown', e => { if (talk.mode !== 'on' && talk.mode !== 'in' && talk.mode !== 'away') return; if (e.key === 'Escape') { e.preventDefault(); closeTalk(); } else talk.surf && talk.surf.trap(e); });
+window.__talkScene = { open: o => { openTalk(o); } };
+
+/* =====================================================================
+   SCROLL → WHAT HAPPENS: the weekly freight is pushed in over the hump and sorted, the full wagons kept, the light ones run into the
+   spur; the two specials come into the platform; on the departure board one idea's box is ticked and it starts generating; its van
+   goes through its voice's shed, writer then editor, and stands at In Review; it goes to the repair shop for edits; the paint shop
+   turns it into a five-car carousel and sprays the image van; the signal comes off and the carousel leaves for the sunset.
+   The steam, the lamps and the fog's colour never stop.
+   ===================================================================== */
+const S = {   // distances along the lines
+  fIn0: LINE.sAtZ(185), fIn1: LINE.sAtZ(69.5),
+  call0: PLAT.sAtZ(175), call1: PLAT.sAtZ(8), web0: PLAT.sAtZ(235), web1: PLAT.sAtZ(46.4),
+  pro: [LINE.sAtZ(-1), LINE.sAtZ(-19.5), LINE.sAtZ(-26), LINE.sAtZ(-35.5), LINE.sAtZ(-52), LINE.sAtZ(-76)],
+};
+const easeOut = u => 1 - Math.pow(1 - u, 2.2), easeIn = u => Math.pow(u, 2.2);
+const _fw = V(0, 0, 0), _sf = V(0, 0, 0);
+let liveryKey = -1;
+function update(t, dt, p) {
+  _dt = Math.max(1e-3, dt); fogTint(); steam.tick(dt); board.tick(t);
+  _fw.set(0, 0, -1).applyQuaternion(camera.quaternion).setY(0).normalize(); _sf.copy(camera.position).addScaledVector(_fw, 9); _sf.y = 0; sunFollow(_sf);   // the shadows where we're looking
+  const sw = (a, b) => SNAP ? (p > (a + b) / 2 ? 1 : 0) : sstep(a, b, p);
+
+  // 01: the freight pushed in, then each wagon let go over the hump in turn: kept along the line, the light ones into the spur
+  const arr = easeOut(sw(0.055, 0.1)), head = lerp(S.fIn0, S.fIn1, arr), tr = freight.tr;
+  tr.cars.forEach((v, i) => {
+    if (v === freight.loco) { place(v, LINE, head - tr.off[i] - 46 * sw(0.142, 0.18)); return; }   // the engine backs away when it's done
+    const r = easeOut(sw(0.103 + i * 0.0042, 0.119 + i * 0.0042)), s0 = head - tr.off[i];
+    if (r <= 0) place(v, LINE, s0); else if (v.kept) place(v, LINE, lerp(s0, v.dest, r)); else place(v, SPUR, lerp(s0 - SPUR_OFF, v.dest, r));
+  });
+
+  // 02: the specials into the platform
+  specials.call.set(lerp(S.call0, S.call1, easeOut(sw(0.168, 0.215))));
+  specials.web.set(lerp(S.web0, S.web1, easeOut(sw(0.208, 0.258))));
+
+  // 03→07: the idea's van, its row on the board, its slate
+  const legs = [sw(0.445, 0.468), sw(0.474, 0.488), sw(0.494, 0.51), sw(0.565, 0.59), sw(0.68, 0.705)];
+  let sp = S.pro[0]; legs.forEach((u, i) => { if (u > 0) sp = lerp(S.pro[i], S.pro[i + 1], easeIO(u)); });
+  place(pro.v, LINE, sp); pro.v.g.visible = pro.v.g.position.z > -72;
+  const st = p < 0.335 ? ['new', 0] : p < 0.36 ? ['new', 1] : p < 0.505 ? ['gen', 0] : p < 0.56 ? ['review', 0] : p < 0.612 ? ['edits', 0] : p < 0.672 ? ['after', 0] : p < 0.742 ? ['creative', 0] : ['ready', 0];
+  const r0 = board.st.rows[HERO]; if (r0[3] !== st[0] || r0[4] !== st[1]) board.set(HERO, st[0], st[1], t);
+  proSay('Idea from a call', 'voice 2 · ' + { new: 'new idea', gen: 'generating', review: 'in review', edits: 'needs edits', after: 'after edits', creative: 'generate creative', ready: 'creative ready' }[st[0]]);
+  sigReview.set(sw(0.556, 0.566));
+  const nk = p > 0.612 ? 1 : 0; if (note.k !== nk) { note.k = nk; note.t.userData.redraw(nk); }
+  repair.fire.intensity = 22 + Math.sin(t * 9.0) * 3 + Math.sin(t * 23.0) * 2;   // the stove's fire
+
+  // 06: the carousel's five cars come out of the paint shop to the engine; the image van is sprayed
+  const C = carousel, dep = easeIn(sw(0.8, 0.995)) * 400, em = easeOut(sw(0.7, 0.738));
+  place(C.loco, LINE, C.front + dep - C.tr.off[0]);
+  C.cars.forEach((v, i) => { place(v, LINE, C.front + dep - C.tr.off[i + 1] - 46 * (1 - em)); v.g.visible = v.g.position.z < -72; });
+  const lu = SNAP ? (p > 0.72 ? 1 : 0) : Math.round(sstep(0.704, 0.742, p) * 60) / 60; if (lu !== liveryKey) { liveryKey = lu; imageVan.t.userData.redraw(lu); }
+
+  // 07: the starter comes off
+  sigDepart.set(sw(0.786, 0.8));
+
+  talkUpdate(t, dt);   // Let's talk: the parcel label and the parcels train
+}
+
+/* ---- camera stations: down the yard from the footbridge end to the far signal ---- */
+const KEY = {
+  hero:    { pos: [7.0, 9.5, 64.0], look: [-8.0, 1.5, -40.0], m: { pos: [2.5, 11.0, 76.0], look: [-7.0, 1.0, -40.0] } },
+  freight: { pos: [0.5, 6.5, 86.0], look: [-7.5, 0.0, 40.0], m: { pos: [-1.5, 8.5, 93.0], look: [-7.5, 0.0, 42.0] } },   // from behind the hump, down the yard
+  specials:{ pos: [-19.6, 2.75, -11.5], look: [-15.4, 2.0, 18.0], m: { pos: [-19.8, 2.9, -14.5], look: [-15.8, 2.0, 18.0] } },
+  board:   { pos: [-16.7, 2.95, 0.4], look: [-21.5, 3.35, 0.0], m: { pos: [-13.4, 2.95, 0.3], look: [-21.5, 3.3, 0.0] } },
+  sheds:   { pos: [13.5, 6.2, -3.0], look: [-4.5, 2.0, -25.0], m: { pos: [11.0, 8.0, 3.0], look: [-4.5, 1.6, -25.0] } },
+  repair:  { pos: [-2.9, 2.25, -58.4], look: [-4.3, 1.7, -51.2], m: { pos: [-2.8, 2.4, -58.8], look: [-4.4, 1.7, -51.2] } },
+  paint:   { pos: [-22.0, 3.9, -106.0], look: [-10.0, 2.0, -89.0], m: { pos: [-24.0, 4.4, -110.0], look: [-10.5, 2.0, -89.0] } },
+  depart:  { pos: [0.5, 2.8, -157.0], look: [-6.5, 3.6, -133.0], m: { pos: [0.5, 3.0, -161.0], look: [-6.5, 3.6, -133.0] } },
+  end:     { pos: [3.5, 10.0, -118.0], look: [-6.0, 2.5, -280.0], m: { pos: [3.0, 12.0, -112.0], look: [-6.0, 2.0, -280.0] } },
+};
+const STATIONS = [
+  { p: 0.00, ...KEY.hero }, { p: 0.03, ...KEY.hero },
+  { p: 0.08, ...KEY.freight }, { p: 0.15, ...KEY.freight },
+  { p: 0.20, ...KEY.specials, via: [[-11.0, 4.5, 6.0], [-17.6, 3.4, -5.0]] }, { p: 0.27, ...KEY.specials },
+  { p: 0.32, ...KEY.board, via: [[-18.6, 2.9, -6.0]] }, { p: 0.39, ...KEY.board },
+  { p: 0.44, ...KEY.sheds, via: [[-11.0, 6.5, -6.0], [0.0, 6.0, -9.0]] }, { p: 0.51, ...KEY.sheds },
+  { p: 0.56, ...KEY.repair, via: [[9.0, 5.5, -34.0], [-2.9, 3.2, -41.5]] }, { p: 0.63, ...KEY.repair },
+  { p: 0.68, ...KEY.paint, via: [[-3.2, 3.2, -61.5], [-12.3, 4.8, -62.5], [-19.5, 4.2, -84.0]] }, { p: 0.74, ...KEY.paint },
+  { p: 0.79, ...KEY.depart, via: [[-18.0, 6.0, -118.0], [-9.5, 6.5, -128.0], [-1.5, 4.0, -144.0]] }, { p: 0.86, ...KEY.depart },
+  { p: 0.93, ...KEY.end }, { p: 1.00, ...KEY.end },
+];
+const _d = new THREE.Vector3();
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), tgtPos = new THREE.Vector3(), tgtLook = new THREE.Vector3();
+const viaCurves = new Map();
+function poseOf(s, por) { return [V(...(por && s.m ? s.m.pos : s.pos)), V(...(por && s.m ? s.m.look : s.look))]; }
+function cameraAt(p) {
+  let a = STATIONS[0], b = STATIONS[1];
+  for (let i = 0; i < STATIONS.length - 1; i++) if (p >= STATIONS[i].p) { a = STATIONS[i]; b = STATIONS[i + 1]; }
+  const t = easeIO(clamp((p - a.p) / Math.max(1e-4, b.p - a.p), 0, 1)), por = W / H < 0.85;
+  const [A, AL] = poseOf(a, por), [B, BL] = poseOf(b, por);
+  if (b.via && t > 0 && t < 1) {
+    const key = b.p + (por ? 'p' : 'l'); let c = viaCurves.get(key);
+    if (!c) { c = new THREE.CatmullRomCurve3([A, ...b.via.map(v => V(...v)), B], false, 'centripetal'); viaCurves.set(key, c); }
+    tgtPos.copy(c.getPointAt(t)); _d.copy(c.getPointAt(Math.min(1, t + 0.08)));
+    tgtLook.copy(AL).lerp(_d, sstep(0.05, 0.3, t) * (1 - sstep(0.6, 0.92, t))).lerp(BL, sstep(0.6, 0.95, t));   // look where it's going, then at what it came for
+  } else { tgtPos.copy(A).lerp(B, t); tgtLook.copy(AL).lerp(BL, t); }
+}
+
+/* ---- pointer parallax ---- */
+const ptr = { x: 0, y: 0, tx: 0, ty: 0 };
+addEventListener('pointermove', e => { ptr.tx = (e.clientX / W) * 2 - 1; ptr.ty = (e.clientY / H) * 2 - 1; }, { passive: true });
+function resize() {
+  const r = canvas.getBoundingClientRect();   // the canvas's own box (on iPhones a fixed 100%-high box is taller than innerHeight)
+  W = Math.round(r.width) || innerWidth; H = Math.round(r.height) || innerHeight; renderer.setSize(W, H, false); composer.setSize(W, H); bloom.resolution.set(W / 2, H / 2);
+  camera.aspect = W / H; camera.fov = W / H < 0.85 ? 62 : 42; camera.updateProjectionMatrix(); viaCurves.clear();
+  steam.m.uniforms.uScale.value = H * DPR;
+  if (talk.cssR) talk.cssR.setSize(W, H);
+  if (talk.group) fitTalk();
+}
+addEventListener('resize', resize);
+
+/* ---- frame loop ---- */
+let last = performance.now(), t0 = last, progL = 0;
+function frame(now) {
+  const dt = Math.min(SNAP ? 0.5 : 0.05, (now - last) / 1000); last = now; const t = (now - t0) / 1000 * (reduce ? 0.5 : 1);
+  progL = SNAP ? stage.prog : lerp(progL, stage.prog, 1 - Math.exp(-dt * 5));
+  ptr.x = lerp(ptr.x, ptr.tx, 0.05); ptr.y = lerp(ptr.y, ptr.ty, 0.05);
+  if (!talkFrame(dt)) {
+    cameraAt(progL);
+    const kc = SNAP ? 1 : 1 - Math.exp(-dt * 3.4); camPos.lerp(tgtPos, kc); camLook.lerp(tgtLook, kc);
+    const pk = camPos.distanceTo(camLook) > 14 ? 0.06 : 0.025;   // less sway in the close-ups
+    camera.position.set(camPos.x + ptr.x * pk, camPos.y - ptr.y * pk * 0.6, camPos.z); camera.lookAt(camLook);
+  }
+  if (window.__camDbg) { camera.position.fromArray(window.__camDbg[0]); camera.lookAt(...window.__camDbg[1]); }   // QA hook
+  update(t, dt, progL);
+  composer.render(dt);
+  if (talk.cssR && talk.mode !== 'off' && talk.css) cssRender();
+  requestAnimationFrame(frame);
+}
+resize(); cameraAt(stage.prog); camPos.copy(tgtPos); camLook.copy(tgtLook); progL = stage.prog;
+requestAnimationFrame(frame);
+window.__yard = { scene, camera, renderer, STATIONS, KEY, talk, talkPose, freight, specials, pro, board, carousel, imageVan, parcels, sigDepart, sigReview, sigPlat, cameraAt, tgtPos, tgtLook, sun, LINE, PLAT, steam };
+</script>
+<script src="../site.js" defer></script>
